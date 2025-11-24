@@ -1,0 +1,710 @@
+Codex Eterna — Master Implementation Spec v1
+
+## 0. Scope & Provenance
+
+Codex Eterna (CE) is the **Self-Learning Libraries pillar** in the Aether/Codex stack. It sits on top of:
+
+* **APP / Astral Press** — structured compression & MDL engine.
+* **Aevum Loom (Loom)** — time‑axis replay & ledger for engine state.
+* **UMX / Universal Matrix** — topology + conservation substrate.
+* **Trinity Gate / TBP** — ingress/egress membrane + NAP envelopes.
+* **Aether Math Compendium (AMC)** — global math backbone.
+
+This spec assembles and closes:
+
+* **Codex pillar dev spec** (math + algorithms).
+* **Aether computing dev v1 / SLL docs** (streaming basis, residuals, DRM).
+* **Cross-pillar integration** from APP / Loom / UMX / Gate master specs.
+
+It is intended to be **self‑sufficient** for implementing CE and wiring it into the rest of the stack, assuming the other pillars are implemented according to their own master specs.
+
+---
+
+## 1. Shared Constants, Types & Numeric Conventions
+
+### 1.1 Global constants
+
+* **Global tick**: (\tau \in \mathbb{N})
+  Shared discrete time index across Loom, UMX, Gate, Press, CE (logical time; mapped to wall clock by Loom/NAP).
+
+* **Universal commit hash**:
+  (U_{\text{commit}} \in {0,1}^{256}) – SHA‑256 of the initial bundle (config, PFNA, profiles).
+
+* **Conserved budgets**: (\mu)
+  Integer budgets (energy‑like quantities) enforced by UMX; CE must not violate global conservation when proposing structural changes.
+
+### 1.2 Types & formats
+
+* **Hash function**: `H256(x) = SHA256(x)` (bit‑stable across hosts).
+* **Fixed‑point**:
+
+  * `Q0.32`: unsigned fixed‑point in ([0,1]) (for probabilities, ratios, overlays).
+  * `Q32.32`: signed fixed‑point for metrics (MDL, κ, drift).
+* **Integers**:
+
+  * `Int64`, `UInt64` for counts, bit lengths, indices.
+
+These align with Gate/TBP integer formats and UMX ledger assumptions.
+
+---
+
+## 2. CE Role & Core Responsibilities
+
+From the Codex pillar dev spec:
+
+1. **Adaptive compression barrier**
+   Only accept structural changes (spawn, merge, basis update, transform change) if they **reduce total description length** while preserving fidelity:
+   (\Delta \mathcal{L}_{\text{total}} < 0).
+
+2. **Determinism barrier**
+   Given identical Loom/UMX/APP inputs and the same U_commit, CE must produce the same library, ledger, and hashes bit‑for‑bit.
+
+3. **Reversibility barrier**
+   All structural changes must be invertible via the hash‑chained ledger.
+
+4. **Drift & governance barrier**
+   CE must not drift into stale/unsafe heuristic regimes: drift guards, cooldowns, reuse monitoring, and Trinity Gate/NAP governance must be enforced.
+
+---
+
+## 3. Data Model & Invariants
+
+### 3.1 Global objects
+
+From Codex pillar spec:
+
+* **Structural ledger**:
+  [
+  \mathcal{L}_{\text{edge}} = (R_1, R_2, \dotsc, R_T)
+  ]
+  Each (R_t = (\text{op}_t,\text{args}_t,h_t,U_t)) where:
+
+  * `op_t` ∈ {SPAWN_NODE, MERGE_NODES, UPDATE_BASIS, UPDATE_STATS, ARCHIVE_NODE, RESTORE_NODE, GOVERNANCE_CHANGE, …}.
+  * `args_t` – deterministic arguments.
+  * `h_t = H256(Δ\text{structure}_t)` – hash of canonical encoding of the change.
+  * `U_t` – global structural hash after applying Δstructure_t.
+
+* **Global structural hash chain**:
+
+  [
+  U_{\tau+1} = U_{\tau} \oplus h_\tau,\quad
+  U_0 = H256(U_{\text{commit}} ,|, \text{"SLL_LIB_ROOT"})
+  ]
+
+  Any divergence in operations yields a different final (U_\tau).
+
+* **Library**:
+  [
+  \mathcal{L}_{\text{lib}}(\tau) = {N_i(\tau) \mid i=1,\dots,n(\tau)}
+  ]
+
+* **MDL & compression gain** (AMC/CE):
+
+  For residuals (e\in\mathbb{R}^m) with covariance (\Sigma_r):
+
+  [
+  \mathcal{L} = \frac{1}{2}\log_2!\Big((2\pi e)^m \det \Sigma_r\Big)
+  ]
+
+  Naive codelength ( \mathcal{L}_{\text{naive}} ) defines compression gain:
+
+  [
+  \kappa = \mathcal{L}_{\text{naive}} - \mathcal{L}
+  ]
+
+  Total: (\kappa_{\text{total}} = \sum_i \kappa_i).
+
+### 3.2 Node model
+
+Codex Eterna node (N_i(\tau)) (pillar spec):
+
+[
+N_i(\tau) = (\Xi_i, \ell_i, a^**i, U_i, a_i, C*{e,i}, \rho_i, \kappa_i, \text{meta}_i)
+]
+
+* Identity: (\Xi_i \in {0,1}^{256}).
+* Level: (\ell_i \in {0,1,2,\dots}) (semantic depth).
+* Anchor: (a^*_i \in \mathbb{Z}^d) – PFNA / UMX coordinate.
+* Basis: (U_i \in \mathbb{R}^{m_i \times r_i}), (U_i^\top U_i = I_{r_i}).
+* Latent: (a_i \in \mathbb{R}^{r_i}).
+* Residual covariance: (C_{e,i}).
+* Reuse ratio: (\rho_i \in [0,1]).
+* Compression gain: (\kappa_i \in \mathbb{R}).
+* Meta: counts, cooldowns, flags, governance tags.
+
+### 3.3 Memory bank
+
+[
+\mathcal{M}(\tau) = {(k, E_k, w_k, \text{meta}_k)}
+]
+
+* Feature vector: (f \in \mathbb{Z}^p), fingerprinted: (k = H_{\text{feat}}(f)).
+* `w_k` – usage count or decayed weight.
+* `E_k` – set of outcomes / references (nodes, motifs, etc.).
+
+CE stores **no raw user data** here; only abstract fingerprints and references.
+
+---
+
+## 4. Core Math: Spawn, Merge, MDL Barriers
+
+### 4.1 Spawn condition (orthogonal mode emergence)
+
+From Codex pillar spec:
+
+For node i, residual covariance (C_{e,i}) with eigenvalues (\lambda_1\ge\dots\ge\lambda_m). Spawn barrier:
+
+[
+\frac{\lambda_2}{\sum_{k=1}^m \lambda_k} > \theta_{\text{spawn}}
+]
+
+* (\theta_{\text{spawn}} \in (0,1)); **CE v1 default**: (\theta_{\text{spawn}} = 0.1).
+
+### 4.2 Merge condition (redundancy collapse)
+
+From pillar spec:
+
+Similarity:
+
+[
+\cos(U_i, U_j) = \frac{|U_i^\top U_j|_F}{\sqrt{r_i r_j}}
+]
+
+Merge barrier: merge nodes if:
+
+* (\cos(U_i,U_j) > c^\star)
+* (\Delta \mathcal{L}_{\text{merge}} < 0)
+
+**CE v1 defaults:**
+
+* (c^\star = 0.95) (strongly overlapping bases).
+* (\Delta \mathcal{L}_{\text{merge}}) computed on a cached residual window (see §6.4).
+
+### 4.3 MDL acceptance barrier
+
+From pillar spec:
+
+For any candidate structural update:
+
+[
+\Delta \mathcal{L}*{\text{total}}
+= \mathcal{L}*{\text{after}} - \mathcal{L}_{\text{before}}
+]
+
+* If (\Delta\mathcal{L}_{\text{total}} < 0): update may be accepted (subject to governance).
+* Else: **must be rejected.**
+
+CE v1 tightens this with a **minimum gain**:
+
+* Canonical threshold: (\tau_{\text{mdl}} = 16) bits.
+* Require (\Delta\mathcal{L}*{\text{total}} \le -\tau*{\text{mdl}}) for acceptance.
+
+### 4.4 Entropy barrier
+
+From pillar spec: effective entropy (H) over library + residuals must not increase:
+
+[
+\Delta H \le 0
+]
+
+We implement this indirectly via the MDL barrier and discriminators (see §8).
+
+---
+
+## 5. Per‑Tick Learning Loop (Closed Version)
+
+Base loop from pillar spec §4, with gap‑closure choices filled in.
+
+For each engine tick (t) (or a sub-sampled subset) aligned with Loom:
+
+1. **Ingest canonical state**
+
+   * Loom provides integerized state (x_t \in \mathbb{Z}^d) via PFNA, plus optional compressed forms from Press.
+
+2. **Feature extraction & fingerprint**
+
+   * (f_t = \Phi(x_t) \in \mathbb{Z}^p); (\Phi) fixed per deployment.
+   * `CE v1` requires Φ to be deterministic, versioned, and documented.
+   * Fingerprint: (k_t = H_{\text{feat}}(f_t)).
+
+3. **Node selection**
+
+   * Use memory bank & anchors to pick active node set (S_t).
+   * Primary node (i^\star = \arg\max_i \text{similarity}(f_t, N_i)) with a deterministic similarity (e.g., anchor distance + fingerprint hits).
+
+   **CE v1 choice:** similarity = weighted sum of:
+
+   [
+   \text{sim}(f,N_i) = -\alpha|a^*_i - a^*(f)|_2^2 + \beta \cdot \mathbb{1}[k_t \in E_k]
+   ]
+
+   with (\alpha=1,\beta=2).
+
+4. **Reconstruction & residuals**
+
+   For each active node (i\in S_t):
+
+   * Latent: (a_{i,t} = U_i^\top (x_t - \mu_i)).
+   * Reconstruction: (\hat{x}*{t,i} = U_i a*{i,t} + \mu_i).
+   * Residual: (e_{t,i} = x_t - \hat{x}_{t,i}).
+
+5. **Residual statistics update**
+
+   We fix a **sliding window covariance** (closes ACD‑01):
+
+   * Window (W_L = 512) ticks per node (CE v1).
+   * Maintain a circular buffer of (e_{t,i}) and compute:
+
+     [
+     C_{e,i} = \frac{1}{W_L}\sum_{k\in W_L} e_{k,i} e_{k,i}^\top
+     ]
+
+6. **Basis / latent update**
+
+   CE v1 uses **incremental PCA (Oja’s rule)** (closes ACD‑02/03):
+
+   For each basis column (u_{i,j}) and residual (e_{t,i}):
+
+   [
+   u_{i,j} \leftarrow u_{i,j} + \eta_t\big(e_{t,i}(u_{i,j}^\top e_{t,i}) - (u_{i,j}^\top e_{t,i})u_{i,j}\big)
+   ]
+
+   * Learning rate: (\eta_t = \eta_0 / (1 + t/T_{\text{decay}})) with (\eta_0=0.1,T_{\text{decay}}=10^5).
+   * Clip (|e_{t,i}|_2) to 5× rolling median over (W_L).
+   * Re‑orthonormalize (U_i) every 128 ticks via Gram–Schmidt.
+
+7. **Spawn evaluation**
+
+   * Compute eigenvalues (\lambda_k) of (C_{e,i}).
+   * If spawn condition holds (see §4.1) and cooldown/gov allow, propose SPAWN_NODE(i→j).
+
+8. **Merge evaluation**
+
+   * Periodically (e.g., every 1024 ticks per node), evaluate candidate node pairs using merge condition (§4.2).
+   * Propose MERGE_NODES(i,j) where beneficial.
+
+9. **MDL evaluation & ledger update**
+
+   * For each proposal P, compute (\Delta\mathcal{L}*{\text{total}}) and CE objective (J*{\text{CE}}) (see §7).
+   * If admissible, apply structural change, emit ledger record (R_\tau), update (U_\tau).
+
+10. **Memory bank update**
+
+* Update (\mathcal{M}) with (k_t, used nodes, outcomes) and update `w_k`.
+* CE v1: `w_k` is an exponentially decayed count with half‑life 10,000 ticks.
+
+---
+
+## 6. Deterministic IDs, Merge Behaviour, Library Self‑Compression
+
+### 6.1 Node IDs & structural hash
+
+From pillar spec:
+
+* Spawned node:
+
+  [
+  \Xi_i = \text{SHA256}\big(U_{\text{parent}} ,|, U_{\text{commit}} ,|, \tau ,|, \text{proposal_tag}\big)
+  ]
+
+* Merged node:
+
+  [
+  \Xi_{\text{merge}} = \text{SHA256}(\Xi_i \oplus \Xi_j ,|, U_{\text{commit}} ,|, \tau)
+  ]
+
+These formulas are **normative**.
+
+### 6.2 Merge policy details (closing gap)
+
+CE v1 fixes:
+
+* Always create a **new merged node** (N_{\text{merge}}); parents marked as `retired`.
+* Compute (\Delta\mathcal{L}_{\text{merge}}) on:
+
+  * All residuals in a recent window from both nodes (same (W_L) as covariance).
+* Retain or refit basis:
+
+  * Fit joint covariance from combined residuals, compute top‑r eigenvectors as new basis (U_{\text{merge}}).
+
+### 6.3 Library self‑compression
+
+From pillar spec: library meta‑model is L1‑regularised compression:
+
+[
+\mathcal{L}*{\text{compressed}}
+= \arg\min*{\hat{\mathcal{L}}}\big|\mathcal{L}_{\text{lib}} - \hat{\mathcal{L}}\big|_2^2 + \lambda|\hat{\mathcal{L}}|
+]
+
+CE v1:
+
+* Represent (\mathcal{L}_{\text{lib}}) as concatenated vector of basis parameters + κ,ρ per node.
+* Use iterative coordinate‑descent with soft‑thresholding (lasso‑style) to find sparse (\hat{\mathcal{L}}).
+* Run this meta‑compression periodically (e.g. daily) and never drop nodes without governance tags allowing it.
+
+---
+
+## 7. CE Global Objective & Acceptance Harness
+
+### 7.1 Objective (J_{\text{CE}}) (closes DTV1‑02, DTC‑06)
+
+For a proposal (P) evaluated over window (W) of ticks:
+
+[
+J_{\text{CE}}(P)
+= w_{\text{MDL}}\Delta \mathcal{L}_{\text{total}}
+
+* w_{\rho}\Delta \rho
+* w_{\text{rev}}\Delta E_{\text{rev}}
+* w_{\text{gov}} G
+* w_{\text{risk}} R
+  ]
+
+- (\Delta\mathcal{L}_{\text{total}}) – total description length change across CE+Loom+APP.
+- (\Delta\rho) – change in reuse ratio across affected nodes.
+- (\Delta E_{\text{rev}}) – change in Loom replay error.
+- (G) – governance penalty (policy violations from Gate/UMX).
+- (R) – risk score (safety, PII, etc.).
+
+**CE v1 canonical weights:**
+
+* (w_{\text{MDL}}=1.0), (w_{\rho}=-0.25), (w_{\text{rev}}=1.0), (w_{\text{gov}}=10.0), (w_{\text{risk}}=20.0).
+
+**Admissibility condition:**
+
+A proposal is **accepted** iff:
+
+1. (J_{\text{CE}}(P) < 0)
+2. (\Delta\mathcal{L}*{\text{total}} \le -\tau*{\text{mdl}}) ((\tau_{\text{mdl}} = 16) bits)
+3. (G \le 0) and (R \le 0).
+
+### 7.2 Canonical CE canary algorithm
+
+```pseudo
+function CE_CANARY_ADMIT(proposal P, window W_ticks):
+    baseline := MEASURE_METRICS(W_ticks)
+    APPLY_PROPOSAL(P)        # sandbox CE instance
+    trial   := MEASURE_METRICS(W_ticks)
+    REVERT_PROPOSAL(P)
+
+    ΔL_total := trial.L_total - baseline.L_total
+    Δrho      := trial.rho      - baseline.rho
+    ΔE_rev    := trial.E_rev    - baseline.E_rev
+    G         := trial.G        # governance
+    R         := trial.R        # risk
+
+    J := w_MDL * ΔL_total + w_rho * Δrho + w_rev * ΔE_rev
+         + w_gov * G + w_risk * R
+
+    if (ΔL_total <= -τ_mdl) and (J < 0) and (G <= 0) and (R <= 0):
+        COMMIT_PROPOSAL(P)
+        return ACCEPT
+    else:
+        return REJECT
+```
+
+---
+
+## 8. Discriminators, Axioms, and Numeric Model (ACD‑05..09)
+
+### 8.1 Canonical discriminators (D1–D5)
+
+CE v1 requires at least these discriminators:
+
+1. **D1 — MDL gain**
+
+   * Reject if (\Delta \mathcal{L}*{\text{total}} > -\tau*{\text{mdl}}).
+
+2. **D2 — Reuse stability**
+
+   * Reject if reuse ratio drops by > 0.1 over (W_L).
+
+3. **D3 — Conservation** (UMX equilibrium law)
+
+   * Reject if ∑Δμ ≠ 0 across affected anchors.
+
+4. **D4 — Reversibility** (Loom replay)
+
+   * Reject if replay discrepancy > (10^{-9}) in Q32.32 units.
+
+5. **D5 — Governance risk**
+
+   * Reject if governance flags contain any “deny” or risk score (R>0).
+
+### 8.2 Primitive registry & axioms (ACD‑06)
+
+**Primitive types** (CE v1):
+
+* `Int64`, `UInt64`, `Q0.32`, `Q32.32`, `Bool`, `Vector[N]`, `Matrix[MxN]`, `Hash256`, `Motif`, `Binding`, `Policy`, `Tick`, `NodeId`.
+
+**Primitive ops**:
+
+* Arithmetic: `ADD,SUB,MUL,DIV` on numeric types.
+* Comparisons: `LT,LE,GT,GE,EQ,NEQ`.
+* Metrics: `MDL_TOTAL`, `MDL_DELTA`, `REUSE_RATIO`, `COMPRESSION_GAIN`.
+* Motifs: `MOTIF_APPLY`, `MOTIF_COMPOSE`, `MOTIF_INVERT`.
+* Ledger/hash: `HASH256`, `LEDGER_APPEND`, `LEDGER_REPLAY`.
+* Governance: `CHECK_POLICY`, `RISK_SCORE`.
+
+**Axioms**:
+
+* Standard ring axioms on numeric types.
+* Determinism: `MDL_TOTAL` and `HASH256` are pure.
+* Conservation: any approved update must preserve global ∑μ (via D3).
+
+DRM considers **any op not in this registry illegal** for CE v1.
+
+### 8.3 Numeric precision & error model (ACD‑09)
+
+CE v1:
+
+* MDL values stored as exact `Int64` bits.
+* Probabilities/ratios as `Q0.32` (max rounding error < 2⁻³²).
+* Drift/replay metrics as `Q32.32`.
+* Any discrepancy beyond thresholds in D4 is a **hard fault**, requiring rollback or S7 Emergency Halt (see §9).
+
+---
+
+## 9. S‑Modes & Governance (DTC‑01/02)
+
+We fix an explicit CE S‑mode machine.
+
+### 9.1 S‑mode list
+
+| ID | Name           | Semantics                                                   |
+| -- | -------------- | ----------------------------------------------------------- |
+| S0 | Idle           | No learning; answer only from existing library.             |
+| S1 | Observe        | Log metrics & residuals; no structural changes.             |
+| S2 | Explore        | Sandbox proposals; canary tests only.                       |
+| S3 | Learn          | Live learning; proposals accepted via CE_CANARY_ADMIT.      |
+| S4 | Guarded Learn  | Like S3 but with stricter thresholds & drift guard engaged. |
+| S5 | Audit          | Replay via Loom; metrics recomputed; no learning.           |
+| S6 | Frozen         | Library read‑only; no changes, including via governance.    |
+| S7 | Emergency Halt | Learning & ingest disabled except for manual overrides.     |
+
+### 9.2 Transitions
+
+* S0 → S1 on attach to running Aether engine.
+* S1 → S2 on explicit operator/governance enable.
+* S2 → S3 when canary acceptance rate & risk allow.
+* S3 ↔ S4 based on drift guard/thresholds.
+* Any → S5 on audit request.
+* Any → S6 on freeze/ release cut.
+* Any → S7 on safety or governance fault.
+
+### 9.3 Crosswalk to pillar modes
+
+CE modes map to Press, Loom, UMX, Gate profiles as in our earlier table (lossless vs quasi‑lossless, checkpoint cadence, UMX profile, Gate export mode). This gives a single “mode crosswalk” developers can implement against.
+
+---
+
+## 10. CE ↔ Loom Integration (DTC‑03)
+
+### 10.1 CE‑visible Loom record
+
+CE treats Loom blocks through:
+
+```json
+{
+  "schema_version": "ce_loom_record.v1",
+  "tick": "<int>",
+  "block_id": "sha256:<64hex>",
+  "block_type": "I" | "P",
+  "umx_root": "sha256:<64hex>",
+  "apx_ref": "sha256:<64hex>",
+  "ce_metrics": {
+    "rho": "<Q0.32>",
+    "kappa": "<Q32.32>",
+    "drift": "<Q32.32>",
+    "replay_err": "<Q32.32>"
+  },
+  "nap_envelope": { /* nap_envelope.v1, with verb, etc. */ }
+}
+```
+
+* `block_type` – checkpoint (I‑block) or predictive (P‑block).
+* `umx_root` – UMX layer hash at this tick.
+* `apx_ref` – Press snapshot reference for P_state + P_cite (APP APX capsule).
+
+### 10.2 Invariants
+
+Loom guarantees:
+
+* For any tick t, replay from nearest I‑block at τ ≤ t plus P‑blocks yields the same `umx_root` and `block_id`.
+* Epsilon ledger is empty or bounded as in Loom profiles.
+
+CE uses this for:
+
+* Determinism tests.
+* Reversibility discriminators.
+* MDL gain contributions (ΔL_loom) in its objective.
+
+---
+
+## 11. CE ↔ UMX Placement & Sync (DTC‑04, DTC‑07)
+
+### 11.1 Anchors & proposals
+
+Each CE motif is anchored at `(layer, node_id)` in UMX (PFNA coordinates).
+
+A placement proposal (P):
+
+[
+P = (\text{id}, \text{umx_anchor}, \Delta\text{topology}, \Delta \mathcal{L}_{\text{total}}, \Delta \mu)
+]
+
+UMX acceptance (normative for CE‑origin changes):
+
+* (\Delta \mathcal{L}*{\text{total}} \le -\tau*{\text{mdl}})
+* (\sum \Delta\mu = 0)
+* respects profile budgets (hops, windows, etc.).
+
+### 11.2 CE Knowledge Sync Protocol
+
+Built on NAP + Loom:
+
+* Uses `nap_verb = "SYNC"`, `layer = "codex"`.
+* Payload (`ce_sync_manifest.v1`):
+
+```json
+{
+  "schema_version": "ce_sync_manifest.v1",
+  "kind": "MOTIF" | "POLICY" | "BINDING",
+  "op": "DECLARE" | "UPDATE" | "REVOKE",
+  "id": "sha256:<64hex>",
+  "parent_id": "sha256:<64hex>" | null,
+  "umx_anchor": "node:<id>@layer:<L>",
+  "dl_before": "<int64>",
+  "dl_after": "<int64>",
+  "rho_before": "<Q0.32>",
+  "rho_after": "<Q0.32>",
+  "gov_flags": ["<string>"],
+  "sig": "<string>"
+}
+```
+
+Merge rule:
+
+1. Order manifests deterministically (tick, src_node, id, op).
+2. Recompute local Δℒ, κ, ρ, G, R.
+3. Accept only if `CE_CANARY_ADMIT` would accept.
+4. SEAL accepted changes via UMX commit chain + Loom record.
+
+This yields **eventual consistency** for multi‑node CE with deterministic resolution.
+
+---
+
+## 12. CE ↔ Press / APP & APX
+
+CE treats APP as the canonical encoder/decoder and MDL engine. APP master spec defines:
+
+* Rule+residual encoding: (S = M_\theta \oplus R).
+* Codelength: (L_{\text{total}} = L_{\text{model}} + L_{\text{residual}} + L_{\text{overhead}}).
+* Dual-compressor segments: (L_{\text{segment}} = \min(L_A,L_B) + L_{\text{gate}}).
+* APX capsules: `(P_state, P_cite, meta)` containers for snapshots.
+
+CE usage:
+
+* For each CE motif experiment, CE can request Press to recompress a time slice and expose:
+
+  * (L_{\text{total}}), (L_{\text{naive}}), (\kappa = L_{\text{naive}} - L_{\text{total}}).
+* CE uses these as MDL terms in its objective and discriminators.
+* CE never manipulates APP’s internals; only config/mode via Press policy cards/self‑described manifests.
+
+---
+
+## 13. Gate / TBP Integration & NAP Verbs
+
+### 13.1 NAP envelope schema (Gate/Loom/CE)
+
+Gate defines `nap_envelope.v1` with fields like: `tick,node_id,layer,seed_hex,payload_ref,metrics,mode,sig` (canon). Loom reuses this.
+
+CE uses:
+
+* `layer = "codex"` for its own NAP envelopes (SYNC, PROPOSE, COMMIT, etc.).
+
+### 13.2 CE’s NAP verb set (for CE v1)
+
+We fix the minimal verbs for CE:
+
+* `COMMIT` – finalise CE structural change.
+* `PROPOSE` – send proposal to Gate/UMX.
+* `SYNC` – knowledge sync operations (see §11.2).
+* `QUERY` – introspection.
+* `REPLAY` – ask Loom to provide replay.
+* `SCHEMA` – schema negotiation.
+* `HEARTBEAT` – liveness.
+
+These appear as `verb` in the envelope payload; Gate & NAP routers treat them as standard. (We’re not redefining NAP globally, only the subset CE relies on.)
+
+---
+
+## 14. Encryption & Classification (DTC‑05)
+
+CE uses a four‑level classification:
+
+* `PUBLIC` – can be stored & transmitted in clear.
+* `INTERNAL` – clear only inside trusted cluster.
+* `CONFIDENTIAL` – encrypted at rest; clear only on trusted nodes.
+* `SECRET` – encrypted at rest and in transit; only decrypted in secure enclaves.
+
+Mapping:
+
+* Library contents (basis matrices, motifs, bindings): `CONFIDENTIAL`.
+* IDs, hashes, high‑level metrics: `INTERNAL` or `PUBLIC` depending on deployment.
+* External knowledge injections and raw training data: `SECRET` until vetted.
+
+Artifacts include:
+
+```json
+"ce_class": "PUBLIC" | "INTERNAL" | "CONFIDENTIAL" | "SECRET"
+```
+
+Encryption pillar enforces the actual crypto (e.g. AES‑GCM, key mgmt). CE must never bypass classification.
+
+---
+
+## 15. Testing & Self‑Verification
+
+Pillar spec already requires self‑test harnesses:
+
+CE v1 test harness must cover:
+
+1. **Determinism** – same inputs (Loom/UMX/APP) ⇒ same library & hashes.
+2. **Idempotence** – applying same diff twice is no‑op second time.
+3. **Isolation** – data not passing through Gate cannot affect CE.
+4. **MDL barrier** – no accepted update has (\Delta\mathcal{L}_{\text{total}} \ge 0).
+5. **Reversibility** – any commit can be rolled back by reversing ledger steps and replaying from Loom.
+6. **Multi‑node sync** – artificially diverge two CE nodes, then feed them the same sync stream; they must converge.
+
+---
+
+## 16. What Developers Need (Checklist)
+
+Given:
+
+* This spec (CE v1 Master Implementation).
+* Pillar master specs for APP, Loom, UMX, Trinity Gate, AMC.
+
+A dev team can implement:
+
+* CE core data structures (nodes, memory bank, ledger).
+* Per‑tick learning loop (basis/residuals/spawn/merge/MDL).
+* CE global objective and canary admission.
+* S‑mode machine and mode crosswalk.
+* CE↔Loom record handling and invariants.
+* CE↔UMX placement proposals and sync protocol.
+* CE↔Press MDL calls and APX linking.
+* CE↔Gate NAP envelopes and verbs.
+* CE classification & encryption hooks.
+* Full self‑test harness.
+
+If you’d like, next step I can split this into **separate pillar-style subdocs**:
+
+* `ce_objective_v1.md`
+* `ce_modes_and_governance_v1.md`
+* `ce_loom_contract_v1.md`
+* `ce_umx_sync_v1.md`
+* `ce_primitive_registry_v1.md`
+
+so you can drop them directly into the project repo as discrete implementation packs.

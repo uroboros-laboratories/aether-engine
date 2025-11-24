@@ -1,0 +1,1149 @@
+# Triune Bridge Protocol (TBP) / Trinity Gate
+
+**Unified Implementation & Operations Spec – Master v1**
+
+**Status:** Composite master spec v1 (implementation‑ready, beyond MVP)
+**Audience:** Systems / ML engineers, infra / SRE, integrators, QA
+**Goal:** This single document is a *closed*, self‑sufficient handover for implementing the Triune Bridge Protocol (TBP) / Trinity Gate pillar as a production‑grade system, not just MVP.
+
+All math, implementation details, and design decisions below are grounded in and cross‑checked against the project files you provided (Implementation Spec v1, TBP roadmap + task breakdown, verification plan & fixtures, Trinity Gate features / expansions, Core Bridge Math & Representation, PFNA integerization & tag math, Gate pillar & TGP focus reports, operator runbook, coverage & gap reports, etc.). When I interpret, I anchor to those files with direct quotes.
+
+---
+
+## 0. Canon, Naming & Scope
+
+### 0.1 Canon name mapping
+
+From **Aether_Name_Changes_2025-11-01.md**:
+
+* **Astral Press (AP)** – formerly *Aether Press*
+* **Aevum Loom** – unchanged
+* **Universal Matrix (UMX)** – formerly *Luminous Lattice*
+* **Synaptic Ley Protocol (SLP)** – formerly *Luminous Lattice Protocol*
+* **Trinity Gate** – unchanged (pillar)
+* **Triune Bridge Protocol (TBP)** – formerly *Trinity Gate Protocol (TGP)* (protocol)
+* **Codex Eterna (CE)** – formerly *Self‑Learning Libraries*
+* **NAP** – unchanged (protocol / envelope)
+
+Use the new names in code, config and docs. Legacy short tokens like `TGP` or `PRESS_` may appear in older artifacts; treat them as synonyms but emit only the new names going forward.
+
+### 0.2 Pillar role (what Trinity Gate / TBP *is*)
+
+From the Gate pillar report:
+
+> “Trinity Gate is the Aether architecture’s **interface engine and universal translator layer**, bridging probabilistic quantum behaviors with deterministic classical computation in a common relational framework. It operates as a **standalone execution engine** that converts between external signals and Aether’s internal state with **near‑lossless fidelity and negligible computational cost**.”
+
+TBP (formerly TGP) is the **translator subsystem** of Trinity Gate:
+
+> “…provides a common relational state that bridges probabilistic quantum models and deterministic classical systems. At its core, the Bridge maps continuous quantum‑state information into discrete integer relationships with 99.999%+ fidelity…”
+
+This master spec implements that translator + membrane + I/O responsibilities as a concrete system.
+
+### 0.3 Out of scope (but referenced)
+
+This spec assumes other pillars exist (Astral Press, Aevum Loom, Universal Matrix, Codex Eterna) and gives **contracts** for them, but does **not** fully implement their internals. Where their math is needed (PFNA tag math, integerization), we define the interface and the exact transforms that Gate must respect.
+
+---
+
+## 1. System Overview & Mental Model
+
+### 1.1 High‑level mental model (for devs)
+
+Think of Trinity Gate / TBP as:
+
+* A **deterministic I/O engine** sitting between:
+
+  * External sources (quantum hardware, classical simulators, telemetry, user input, logs, etc.)
+  * Internal Aether state (Press, Loom, UMX, CE, global ledger U, NAP envelopes)
+* A **near‑lossless codec** between:
+
+  * Quantum‑style probability amplitudes ( \psi )
+  * Integer‑coded states (counts, phase bins, relational fields, residual overlays)
+* A **governed membrane**:
+
+  * Ingress: `Fetch → Bridge‑normalize → Inject` with schemas, PII stripping, quotas, approvals.
+  * Egress: `FRAME → PROJECT → APPROVE → RELEASE` with redaction and brokered channels.
+
+The system runs in discrete **ticks** ( \tau \in \mathbb N ). At each tick, it:
+
+1. Accepts inbound payloads (quantum outputs, classical arrays, log lines, etc.).
+2. Normalizes them (units → SI, schemas → numeric arrays).
+3. Integerizes / encodes them (PFNA + TBP math).
+4. Updates an internal state representation (slices, packs, scenes, ledger U).
+5. Emits:
+
+   * **NAP envelopes** (hash‑only summaries, metrics)
+   * **Scene frames** (JSON/CSV for visualizations / downstream systems), subject to governance.
+
+---
+
+## 2. Core Quantum‑Side Math (TBP Integer Codec)
+
+Grounded in **Core Bridge Math & Representation** and **TBP Implementation Spec v1**.
+
+### 2.1 L0: probability → integers
+
+We start from a **normalized complex state vector**:
+
+* ( \psi \in \mathbb C^N ), with ( \sum_i |\psi_i|^2 = 1 )
+* Probability per state: ( p_i = |\psi_i|^2 )
+* Phase per state: ( \theta_i = \arg(\psi_i) \in (-\pi, \pi] )
+
+**Magnitude quantisation (v1 canonical form)**
+
+> “Magnitude quantisation: ( m_i = \lfloor \eta \cdot |\psi_i|^2 \rfloor )”
+
+* ( \eta \in \mathbb N ) – **resolution** (called S in older docs, renamed to η).
+* ( m_i \in \mathbb N ) – **integer mass** for state (i).
+
+**v1 decision (types & ranges)**
+
+From the Implementation Spec:
+
+* `η` – 64‑bit integer scaling (`u64`).
+* `m_i` – unsigned 64‑bit integer (`u64`).
+* `P` – number of phase bins; `P ≤ 65535` in v1 for comfort.
+* `p_i` – unsigned 16‑bit integer (`u16`), range `[0, P−1]`.
+
+**Phase binning**
+
+> “Phase binning: ( p_i \in {0, …, P−1} )”
+
+Concrete v1 algorithm (`bin_phase(theta, P)`):
+
+1. Wrap phase:
+   ( \theta \gets \text{wrap}(\theta, [-\pi, \pi)) )
+2. Bin width:
+   ( \Delta_\theta = 2\pi / P )
+3. Bin index:
+   ( p_i = \left\lfloor (\theta + \pi)/\Delta_\theta \right\rfloor )
+   Clip to `[0, P−1]`.
+
+**Residual at L0 (per‑state)**
+
+Implementation decision:
+
+> “**Residual at L0:** store per‑state fractional remainder ( r_i )… (Rationale: deterministic, compact, adequate for η up to 1e9.)”
+
+Concrete v1 representation:
+
+* Compute ( \text{tmp} = \eta \cdot |\psi_i|^2 )
+* `m[i] = floor(tmp)`
+* `r_Q032 = floor((tmp − m[i]) · 2³²)`
+* Store `r[i]` as **Q0.32 fixed‑point** ∈ `[0, 2³²−1]`.
+
+So:
+
+* ( r_i \approx \text{tmp} - m_i \in [0,1) )
+* Encoded as 32‑bit integer with 32 fractional bits.
+
+**L0 encode pseudo‑code (spec)**
+
+```python
+def encode_L0(psi, eta, P):
+    # psi: complex[N]
+    # eta: int (resolution)
+    # P:   int (phase bins)
+    N = len(psi)
+    m = [0]*N        # u64
+    p = [0]*N        # u16
+    r = [0]*N        # Q0.32
+
+    for i in range(N):
+        prob = abs(psi[i])**2                   # |ψ_i|²
+        tmp  = eta * prob
+        mi   = math.floor(tmp)
+        frac = tmp - mi
+
+        m[i] = mi
+        r[i] = int(math.floor(frac * 2**32))    # Q0.32
+        theta = math.atan2(psi[i].imag, psi[i].real)
+        theta = wrap_to_minus_pi_pi(theta)      # [-π, π)
+        bin_w = 2*math.pi / P
+        pi    = int(math.floor((theta + math.pi)/bin_w))
+        p[i]  = max(0, min(P-1, pi))
+
+    return m, p, r
+```
+
+### 2.2 Reconstruction from integers
+
+From the Implementation Spec quoting older Triune report:
+
+> “Explicit reconstruction formula:
+> ( \displaystyle \psi'_i = \sqrt{ \frac{m_i}{\sum_j m_j} } \cdot \exp!\left[i \cdot \left(p_i + \tfrac{1}{2}\right) \cdot \frac{2\pi}{P} - \pi\right] ) followed by renormalisation.”
+
+So baseline reconstruction (before residual overlays):
+
+1. ( \hat{p}_i = m_i / \sum_j m_j )
+2. ( \theta'_i = (p_i + \tfrac12)\cdot(2\pi/P) - \pi )
+3. ( \psi'_i = \sqrt{\hat{p}_i}, e^{i\theta'_i} )
+4. Renormalise ( \psi' ) to unit norm.
+
+**v1 decode order (with residuals)**
+
+> “Apply `R2` → apply per‑slice `R1` → reconstruct ( \psi' ) from ( (m, p) ) → renormalise.”
+
+Detailed in §4.3 below.
+
+---
+
+## 3. Fidelity Policy: η, P, Metrics & Tiers
+
+### 3.1 Scaling laws
+
+Core Bridge + spec anchors:
+
+> “Variance drops **quadratically** as resolution increases (σ² ∝ η⁻²)… **F ≈ 1 − k/η**.”
+
+> “Increasing S (η) and P reduces loss asymptotically.”
+
+The system exposes:
+
+* Resolution ( \eta ) and phase bins P as tunable fidelity knobs.
+* A **no‑rounding‑loss stance**: fractional probability mass is kept as residual overlays rather than discarded.
+
+### 3.2 Metrics
+
+From Implementation Spec §7.1:
+
+* **Prob‑L1**:
+  ( \displaystyle \text{Prob‑L1} = \sum_i \left| \hat{p}_i - p_i \right| )
+* **Amp‑L2**:
+  ( \displaystyle \text{Amp‑L2} = \sqrt{\sum_i |\psi'_i - \psi_i|^2} )
+
+Where:
+
+* ( p_i = |\psi_i|^2 ) (true probability)
+* ( \hat{p}_i ) from reconstructed ψ′ after full residual layering.
+
+### 3.3 Tier thresholds (defaults)
+
+Implementation Spec §7.2:
+
+| Tier       | Prob‑L1 target | Amp‑L2 target |
+| ---------- | -------------- | ------------- |
+| Dev        | ≤ 1 × 10⁻³     | ≤ 1 × 10⁻²    |
+| Research   | ≤ 1 × 10⁻⁴     | ≤ 1 × 10⁻³    |
+| Prod‑Hi    | ≤ 1 × 10⁻⁵     | ≤ 1 × 10⁻⁴    |
+| Prod‑Ultra | ≤ 1 × 10⁻⁶     | ≤ 1 × 10⁻⁵    |
+
+And corresponding **η/P baselines** (from §1.3 of the Implementation Spec):
+
+| Tier       | Target use          | η (min) | P (min) | Notes                                       |
+| ---------- | ------------------- | ------- | ------- | ------------------------------------------- |
+| Dev        | prototyping         | 1e5     | 16      | ~0.999+; fast                               |
+| Research   | analyses            | 1e6     | 32      | ≥0.99998 (canon reference)                  |
+| Prod‑Hi    | production          | 1e8     | 64      | very high fidelity                          |
+| Prod‑Ultra | archival / coupling | 1e9     | 128     | residual energy ~1e‑11 (canon experimental) |
+
+### 3.4 Auto‑tune loop (η, P)
+
+Spec anchor:
+
+> “**Auto‑tune:** allow a run‑up mode: start at tier η/P, measure metrics; increase η/P until metrics fall below target thresholds set per tier.”
+
+v1 algorithm (per channel or global):
+
+1. Start at configured tier (e.g. `Research`).
+2. Encode & decode canonical test vectors (see Golden Fixtures F1–F3).
+3. Compute Prob‑L1 and Amp‑L2.
+4. If metrics exceed tier thresholds:
+
+   * Increase η (e.g. ×10) and/or P (e.g. +16).
+   * Re‑test.
+5. Stop when metrics meet desired tier or caps (η_max, P_max) are reached.
+
+The auto‑tune procedure ships as part of the verification harness and should be callable at runtime to validate deployments.
+
+---
+
+## 4. Residual Layering (L1 & L2)
+
+Grounded in **Implementation Spec §1.5** and **Older Reports Expansions**.
+
+### 4.1 Conceptual role
+
+Older Trinity Gate reports emphasise a **layered translation stack**:
+
+* **L0** – Integer mass + phase bins + per‑state fractional residual (m, p, r).
+* **L1** – Local residual overlay per slice (e.g. 16‑bit region).
+* **L2** – Thin global residual overlay after NAP stitch across slices/packs.
+
+From older report expansions:
+
+> “Layered L0 / L1 / L2 translation stack… enables near‑lossless translation even as the system size doubles (64→128 state trials).”
+
+### 4.2 v1 encode order
+
+From Implementation Spec §1.5:
+
+1. **L0**: compute ( (m, p, r) ) per state (as in §2).
+2. **L1**: per‑slice residual vector `R1` (same length as slice), Q0.32 deltas to L0.
+3. **NAP stitch** (§6): phase alignment, totals normalisation.
+4. **L2**: global residual vector `R2` on concatenated range, Q0.32.
+
+`R1` and `R2` are deterministic corrections to recover sub‑bin structure and inter‑slice coherence without reintroducing randomness.
+
+### 4.3 v1 decode order
+
+Spec:
+
+> “Apply `R2` → apply per‑slice `R1` → reconstruct ( ψ′ ) from ( m, p ) → renormalise.”
+
+Implementation steps:
+
+1. Start with integer counts `m` and phase bins `p`.
+2. Apply L2 residual corrections:
+
+   * Adjust effective probabilities or amplitudes according to `R2` across the whole concatenated state.
+3. Apply L1 residual corrections per slice using `R1`.
+4. Use the reconstruction formula (from §2.2) to build ψ′ from the corrected mass & phase.
+5. Renormalise ψ′ to unit norm.
+
+The exact functional form of how `R1` / `R2` combine with `m` is fixed by your implementation; it must be:
+
+* Deterministic (no random seeds).
+* Invertible given recorded residuals.
+* Calibrated to reproduce canonical fixtures’ Amp‑L2 / Prob‑L1 curves.
+
+---
+
+## 5. Relational Field (Optional but Specified)
+
+From **old Triune bridge report features** and the Implementation Spec:
+
+> “Relational field option: ( (R_{ij} = m_i·m_j), (Δp_{ij} = (p_i − p_j) \bmod P) ).”
+
+The relational field is an **optional derived structure**:
+
+* **Magnitude relation:**
+  ( R_{ij} = m_i m_j )
+* **Phase difference:**
+  ( Δp_{ij} = (p_i − p_j) \bmod P )
+
+Usage:
+
+* For compressed relational inference.
+* For cross‑subsystem coupling where you care about pairwise coherence rather than raw amplitudes.
+
+Implementation note:
+
+* You **do not** have to materialise the full ( N \times N ) matrix; for large N this is impractical.
+* v1 can expose iterators or on‑demand computation for subsets of indices or sparse neighborhoods.
+
+---
+
+## 6. PFNA Integerization: External I/O → ℤ
+
+Grounded in **PFNA — Integerization (I/O→ℤ) v0.2**.
+
+Where TBP handles **quantum‑like** amplitudes, PFNA integerization handles **classical input channels** (x_j) (time series, sensor readings, logs as numbers).
+
+### 6.1 Per‑channel setup
+
+Per channel ( j ):
+
+* Raw sample: ( x_j )
+
+* SI map: ( x^{\text{SI}}_j = s_j x_j + o_j )
+  (slope/offset from a bridge table: “Aether Bridge”)
+
+* Robust center/scale over a window (W_c):
+
+  * Median ( \mu_j )
+  * Median absolute deviation ( \sigma_j > 0 )
+
+* Normalised real:
+
+  [
+  y_j = \frac{x^{\text{SI}}_j - \mu_j}{\sigma_j}
+  ]
+
+Sidecar (hashed and logged): ((s_j, o_j, \mu_j, \sigma_j)).
+
+### 6.2 Quantisation & mixed‑radix integer
+
+1. Pick quantisation step ( \Delta \in \mathcal L ) from a **ladder** of allowed steps (aligned with Press / MDL).
+
+2. Quantise:
+
+   [
+   q_j = \left\lfloor \frac{y_j}{\Delta} \right\rceil
+   ]
+
+3. Zigzag code to non‑negative integer:
+
+   [
+   \mathrm{zz}(q) =
+   \begin{cases}
+   2q,      & q \ge 0 \
+   -2q - 1, & q < 0
+   \end{cases}
+   ]
+
+   Let ( z_j = \mathrm{zz}(q_j) ).
+
+4. Choose a per‑channel modulus ( M_j = 2^{b_j} ) (number of bits/levels).
+
+5. Ensure ( 0 \le z_j < M_j ) (clip or saturate if needed; log saturation events).
+
+Then **assemble a mixed‑radix tick integer** from all channels in a fixed order:
+
+[
+I_\tau = \sum_{j=1}^m \left( z_j \prod_{k < j} M_k \right) \in \mathbb N
+]
+
+This is invertible given the same (M_j) and channel ordering.
+
+### 6.3 Ledger & zero‑egress policy
+
+Optional payload hash:
+
+[
+H_\tau = \mathrm{SHA256}(I_\tau)
+]
+
+Ledger update (schematic from PFNA v0.2):
+
+[
+U(\tau + 1)
+= U(\tau) \oplus \mathrm{hash}(\tau, H_\tau, \text{channel_id}, \dots)
+]
+
+Core policy:
+
+* Only **integers and hashes** leave the node (“zero‑egress auditability”).
+* Raw samples stay inside the Gate node; egress is mediated by governance (see §10).
+
+PFNA integerization is used for:
+
+* Non‑quantum I/O channels feeding TBP.
+* Press / Loom compression consistency (quantization steps align).
+
+---
+
+## 7. Tag‑Level Math (PFNA v0.3b Tag Sheet – Loom/Press‑adjacent)
+
+Gate itself doesn’t *implement* all tag math, but it must respect the semantics where tags appear in NAP envelopes or scene metadata.
+
+From **PFNA v0.3b — Tag → Math Sheet**:
+
+### 7.1 Shared definitions
+
+* Tick: ( \tau \in \mathbb N )
+
+* Zoom level: ( \ell \in \mathbb N_0 )
+
+* Horizon: ( h \in \mathbb N )
+
+* Shape signature: ( \sigma = (\text{m}, \text{basis_id}, \text{scale}) )
+
+* Seed:
+
+  [
+  \Xi = \text{SHA256}(U_{\text{commit}} ,|, \text{node_id} ,|, \ell ,|, \lfloor \tau/W \rfloor)
+  ]
+
+* Basis ( U \in \mathbb R^{m\times r} ), latents ( a \in \mathbb R^r )
+
+* Prediction:
+
+  [
+  \hat{Y}(\tau, h) = U \cdot a^{(h)}(\tau)
+  ]
+
+Gate uses this seed definition (also quoted in Implementation Spec) for deterministic behaviour everywhere.
+
+### 7.2 Example tag: `#Λ` (Loom – structure learning & zoom)
+
+The Tag Sheet defines:
+
+* Projection: ( z = U_-^T X ), reconstruction ( \hat{Y} = U_- z ), residual ( e = X - \hat{Y} ).
+
+* Streaming covariance:
+
+  [
+  C_e \leftarrow (1-\alpha) C_e + \alpha (e e^\top)
+  ]
+
+* Dominant direction via power iteration, then orthonormalisation of basis.
+
+* Reuse metric:
+
+  [
+  \rho = |U^\top U_-|_F^2 / r
+  ]
+
+* Decision rules (zoom‑up, zoom‑down, spawn‑nest, merge) based on loss and reuse.
+
+Gate doesn’t compute these directly, but:
+
+* It must propagate the **seed (\Xi)** and tick/zoom metadata correctly.
+* It must not introduce randomness that would break deterministic Loom / Press behaviour.
+
+---
+
+## 8. Tiling, Indexing & Packs (NAP‑Aligned)
+
+Grounded in **Implementation Spec §2** and **Older Reports**.
+
+### 8.1 Canon tiling
+
+From Implementation Spec:
+
+* Slices of (2^{16}) states (**65,536**).
+* Packs of **4 slices → (2^{18})** states. Informally labeled A–D, E–H, I–L, etc.
+* Multi‑pack stitching targeting **(2^{20})** (1,048,576) states.
+
+Manifests (per slice / pack) include:
+
+* `state_range` (`start`, `end`)
+* `scale_params`: `{ "eta": ..., "P": ... }`
+* `phase_offset`
+* `metrics`: Amp‑L2, Prob‑L1
+* Artifact hashes and commit references.
+
+### 8.2 Global indexing (v1 decision)
+
+From Implementation Spec §2.2:
+
+Given a **global index** `g`:
+
+* **18‑bit space (per pack)**
+
+  ```text
+  slice = (g >> 16) & 0x3   # 0..3
+  local = g & 0xFFFF        # 0..65535
+  ```
+
+* **20‑bit space (multi‑pack)**
+
+  ```text
+  pack  = (g >> 18) & 0x3   # 0..3 → pack groups (A–D, E–H, I–L, M–P)
+  slice = (g >> 16) & 0x3
+  local = g & 0xFFFF
+  ```
+
+This formalises the **4×16‑bit → 18‑bit** and **4×(18‑bit) → 20‑bit** pattern described in earlier reports.
+
+### 8.3 Slice & pack manifests (schemas)
+
+**Slice manifest (v1)**
+
+```json
+// slice_manifest.v1.json
+{
+  "state_range": { "start": 0, "end": 65535 },
+  "scale_params": { "eta": 1000000, "P": 32 },
+  "phase_offset": 0.5,
+  "metrics": { "amp_L2": 1.2e-3, "prob_L1": 1.7e-3 },
+  "has_relational_field": true,
+  "artifact_hash": "sha256:...",
+  "commit_ref": "u:sha256:..."
+}
+```
+
+**Pack manifest (v1)**
+
+```json
+// pack_manifest.v1.json
+{
+  "global_bits": 18,
+  "slices": [
+    "sliceA.manifest",
+    "sliceB.manifest",
+    "sliceC.manifest",
+    "sliceD.manifest"
+  ],
+  "nap_stitch": { "phase_align": true, "normalised": true },
+  "R2_hash": "sha256:...",
+  "metrics": { "amp_L2": 3.0e-4, "prob_L1": 8.0e-5 },
+  "commit_ref": "u:sha256:..."
+}
+```
+
+---
+
+## 9. NAP Envelopes & Gate Scene Schemas
+
+Grounded in **Implementation Spec §3**.
+
+### 9.1 NAP envelope (v1)
+
+Canon constraint:
+
+> “Each node emits envelope: tick, node_id, layer, metrics, seed, payload hash (no raw data).”
+
+**NAP envelope schema (JSON, CBOR allowed)**
+
+```json
+// nap_envelope.v1.json
+{
+  "tick": 12345,
+  "node_id": "gate-main-01",
+  "layer": "L0|L1|L2",
+  "seed": "xi:sha256:...",
+  "metrics": {
+    "prob_L1": 1.7e-4,
+    "amp_L2": 9.3e-4
+  },
+  "payload_ref": "sha256:...",    // content-address of packed data
+  "schema_version": "nap_envelope.v1",
+  "extra": {                      // optional
+    "eta": 1000000,
+    "P": 32,
+    "pack_id": "A",
+    "slice_id": 0
+  }
+}
+```
+
+No raw payload appears in the envelope; only hashes and metrics.
+
+### 9.2 Gate scene schema (egress frame)
+
+From Implementation Spec §3.2; simplified core:
+
+```json
+// scene_frame.v1.json
+{
+  "commit": "u:sha256:...",
+  "tick": 12345,
+  "actors": [
+    {
+      "id": "chem:ion:Na+",
+      "x": 0.12,
+      "y": 0.34,
+      "z": 0.01,
+      "state": "excited",
+      "tags": ["chem", "visual"]
+    }
+  ],
+  "bonds": [
+    { "from": "chem:ion:Na+", "to": "chem:ion:Cl-", "type": "ionic" }
+  ],
+  "summary": {
+    "energy": 1.23,
+    "temperature": 298.15
+  },
+  "nap_envelope": {
+    "...": "embedded or reference"
+  }
+}
+```
+
+Gate’s **projection layer** (see §11) is responsible for mapping internal TBP state to such scene frames with appropriate redaction.
+
+---
+
+## 10. Ingress Pipeline (Strict Membrane)
+
+Grounded in **Implementation Spec §4.1** and **TGP Focus Expansions**.
+
+Canon constraint:
+
+> “**Fetch → Bridge‑normalize → Inject**; strip raw IDs/high‑entropy; allowlist; quotas; PROPOSE→VALIDATE→APPROVE→COMMIT.”
+
+### 10.1 Components (from TGP Focus Expansions)
+
+* **Schema Registry** – first‑class component that:
+
+  * Maintains canonical data definitions (units, types, constraints).
+  * Ensures all incoming payloads are validated and normalized (e.g., to SI units).
+* **Translator Modules** – domain‑specific adapters (Chem, Visual, Physics, etc.) that map normalized arrays into TBP/PFNA structures.
+* **Sanitize/Redact Stage** – removes PII and high‑entropy text; enforces “No identifiers” policy.
+* **Approval Gates** – policy/human approvals for high‑risk feeds before commit.
+* **Provenance Anchors** – content‑addressed hashes for all inbound data; ensure replayability.
+* **Queues & Throttles** – rate limits and buffering.
+
+### 10.2 v1 ingress flow
+
+1. **Fetch**
+
+   * Receive payload (HTTP, WS, file drop, etc.).
+   * Associate a `source_id` and a tentative `schema_id`.
+
+2. **Normalize**
+
+   * Look up schema in **Schema Registry**.
+   * Convert units → SI, coerce to numeric arrays, drop unsupported fields.
+   * Obtain `x_j` arrays for PFNA or `ψ` vectors for TBP.
+
+3. **Sanitise / Redact**
+
+   * Strip identifiers and high‑entropy strings (emails, names, free‑text).
+   * Apply PII rules from `governance/pii_rules.toml`.
+   * “No identifiers” inside the core.
+
+4. **Propose**
+
+   * Construct a provisional **NAP input envelope** (no commit yet).
+   * Attach `source_hash = sha256(raw_bytes)` and schema version.
+
+5. **Validate**
+
+   * Check:
+
+     * Schema fit (all required fields present and well‑typed).
+     * Value ranges (no NaNs, infinities, impossible units).
+     * Rate budgets (e.g., **50 msgs/s and 256 KB/s per source** as default).
+   * On violation → **quarantine** (see below).
+
+6. **Approve**
+
+   * For normal feeds: automatic, policy‑driven.
+   * For sensitive feeds: may require human or separate policy engine.
+   * If approval not granted within timeout (default: 1s) → quarantine.
+
+7. **Commit / Inject**
+
+   * PFNA integerization for classical channels.
+   * TBP encode (L0/L1/L2) for quantum‑like payloads.
+   * Emit NAP envelope and update ledger U.
+
+### 10.3 Quarantine & error handling
+
+From TGP Focus:
+
+> “Beyond generic ‘quarantine’, TGP describes a dedicated **Error/Quarantine Handling** subsystem… dead‑letter queues… alerts when feeds enter quarantine…”
+
+v1 design:
+
+* **Quarantine buffer** per source.
+* Dead‑letter queue with:
+
+  * Payload hash
+  * Reason (schema, PII, rate, approval timeout, etc.)
+  * Timestamp, node_id.
+* Operator controls:
+
+  * Inspect sample payloads (within governance rules).
+  * Re‑play from quarantine after schema / policy fixes.
+  * Permanent delete where mandated.
+
+---
+
+## 11. Egress Pipeline (Projection & Governance)
+
+Grounded in **Implementation Spec §4.2** and **TGP Focus**.
+
+Canon constraint:
+
+> “Projection, approval before release; brokered channels; kill‑switch; zero‑egress mode.”
+
+### 11.1 v1 egress flow
+
+1. **FRAME**
+
+   * Assemble a `scene_frame.v1.json` from internal TBP state and Nap envelopes.
+   * This includes commit ID, tick, actor positions/states, summary stats.
+
+2. **PROJECT**
+
+   * Map scene frames to requested formats:
+
+     * JSON (API consumers)
+     * CSV (analytics)
+     * Scene graphs / binary formats (visual engines, e.g., Godot)
+   * Apply **projection rules**: which subsystems are allowed to see which sections.
+
+3. **APPROVE**
+
+   * Apply output governance:
+
+     * Redaction rules (strip sensitive fields).
+     * Policy gates (e.g., any export to external network).
+   * For high‑risk outputs, require explicit approval channel.
+
+4. **RELEASE**
+
+   * Send via **brokered channels**:
+
+     * Message brokers, file drops, internal APIs.
+   * Support **kill‑switch** and **zero‑egress** mode:
+
+     * When enabled, scene frames can only be written to internal logs / sealed storage, not external networks.
+
+### 11.2 Ephemeral & anonymized outbound
+
+From TGP Focus:
+
+* IDs in outbound frames should be **content‑addressed** or **ephemeral**.
+* No raw user identifiers; those remain in outer governance layers or logs with stricter access.
+
+---
+
+## 12. Determinism, Seeds, Causality & Replay
+
+Grounded in multiple docs (Core Math, Tag Sheet, TGP Focus, Implementation Spec).
+
+### 12.1 Seed derivation
+
+Canonical formula (used consistently):
+
+> “Ξ = SHA‑256(U_commit ∥ node_id ∥ ℓ ∥ ⌊τ/W⌋)”
+
+Where:
+
+* ( U_{\text{commit}} ) – current ledger commit hash (e.g., `u:sha256:...`).
+* `node_id` – string ID of the Gate node.
+* ( \ell ) – zoom level.
+* ( \tau ) – tick.
+* ( W ) – window size.
+
+Fixture **F0** in the Golden Fixtures pack pins one exact example (values for `U_commit`, `node_id`, `τ`, `W`, expected hex seed) so implementations agree bit‑for‑bit.
+
+### 12.2 Determinism & idempotence
+
+From TGP Focus:
+
+> “TGP guarantees that the same input under the same state yields the same results.”
+
+System constraints:
+
+* No hidden RNG; all pseudo‑random behaviour must be seeded via Ξ or explicitly recorded seeds.
+* Log all inputs, schemas, and seeds so a run is **bit‑replayable**.
+* Idempotence: reprocessing a message with the same commit state **does not change** state (no double‑apply).
+
+### 12.3 Causality & replay
+
+From TGP focus expansions:
+
+* For each envelope / scene, record:
+
+  * `U_parent` and `U_commit` (pre‑ and post‑state).
+  * `source_hash` of inbound payload.
+* A full causal trace can reconstruct **exactly** which inputs caused which changes, and run them again.
+
+---
+
+## 13. Golden Fixtures & Verification Plan
+
+Grounded in **Golden Fixtures Pack v1**, **Verification & Test Plan v1**, and **Fixtures Crosswalk**.
+
+### 13.1 Fixture index (F0–F4)
+
+**F0 – Seed Derivation Fixture (spec‑defined)**
+
+* Fix:
+
+  * `U_commit`, `node_id`, `τ`, `W`.
+* Expect:
+
+  * Exact Ξ hex string.
+* Purpose:
+
+  * Remove ambiguity in seed byte order and concatenation.
+
+**F1 – Born Micro‑Case (3‑state)**
+
+* ( p = (1/3, 1/3, 1/3) ), `η=64`, `P=16`.
+* Expected:
+
+  * `m = (21, 21, 21)`.
+  * Specific phase bins and residual Q0.32 (`0x55555555` pattern).
+* Tests:
+
+  * L0 quantisation and reconstruction.
+  * Amp‑L2 and Prob‑L1 values roughly: Amp‑L2 ≈ 0.1251582282; Prob‑L1 ≈ 0.
+
+**F2 – 4‑state toy (S=1000, P=16)**
+
+* A 4‑state example with known amplitudes.
+* Expected:
+
+  * Amp‑L2 ≈ 0.12.
+  * Prob‑L1 ≈ 1.7×10⁻³.
+* Purpose:
+
+  * Check non‑trivial phase wrapping and resolution behaviour.
+
+**F3 – Algebraically Exact 3‑state fixture**
+
+* Construction chosen so that encode/decode is **exact** within numerical tolerance.
+* Expect:
+
+  * Amp‑L2 < 1e‑12, Prob‑L1 < 1e‑12.
+* Purpose:
+
+  * Confirm pure math path correctness (no implementation artefacts).
+
+**F4 – Pack / Stitch Sanity Fixture**
+
+* Patterned counts and phases across 4 slices.
+* Purpose:
+
+  * Verify:
+
+    * slice→pack stitching,
+    * phase alignment,
+    * L2 residual behaviour,
+    * improved metrics after stitching vs per‑slice.
+
+### 13.2 Verification phases
+
+The **Verification & Test Plan v1** is structured to cover:
+
+1. Core math (L0, L1, L2) – anchored to F1–F3.
+2. Tiling & packs – anchored to F4.
+3. Determinism & logs – seeds, commits, reproducibility.
+4. Ingress / egress membrane – PII, schemas, rate limits.
+5. Governance / security – allowlists, kill‑switch, quarantine.
+6. Integration examples – e.g., chem bridge, visual engine.
+7. Global acceptance – end‑to‑end tests combining all elements.
+
+The **Fixtures Crosswalk** maps each section of the Verification Plan to F0–F4, ensuring there are no gaps.
+
+---
+
+## 14. Operations (Operator Runbook – v1)
+
+Grounded in **TBP / Trinity Gate — Operator Runbook v1**.
+
+### 14.1 Mental model for operators
+
+From the Runbook:
+
+* Trinity Gate / TBP is the **I/O and scene engine** for Aether.
+* It:
+
+  * Accepts data via strict membranes.
+  * Produces scenes and NAP envelopes.
+  * Integrates with Loom/Press/UMX/NAP.
+
+### 14.2 Directory layout (v1 suggestion)
+
+From the runbook’s sample:
+
+```text
+gate/
+  config/
+    gate.toml
+    ingress_policies.toml
+    schemas/
+      nap_envelope.v1.json
+      scene_frame.v1.json
+      chem_bridge_in.v1.json
+    governance/
+      modes.toml
+      allowlist_peers.toml
+      pii_rules.toml
+      rate_budgets.toml
+    seeds/
+      seed_policy.toml
+      golden_vectors.json
+    paths.toml          # data/log directories
+  data/
+    slices/
+    packs/
+    scenes/
+    nap/
+  logs/
+    gate.log
+    audit.log
+    quarantine.log
+  bin/
+    gate_node
+    gate_tools/
+```
+
+### 14.3 Startup & health
+
+* Ensure config files are present and valid JSON/TOML.
+* Start `gate_node` with:
+
+  * Mode (`dev`, `research`, `prod_hi`, `prod_ultra`).
+  * Target η/P or auto‑tune.
+* Check:
+
+  * `gate.log` for startup banner and schema version.
+  * `audit.log` for initial NAP envelopes.
+* Run:
+
+  * Seed derivation test (F0).
+  * At least F1–F3 on startup or CI.
+
+### 14.4 Normal operations
+
+Operators should:
+
+* Monitor metrics per envelope:
+
+  * Prob‑L1, Amp‑L2 vs configured thresholds.
+* Watch:
+
+  * `quarantine.log` for PII or schema issues.
+  * `audit.log` for blocked exports and kill‑switch events.
+* Adjust:
+
+  * Rate budgets and PII rules as needed via config reloads.
+
+### 14.5 Emergency procedures
+
+* **Kill‑switch**: set mode in `governance/modes.toml` to `zero_egress` or `offline`; gate should:
+
+  * Continue internal logging and Press compression.
+  * Stop sending frames over network.
+* **Quarantine storms**:
+
+  * If a data source is repeatedly quarantined:
+
+    * Auto‑suspend feed.
+    * Notify operator.
+* **Backups & replays**:
+
+  * Use ledger U and logged envelopes to reconstruct sequences for forensic analysis or re‑runs on patched code.
+
+---
+
+## 15. Development Roadmap & Task Breakdown
+
+Grounded in **Development Roadmap v1** and **Dev Roadmap Task Breakdown v1**.
+
+### 15.1 Phase structure
+
+The roadmap defines phased delivery:
+
+1. **Phase 0 – Repo scaffolding & norms**
+2. **Phase 1 – Core math (L0) & metrics**
+3. **Phase 2 – Residual layers (L1/L2) & packs**
+4. **Phase 3 – NAP envelopes & scene schemas**
+5. **Phase 4 – Ingress / egress & governance**
+6. **Phase 5 – Integration examples**
+7. **Phase 6 – Global acceptance & hardening**
+
+### 15.2 Example tasks (Phase 1 – L0 core)
+
+From Task Breakdown:
+
+* **P1.1 – Complex vector & normalization utilities**
+
+  * Implement `normalize_psi(psi)` ensuring ( \sum |\psi|^2 = 1 ).
+  * Implement `amp_L2`, `prob_L1` utilities.
+
+* **P1.2 – L0 quantisation & phase binning**
+
+  * `quantise_m(psi, eta) → m[u64], r[Q0.32]`:
+
+    * `tmp = η·|ψ|²; m = floor(tmp); r_Q032 = floor((tmp − m)·2³²)`.
+  * `bin_phase(theta, P)` as in §2.1.
+  * `encode_L0(psi, eta, P)` returns `(m, p, r)`.
+  * Tests with F1 / F3.
+
+* **P1.3 – Reconstruction & metrics**
+
+  * `reconstruct_psi(m, p, P)` as in §2.2.
+  * `prob_L1(psi_true, psi_recon)` and `amp_L2`.
+  * Acceptance: F1 & F3 within tolerance.
+
+The rest of the phases similarly decompose into small testable tasks (residual layers, tiling, envelopes, pipelines, governance, integrations).
+
+---
+
+## 16. Trinity Gate Feature Set & Capabilities (Consolidated)
+
+Grounded in **trinity_gate_features_components_capabilities**, **TGP Focus Expansions**, and **Older Reports Expansions**.
+
+### 16.1 Core capabilities (short list)
+
+From the features report:
+
+* **Deterministic cross‑domain translation**
+
+  * “maps complex quantum amplitudes onto structured integers (and back)… with near‑lossless fidelity.”
+* **Bidirectional control & input integration**
+
+  * Accepts external control inputs, logs, telemetry, quantum results.
+* **Visual scene synthesis & scene graph**
+
+  * Maintains a scene graph and publishes frames for visual engines.
+* **Normalized external translation**
+
+  * All external data is normalised to canonical units / schemas.
+* **Cross‑domain fidelity & reproducibility**
+
+  * Near‑lossless translation, sub‑10 ms CPU execution demonstrated in 64/128‑state trials.
+
+### 16.2 Extended characteristics from older reports
+
+From older expansions:
+
+* 64→128 state trials show:
+
+  * **Near‑lossless fidelity** at η values in the 10⁵–10⁶ range.
+  * **Sub‑10 ms CPU execution** for forward + reconstruction on standard hardware.
+* 18‑bit / 18‑qubit bridge:
+
+  * Multi‑slice NAP alignment with error reduction after stitching.
+* Real‑world Bell‑state experiment:
+
+  * Handled noisy quantum data on mobile hardware.
+  * Layered stacking acts as a simple form of error correction.
+
+These results justify the default tier choices and performance expectations in this spec.
+
+---
+
+## 17. Remaining Knowledge Gaps & Open Items
+
+Grounded in **triune_bridge_gate_knowledge_gaps.md** and **Trinity Gate vs Math Compendium Coverage Report**.
+
+The knowledge gaps document notes that previously you were missing:
+
+* **Design‑level choices** (exact S/η, P, tiling strategy).
+* **Implementation‑level details** (schemas, wire formats, logging).
+* **Governance‑level spec** (PII, approvals, back‑pressure).
+
+Implementation Spec v1 + this master document make explicit v1 decisions for those areas (η/P tiers, index math, JSON schemas, pipelines, governance modes). However, some items are still intentionally left to policy / engineering:
+
+* Concrete **PII detection heuristics** beyond the “strip identifiers and high‑entropy strings” rule.
+* Exact **governance modes** enumeration and their operational semantics (e.g., multiple levels of zero‑egress).
+* Detailed **Press / Loom internal algorithms** – here we only fix Gate’s contracts and the PFNA math.
+
+The Implementation Spec’s closing section is explicit:
+
+> “We **decide** the missing bits (exact seed byte order, schemas, wire formats…) and keep them clearly labeled as v1 decisions so they can evolve.”
+
+If you need this doc to be *even more* closed, those policy‑level choices can be tightened into additional appendices (e.g. “Governance Modes v1”) without changing the math / core TBP implementation.
+
+---
+
+## 18. Versioning & Compatibility
+
+From Implementation Spec §12:
+
+* Use explicit schema versions: `*.v1.json`.
+* For envelopes, manifests, scenes:
+
+  * Back‑compat: accept `v1..v1.x`, emit current minor.
+  * Reject future major versions by default (“fail closed”).
+* TBP library versioning:
+
+  * Semantic versioning (`MAJOR.MINOR.PATCH`).
+  * Changes to math / codec (η/P semantics, reconstruction) must bump **major**.
+
+---
+
+## 19. How to Implement from This Doc (Short Recipe)
+
+If you’re a dev starting from scratch, the minimally ambiguous path is:
+
+1. **Implement the PFNA / TBP math first**:
+
+   * Integerization (PFNA v0.2) for classical channels (§6).
+   * L0 encode/decode (m, p, r), metrics (§2–3).
+   * Residual layers L1/L2 (§4).
+   * Global indexing and manifests (§8).
+
+2. **Wire NAP envelopes & scene schemas** (§9).
+
+3. **Build the ingress/egress pipelines with governance** (§10–11).
+
+4. **Enforce determinism and seeds** (§12).
+
+5. **Implement the Golden Fixtures & full Verification Plan** (§13).
+
+6. **Follow the operator runbook & roadmap** (§14–15) for deployment and iterative hardening.
+
+At that point, you have a **full, beyond‑MVP implementation** of Trinity Gate / Triune Bridge Protocol as defined by all the project specs, with math, implementation details, and design decisions pulled together in one place.

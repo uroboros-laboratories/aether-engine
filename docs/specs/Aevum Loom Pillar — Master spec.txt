@@ -1,0 +1,866 @@
+ Aevum Loom Pillar — Master Implementation Spec v1
+
+**Status:** Implementation-ready, fully closed, beyond-MVP spec for the Aevum Loom pillar, including math, binary formats, and cross‑pillar integration.
+
+**Pillars touched:**
+
+* **Loom** — reversible time-chain compression, per-engine.
+* **Press (APP)** — snapshot compression for Loom I-blocks.
+* **PFNA / Aether Bridge** — integerization and MDL.
+* **Trinity Gate / TBP** — NAP envelopes, scenes, commits.
+* **UMX** — U-ledger and commit chain.
+* **NAP** — envelopes and transport.
+
+This doc is meant to be *self-sufficient*: a team that only has this spec and the project files should be able to build a conformant Loom implementation and integrate it into the full Aevum stack.
+
+---
+
+## 0. Scope and Mental Model
+
+Loom is the **time-axis** pillar:
+
+* It takes a deterministic engine (U) with state (s_t) and inputs (i_t).
+* It records the evolution as a compact, **replayable ledger**:
+
+  * Full checkpoints (I-blocks, via Press).
+  * Incremental residuals (P-blocks).
+  * Optional epsilon corrections.
+  * Hash chain + Merkle for integrity.
+* It guarantees **bit-perfect replay** (or ε‑bounded where explicitly allowed), given:
+
+  * Initial state (s_0),
+  * Input ledger (I),
+  * Math profile (\theta),
+  * Schedule (\sigma),
+  * Optional ε‑ledger (e_t).
+
+Loom does **not** define the dynamics of (U). It just guarantees that, given the same (U), the same inputs, and the same Loom stream, every replay is identical.
+
+---
+
+## 1. Deterministic System Model & ε-Ledger
+
+### 1.1 Engine and Update Map
+
+* Tick index: (t \in \mathbb{N}_0).
+* State space: (\mathcal{S}).
+* Input space: (\mathcal{I}).
+* Update map:
+  [
+  s_{t+1} = U(s_t, i_t; \theta, \sigma)
+  ]
+  where:
+
+  * (\theta) = math profile (numeric precision, rounding rules).
+  * (\sigma) = concurrency schedule (thread ordering, etc.).
+
+**Determinism contract:**
+
+Given:
+
+* Initial state (s_0),
+* Input ledger (I = (i_0, …, i_{T-1})),
+* Fixed (\theta) and (\sigma),
+
+the run is logically determined. Loom’s job is to provide a **binary encoding of that run** that is:
+
+* Lossless (bit-exact) for production.
+* Efficient in storage and replay.
+* Authenticated and tamper-evident.
+
+### 1.2 ε-Ledger
+
+The ε‑ledger logs rare, sparse corrections when FP numerics or cross-platform differences cause tiny divergences.
+
+Formally, the decoder evolves a “reference” state:
+[
+s'*{t+1} = U(s'*t, i_t; \theta, \sigma)
+]
+and Loom applies corrections as needed:
+[
+s*{t+1} = s'*{t+1} \oplus e_{t+1}
+]
+
+Where (e_{t+1}) is an element of some group (G) over the state representation. In v1:
+
+* In production profiles:
+
+  * ε‑ledger **must be empty** in normal operation.
+  * ε is used only to mask truly unavoidable drift.
+* Hard bound:
+
+  * ε‑byte‑ratio = (total ε bytes) / (total Loom bytes) must be ≤ **1%**.
+  * Exceeding 1% is an SLO violation and must raise an alarm.
+
+ε is encoded as a dedicated tile (class `7 = epsilon_tile`), so it uses the same transform graph and entropy codec as everything else.
+
+---
+
+## 2. Normalisation, PFNA Integerization & Symbol Lattice
+
+Loom relies on PFNA to produce **quantised integers** and MDL metrics from raw sources. The key pieces:
+
+### 2.1 Aether Bridge Forward Path AB(_\rightarrow)
+
+For each raw channel (x_j):
+
+1. Unit map to SI:
+   [
+   x^{\text{SI}}_j = s_j x_j + o_j
+   ]
+
+2. Robust normalisation:
+   [
+   y_j = \frac{x^{\text{SI}}_j - \mu_j}{\sigma_j}
+   ]
+   where (\mu_j, \sigma_j) are medians / robust scales estimated over window (W_c).
+
+3. Quantise:
+
+   * Ladder of steps:
+     [
+     \Delta_j \in {2^{-8}, 2^{-12}, 2^{-16}, 2^{-20}, 2^{-24}, 2^{-28}, 2^{-32}}
+     ]
+   * Quantised:
+     [
+     q_j = \left\lfloor \frac{y_j}{\Delta_j} \right\rceil
+     ]
+
+4. Zig‑zag to unsigned:
+   [
+   \text{zz}(q) =
+   \begin{cases}
+   2q, & q \ge 0 \
+   -2q - 1, & q < 0
+   \end{cases}
+   ]
+   Let (z_j = \text{zz}(q_j)).
+
+5. Mixed-radix tick integer:
+
+   * Choose bit-width (b_j \in {8, 12, 16, 24, 32}) so (z_j < 2^{b_j}) in normal operation.
+   * Radix (M_j = 2^{b_j}).
+   * Tick integer:
+     [
+     I_\tau = \sum_j z_j \prod_{k<j} M_k
+     ]
+   * If (z_j \ge M_j): clip to (M_j-1), increment a saturation counter and log.
+
+Loom never sees amplitudes or raw analogs; it sees:
+
+* (Option A) integerised vectors (z_j),
+* (Option B) mixed-radix scalar (I_\tau) per tick,
+* plus side metrics (saturations, error metrics).
+
+### 2.2 Symbol Base and Map (\phi)
+
+* Canonical Loom v1 symbol base: **(N = 256)** (byte lattice).
+* The map (\phi: {0,1}^{8m} \rightarrow \Sigma_{256}^m) is **just reinterpreting bytes**:
+
+  * Byte 0 → symbol 0, etc.
+  * No fancy bit-packing; each symbol is one byte.
+
+Alternative (N) values can only occur in non-zero transform-graph IDs and must be fully documented there.
+
+---
+
+## 3. Tile Partition & Predictors
+
+### 3.1 Tile Descriptor Table
+
+The state snapshot (S_t) is a flat byte buffer of length (|S|). It’s partitioned into non-overlapping tiles:
+
+* Tile set (C = {c^{(1)}, …, c^{(M)}}).
+* For each tile:
+
+  * `tile_id: u32`
+
+  * `offset: u64` — byte offset in (S_t).
+
+  * `length: u32` — number of bytes.
+
+  * `class: u8` — semantic class:
+
+    | class | Meaning        |
+    | ----- | -------------- |
+    | 0     | generic        |
+    | 1     | sensor         |
+    | 2     | actuator       |
+    | 3     | control_state  |
+    | 4     | safety_flag    |
+    | 5     | kinematic      |
+    | 6     | embedded_asset |
+    | 7     | epsilon_tile   |
+
+  * `predictor_default: u8` — default predictor (see below).
+
+Rules:
+
+* Tiles cover the entire normalised state, non-overlapping.
+* Tile layout is fixed per stream. Any change in layout → new Loom stream with new header and `tile_desc_digest`.
+* Max tiles per stream: 65 535.
+* Max tile size: (2^{24}) bytes (16 MiB).
+
+### 3.2 Predictor Library (Canonical v1)
+
+Predictors transform a tile’s current and previous values into a residual with low entropy.
+
+**Predictor IDs (MUST-implement):**
+
+* `0 = LV (Last Value)`
+
+  * For additive domains:
+    [
+    \hat{c}*t = c*{t-1}, \quad r_t = c_t - \hat{c}_t
+    ]
+
+* `1 = DoD (Delta-of-Delta)`
+  For counters:
+  [
+  d_{t-1} = c_{t-1} - c_{t-2}
+  ]
+  [
+  \hat{c}*t = c*{t-1} + d_{t-1}
+  ]
+  [
+  r_t = (c_t - c_{t-1}) - d_{t-1}
+  ]
+
+* `2 = KIN (Kinematic)`
+  For position/velocity pairs (q, v) with fixed (\Delta t):
+  [
+  \hat{q}*t = q*{t-1} + v_{t-1} \Delta t, \quad \hat{v}*t = v*{t-1}
+  ]
+  Residual:
+  [
+  r_q = q_t - \hat{q}_t,\quad r_v = v_t - \hat{v}_t
+  ]
+  (\Delta t) is global per run (header meta).
+
+* `3 = AR1 (Affine AR(1))`
+  For smooth scalars:
+  [
+  \hat{c}*t = \alpha c*{t-1} + \beta
+  ]
+
+  * (\alpha, \beta) stored as Q16.16 fixed-point in per-tile side-info.
+
+* `4 = BRUN (Boolean run)`
+  Encodes runs of identical bits:
+
+  * Residual is a sequence of pairs `(value, run_length)`.
+  * `run_length` encoded as varint.
+
+**Default predictor selection (if engine doesn’t specify):**
+
+* Counters / monotone IDs → DoD.
+* Positions/velocities → KIN.
+* Smooth scalars → AR1.
+* Booleans / bitmasks → BRUN.
+* Everything else → LV.
+
+---
+
+## 4. Loom Stream Format
+
+A Loom stream (\mathcal{L}) is a sequence:
+
+[
+\mathcal{L} = (H, B_0, B_1, …, B_{N_B-1}, h_{\text{final}})
+]
+
+Where:
+
+* `H` = header.
+* `B_k` = blocks (I-blocks or P-blocks).
+* `h_final` = final hash.
+
+All integers are **little-endian**; large unsigned ints use **LEB128-style varints**; signed ints use **zig‑zag + varint**.
+
+### 4.1 Header H — Binary Layout
+
+In order:
+
+1. `magic[7] = "AEVLOM2"` (ASCII).
+2. `version (u8)` — Loom stream version (v1 = `0x03`).
+3. `g (u32, little-endian)` — transform-graph ID (0 = canonical graph).
+4. `map_id (u16 LE)` — normalisation map ID (1 = byte identity).
+5. `N (varint)` — symbol base (256).
+6. `tile_desc_digest[32]` — BLAKE3-256 hash of tile table.
+7. `K (varint)` — checkpoint cadence hint.
+8. `hash_id (u8)` — 0=BLAKE3-256, 1=SHA-256.
+9. `state_bytes_0 (varint)` — size of initial APX snapshot payload.
+10. `T (varint)` — total ticks (0 if unbounded; must be updated at end).
+11. `meta_len (varint)`.
+12. `meta[meta_len]` — UTF‑8 JSON or CBOR with:
+
+    * engine_id,
+    * build_hash,
+    * θ / σ hashes,
+    * profile ID,
+    * other cross-pillar info.
+13. `sig_len (varint)`.
+14. `sig[sig_len]` — optional signature (Ed25519 recommended).
+
+### 4.2 I-blocks (Checkpoints)
+
+Structure:
+
+1. `tag (u8) = 0x49` (`'I'`).
+2. `tick (varint)` — τ.
+3. `apx_len (varint)`.
+4. `apx[apx_len]` — Press capsule in strict lossless mode (APX).
+5. `auth[32]` — hash of canonical block bytes (fields 1–4) using `hash_id`.
+
+Semantics:
+
+* I-block at tick τ stores full engine state (S_\tau), compressed as a Press `.apx` capsule:
+
+  * P_state = minimal data required to resume (U) at τ.
+  * P_cite = hashed references to external dependencies.
+* First I-block must be at τ=0.
+* Subsequent I-blocks at τ_k must obey:
+
+  * τ₀ = 0, 1 ≤ τ_{k+1} − τ_k ≤ K.
+  * Actual cadence is flexible within this bound.
+
+### 4.3 P-blocks (Progress)
+
+Structure:
+
+1. `tag (u8) = 0x50` (`'P'`).
+2. `tick (varint)` — t.
+3. `changed_count (varint)` — |R_t|.
+4. For each changed tile j in R_t:
+
+   * `tile_id (varint)`.
+   * `predictor_id (u8)`.
+   * `side_len (varint)`.
+   * `side_info[side_len]`.
+   * `residual_len (varint)`.
+   * `residual[residual_len]` — entropy-coded residual bytes.
+5. `eps_len (varint)`.
+6. `eps_payload[eps_len]` — ε-subtile data (may be zero).
+7. `auth[32]` — hash of fields (1–6) using `hash_id`.
+
+Semantics:
+
+* Only **changed** tiles are listed; unchanged tiles implicitly keep previous values (subject to predictor semantics).
+* ε payload is optional; if `eps_len = 0`, no ε emission at this tick.
+
+### 4.4 Hash Chain & Merkle
+
+Hash chain:
+
+* Let `H0` be chosen hash (BLAKE3-256 or SHA-256).
+
+* `HdrDigest = H0(header_bytes_without_sig)`.
+
+* `h_{-1} = H0(HdrDigest)`.
+
+* For each block k:
+  [
+  h_k = H_0(\text{tag}*k \Vert h*{k-1} \Vert \text{digest}(\text{payload}_k))
+  ]
+  where `digest(payload_k) = H0(block_bytes_without_auth)`.
+
+* `h_final = h_{N_B-1}` appended at end of file.
+
+Merkle (optional):
+
+* Leaves: `leaf_k = H0(block_bytes_without_auth)`.
+* Parents: `node = H0(left || right)`.
+* Root stored in `meta` as `loom.merkle_root`.
+* Proof = list of `(sibling_hash, direction_bit)`.
+
+---
+
+## 5. Entropy Coder & Residual Representation
+
+### 5.1 Residual Domain
+
+Predictors produce residuals (r_t^{(j)}) in an appropriate group:
+
+* For integer fields: (\mathbb{Z}/2^b\mathbb{Z}) (wrap-around) or bounded (\mathbb{Z}).
+* For fixed-point fields: same underlying integer domain as PFNA (Q32.32).
+
+Residuals are then mapped to byte sequences:
+
+* For small integers: zig‑zag + varint → stream of bytes.
+* For structured residuals (e.g., BRUN), we build a logical sequence:
+
+  * `(value, run_length)` pairs flattened to bytes.
+
+### 5.2 Coder: rANS
+
+Canonical coder: **rANS** with:
+
+* Single 64‑bit state.
+* Per-context frequency tables with 12‑bit precision (sum frequencies per context = (2^{12})).
+
+Context key:
+
+* `(tile_class, predictor_id, magnitude_bucket)` where:
+
+  * `magnitude_bucket = floor(log2(|r|+1))`, clipped to 0…15.
+* Each symbol `z` in 0–255 is coded in a context.
+
+Adaptation:
+
+* When symbol `z` appears in context `c`:
+
+  * Increment its frequency, then renormalise to maintain total = (2^{12}).
+* Long-run adaptation uses a decay factor (e.g., count_old * (1-β) + 1), but the exact adaptation is deterministic and pinned in implementation.
+
+Initialisation:
+
+* All contexts start with uniform frequencies.
+
+Reset:
+
+* Coder state and context frequencies are reset at each I-block.
+
+---
+
+## 6. Replay, Random Access & Jump Lemma
+
+### 6.1 Sequential Replay
+
+To replay (\mathcal{L}):
+
+1. Parse and validate header H.
+2. Compute `HdrDigest` and verify signature if present.
+3. Initialise `h_{-1}`; verify each block’s `auth` and `h_k`.
+4. Decode first I-block at τ=0:
+
+   * DePress(APX_0) → (S_0).
+5. For each subsequent block in order:
+
+   * If I-block at τ: DePress(APX_τ) → (S_τ).
+   * If P-block at t:
+
+     * For each changed tile j:
+
+       * Reconstruct predictor state (need c_{t-1}^{(j)}, c_{t-2}^{(j)} for DoD, etc.).
+       * Decode residual r_t^{(j)} via rANS.
+       * Recover c_t^{(j)} from predictor equation.
+     * For unchanged tiles: propagate (c_t^{(j)} = c_{t-1}^{(j)}) if predictor semantics permit.
+     * Apply ε corrections if any.
+     * Optionally apply engine U to step to next tick’s state (if Loom is co-running with engine).
+
+### 6.2 Random Access
+
+To get state at tick t:
+
+1. Use an index or Merkle tree to locate nearest checkpoint τ ≤ t.
+2. Verify I-block at τ and decode S_τ.
+3. Replay P-blocks from τ+1 to t in sequence.
+
+Cost bound (per Loom math compendium):
+[
+\text{cost}(t) \le \Delta \cdot \text{cost}(U) + \text{cost}_{\text{decode}}(\Delta), \quad \Delta = t-\tau
+] 
+
+By choosing K and indexing appropriately, we ensure (\Delta) ≤ K and random access meets SLOs.
+
+### 6.3 Jump Lemma
+
+**Loom Jump Lemma:** Time advances only via U. Loom never mutates state except by:
+
+* Reconstructing an exact prior state from a checkpoint, then
+* Applying U with logged inputs and residuals.
+
+Therefore, replay from (τ, S_τ) to (τ+Δ, S_{τ+Δ}) is equivalent to a direct run.
+
+---
+
+## 7. MDL Objective & PFNA Integration
+
+### 7.1 Naive Code Model and MDL Gain
+
+Naive model for residuals:
+
+* Residuals (r \in \mathbb{R}^m) are i.i.d. Gaussian with fixed variance σ².
+* Naive codelength:
+  [
+  L_{\text{naive}} = \frac{m}{2} \big(1 + \log_2 2\pi\sigma^2\big)
+  ]
+
+Actual model codelength comes from:
+
+* Loom residuals and predictor choices.
+* Press model codelength for snapshots.
+* PFNA structural codes.
+
+MDL gain:
+[
+\kappa = L_{\text{naive}} - L_{\text{model}}
+]
+
+### 7.2 Global MDL Objective
+
+Across nodes (PFNA view), we minimise:
+[
+\mathcal{J} = \sum_i L_i + \lambda |E| + \mu \sum_i d(a_i, a_{\text{anchor}(i)}) + \gamma R_{\text{health}}
+]
+
+Where:
+
+* (L_i): codelength for node i.
+* (|E|): number of edges.
+* (d): distance on anchor lattice.
+* (R_{\text{health}}): penalties for RED/AMBER health states.
+
+Canonical weights:
+
+* (\lambda = 4) bits per edge.
+* (\mu = 8) bits/unit distance.
+* (\gamma = 16) bits per RED flag per node per window.
+* Move thresholds:
+
+  * (\varepsilon_{\text{edge}} = 1.0) bit.
+  * (\varepsilon_{\text{move}} = 2.0) bits.
+  * (\rho^* = 0.9) reuse.
+  * (\kappa^* = 0.0) (no negative gain).
+  * Merge similarity (c^* = 0.95).
+  * Residual energy threshold (\theta = 3\sigma).
+  * Angle threshold (\alpha^* = 30^\circ).
+
+Loom itself doesn’t typically spawn/merge PFNA nodes, but its metrics (e.g., residual entropies) feed MDL decisions upstream.
+
+---
+
+## 8. Press Integration (APX Snapshots)
+
+Loom is glued to Press as its **snapshot engine**:
+
+### 8.1 Press Mode for Loom
+
+* Press must run in **lossless mode** for Loom I-blocks:
+
+  * No lossy quantisation beyond the engine’s own representation.
+  * MDL acceptance rule must respect ΔL_total>0 per Press spec.
+
+* Capsules used:
+
+  * `.apx` — Press snapshot capsule:
+
+    * Contains model parameters & residuals for state (P_state),
+    * plus metadata/hashes (P_cite).
+
+Loom sees APX as opaque bytes plus:
+
+* Uncompressed length,
+* Hash,
+* Press version in meta.
+
+### 8.2 P_state and P_cite Split
+
+* P_state:
+
+  * The minimal state required to resume U exactly at checkpoint τ.
+  * Must be fully lossless.
+
+* P_cite:
+
+  * Hashes and descriptors for external dependencies (datasets, configs).
+  * Not part of Loom’s state, but essential for audit; cross-linked in LOOM_RUN_MANIFEST.
+
+---
+
+## 9. NAP, Trinity Gate, and TBP Integration
+
+### 9.1 NAP Envelope v1
+
+Loom adopts Gate’s **`nap_envelope.v1`** schema:
+
+* Core fields:
+
+  * `tick: u64`
+  * `node_id: string`
+  * `layer: string`
+  * `seed_hex: "[0-9a-f]{64}"`
+  * `payload_ref: "sha256:[0-9a-f]{64}"`
+  * `metrics: object`
+  * `mode: string`
+  * `sig: string` (signature)
+* Canonical JSON:
+
+  * Sorted keys, UTF-8,
+  * Preimage hashed with SHA-256 before signing.
+
+Use with Loom:
+
+* `tick` = tick of I-block or P-block.
+* `node_id` = engine node ID.
+* `layer` = `"loom"`.
+* `seed_hex` = hash of (S₀, θ, σ, tile_desc_digest).
+* `payload_ref` = hash of Loom block payload.
+* `metrics` = may include `block_type`, `block_bytes`, `epsilon_bytes`.
+
+Gate/TBP treat Loom as an opaque payload provider referenced via `payload_ref`.
+
+### 9.2 Scenes and Commit Chain
+
+* Trinity Gate builds **scene frames** (S_t) and sends them via NAP.
+
+* For each scene frame:
+
+  1. Compute scene hash (h_t = H0(scene_bytes)).
+  2. Put `payload_ref = "sha256:" + h_t` into NAP envelope.
+  3. UMX’s commit chain includes this payload_ref in U-commit.
+
+* Loom’s I-blocks will typically correspond to scene snapshots at selected ticks; P-blocks compress the intervening states.
+
+TBP requires:
+
+* Deterministic replay via Press + Loom + U.
+* Content-addressed referencing only: no raw state inside NAP.
+
+---
+
+## 10. UMX, U-Ledger, and Distributed Consistency
+
+UMX is the “universal matrix” pillar that owns commit chains and global consistency.
+
+### 10.1 U-Ledger Format
+
+Binary U-ledger:
+
+* Header:
+
+  * `magic[4] = "ULGR"`.
+  * `version (u16) = 1`.
+  * `reserved (u16) = 0`.
+
+* Entries:
+
+  * `entry_len (varint)`.
+  * `entry_type (u8)`:
+
+    * 0 = commit,
+    * 1 = reorg,
+    * 2 = note.
+  * `payload[entry_len-1]`.
+
+Commit entry payload:
+
+* `height (varint)`.
+* `parent_hash[32]`.
+* `run_id_len (varint)` + `run_id[run_id_len]`.
+* `loom_head_hash[32]`.
+* `nap_root[32]`.
+* `press_root[32]`.
+* `timestamp (u64)`.
+
+Loom’s `h_final` is referenced in `loom_head_hash`. Only the branch whose tip commit is currently selected is canonical for Loom.
+
+### 10.2 Reversibility Window & Forks
+
+* Reversibility window `W_R = 4096` ticks (configurable in profile).
+* U-ledger may sanction rollbacks within `W_R` ticks via reorg entries.
+* Beyond `W_R`, forks are invalid; any divergence must be treated as a fault.
+
+Loom must:
+
+* Be able to roll back state and replay within `W_R` (using checkpoints and P-blocks).
+* Treat any branch outside the surviving U-chain as orphaned and non-canonical.
+
+---
+
+## 11. Configuration, Profiles & Performance Targets
+
+### 11.1 Loom Configuration Knobs
+
+Key knobs:
+
+1. **Checkpoint cadence (K)**:
+
+   * 64 ≤ K ≤ 1024 recommended.
+   * Smaller K = more I-blocks, more storage, faster random access.
+   * Larger K = fewer I-blocks, smaller storage, slower random access.
+
+2. **Tile granularity**:
+
+   * Many small tiles → better compression for sparse changes, more metadata.
+   * Few big tiles → less metadata, more payload per change.
+
+3. **Predictor choices**:
+
+   * Simple predictors (LV, DoD) → cheap CPU, larger residuals.
+   * Richer (AR1, KIN) → more CPU, smaller residuals.
+
+4. **Hash algorithm**:
+
+   * BLAKE3-256 as default; SHA-256 as alternative.
+
+5. **ε-ledger policy**:
+
+   * On/off,
+   * Strict bound on ε-byte-ratio.
+
+### 11.2 Module Profiles and SLOs
+
+Canonical production targets:
+
+* **Zero control kernel:**
+
+  * (\rho_{\text{full}} \le 0.01) on average.
+  * 95th percentile replay latency ≤ 200 ms from nearest checkpoint.
+
+* **Trinity Gate core:**
+
+  * (\rho_{\text{full}} \in [0.02, 0.05]).
+  * 99th percentile replay latency ≤ 500 ms.
+
+* **Momentum planner:**
+
+  * (\rho_{\text{full}} \le 0.02).
+  * Replay latency ≤ 1 s at 99th percentile.
+
+* **Miner controls:**
+
+  * (\rho_{\text{full}} \le 0.01).
+  * Replay latency ≤ 250 ms at 99th percentile.
+
+Where press factor:
+[
+B_{\text{full}} = |S|,(T+1)
+]
+[
+B_{\text{chk}} = |S| + |S| \frac{T}{K}
+]
+[
+L = |H| + \sum_k |B_k| + |h_{\text{final}}|
+]
+[
+\rho_{\text{full}} = \frac{L}{B_{\text{full}}},\quad \rho_{\text{chk}} = \frac{L}{B_{\text{chk}}}
+] 
+
+---
+
+## 12. Engine Interface & APIs
+
+### 12.1 Engine ↔ Loom API
+
+Language-agnostic interface:
+
+* Engine exposes:
+
+  * `engine_init(config_bytes) -> engine_handle`.
+  * `engine_step(engine_handle, input_events_bytes) -> void`.
+  * `engine_get_state(engine_handle, buffer_out) -> size`:
+    writes canonical state bytes into `buffer_out` and returns size.
+  * `engine_set_state(engine_handle, buffer_in, size) -> void`.
+
+Requirements:
+
+* `engine_get_state` must always serialize state in the same format; Loom’s tile offsets are defined on this representation.
+* `engine_set_state` must exactly reconstruct the engine state from these bytes.
+
+### 12.2 Loom Public API (Library-level)
+
+Typical Loom library will expose:
+
+* `LoomEncoder.begin(H_config, tile_table, press_config)`.
+
+* `LoomEncoder.ingest_tick(t, input_events, engine_handle)`:
+
+  * Calls engine_step,
+  * Reads state,
+  * Emits I- or P-block as needed.
+
+* `LoomEncoder.finalize() -> (loom_stream_bytes, h_final)`.
+
+* `LoomDecoder.open(loom_stream_bytes)`:
+
+  * Validates header and hashes.
+
+* `LoomDecoder.get_state_at_tick(t) -> state_bytes`.
+
+* `LoomDecoder.replay_range(t0, t1) -> iterator over states/events`.
+
+NAP/JS-layer wrappers can then push Loom blocks as NAP envelopes.
+
+---
+
+## 13. Tooling, Audit & Tests
+
+### 13.1 LOOM_RUN_MANIFEST
+
+For each Loom stream, maintain:
+
+```json
+{
+  "run_id": "string",
+  "engine_id": "ZERO_V1",
+  "build_hash": "hex",
+  "loom_stream_hash": "hex",
+  "merkle_root": "hex",
+  "tick_start": 0,
+  "tick_end": 12345,
+  "scene_manifest_ref": "id",
+  "nap_manifest_ref": "id",
+  "press_capsule_refs": ["apx:..."],
+  "u_commit": "hex",
+  "notes": "optional",
+  "labels": {"key": "value"},
+  "metrics": {"rho_full": 0.01}
+}
+```
+
+Used for:
+
+* Cross-pillar audits,
+* Provenance,
+* Evidence packs.
+
+### 13.2 Acceptance Tests
+
+Minimal acceptance tests per module:
+
+* **AT‑1 Reversibility:**
+
+  * Run engine for 10–30 min.
+  * Record Loom stream.
+  * Decode ticks {0, 1, some τ, mid, end}, compare engine state bytes to reference; must match.
+
+* **AT‑2 Integrity:**
+
+  * Verify all block auth hashes and final digest.
+  * Verify signature if present.
+
+* **AT‑3 Density:**
+
+  * Record (\rho_{\text{full}}) and (\rho_{\text{chk}}).
+  * Check against profile targets.
+
+* **AT‑4 Replay Bound:**
+
+  * Measure random access latency from nearest checkpoint to random ticks.
+  * Verify worst case ≤ profile SLO.
+
+* **AT‑5 ε-Rate:**
+
+  * Confirm ε-byte-ratio ≤ 1%.
+  * Any violation must fail test.
+
+---
+
+## 14. Summary
+
+If you implement:
+
+* The stream format (header, I-block, P-block, hash chain),
+* The tile partition, predictor set, and rANS-based residual coder,
+* The engine ↔ Loom API,
+* Press integration (APX snapshots, lossless),
+* NAP envelope handling and U-ledger hooks,
+
+according to this spec, you will have a fully conformant Loom v1 that:
+
+* Is deterministic and replayable,
+* Integrates cleanly with Gate/TBP, Press, PFNA, and UMX,
+* Provides efficient time-chain compression with clear operational knobs,
+* Is ready for production beyond MVP.
+
