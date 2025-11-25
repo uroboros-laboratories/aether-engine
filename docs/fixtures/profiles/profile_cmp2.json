@@ -1,0 +1,26 @@
+{
+  "name": "CMP-2",
+  "modulus_M": 1000000007,
+  "C0": 1234567,
+  "SC": 20,
+  "I_block_spacing_W": 8,
+  "flux_rule": {
+    "type": "CMP0_flux_v1",
+    "du_formula": "du = pre_u[i] - pre_u[j]",
+    "raw_formula": "raw = floor(k * abs(du) / SC)",
+    "f_e_formula": "f_e = sign(du) * min(raw, cap, abs(du))",
+    "conservation": "sum(pre_u) == sum(post_u)"
+  },
+  "chain_rule": {
+    "type": "CMP0_chain_v1",
+    "update": "C_t = (17 * C_{t-1} + 23 * s_t + seq_t) mod M",
+    "constants": {"a": 17, "b": 23}
+  },
+  "s_t_rule": {
+    "type": "CMP0_s_t_v1",
+    "description": "CMP-2 placeholder mirrors CMP-0 with SC tuned for ring fixtures.",
+    "gf01_constant": 9
+  },
+  "nap_defaults": {"v": 1, "layer": "DATA", "mode": "P"},
+  "press_defaults": {"preferred_schemes": ["R", "GR", "ID"], "gf01_streams": ["S1_post_u_deltas", "S2_fluxes"]}
+}

@@ -11,7 +11,8 @@ from typing import Dict, Iterable, Mapping, Optional, Sequence, Tuple
 
 from gate import NAPEnvelopeV1
 from loom.loom import LoomIBlockV1, LoomPBlockV1
-from press import APXManifestV1
+from press import APXManifestV1, APXiViewV1
+from press.aeon import AEONWindowGrammarV1, AEONWindowRegistry
 from umx.tick_ledger import EdgeFluxV1, UMXTickLedgerV1
 
 
@@ -113,6 +114,8 @@ class CodexRuntimeStats:
     total_i_blocks: int = 0
     total_manifests: int = 0
     total_envelopes: int = 0
+    total_aeon_windows: int = 0
+    total_apxi_views: int = 0
     ingested_runs: list[str] = field(default_factory=list)
     edge_pattern_counts: Dict[Tuple[int, int, int], int] = field(default_factory=dict)
     ledger_pattern_counts: Dict[Tuple[Tuple[int, ...], Tuple[int, ...]], int] = field(
@@ -171,6 +174,9 @@ class CodexContext:
         self.runtime_stats = CodexRuntimeStats()
         self._last_ingest_window: Optional[str] = None
         self._last_ingest_gid: Optional[str] = None
+        self._last_ingest_tick_range: Optional[tuple[int, int]] = None
+        self._last_aeon_windows: Optional[AEONWindowGrammarV1] = None
+        self._last_apxi_views: tuple[APXiViewV1, ...] = ()
 
     def ingest(
         self,
@@ -182,6 +188,8 @@ class CodexContext:
         i_blocks: Optional[Sequence[LoomIBlockV1]] = None,
         manifests: Optional[Mapping[str, APXManifestV1] | Sequence[APXManifestV1]] = None,
         envelopes: Optional[Sequence[NAPEnvelopeV1]] = None,
+        aeon_windows: Optional[AEONWindowGrammarV1 | AEONWindowRegistry] = None,
+        apxi_views: Optional[Mapping[str, APXiViewV1] | Sequence[APXiViewV1]] = None,
         window_id: Optional[str] = None,
     ) -> None:
         """Consume run artefacts and tally lightweight patterns.
@@ -220,6 +228,21 @@ class CodexContext:
         if envelopes:
             self.runtime_stats.total_envelopes += len(envelopes)
 
+        if aeon_windows is not None:
+            grammar = (
+                aeon_windows.grammar if isinstance(aeon_windows, AEONWindowRegistry) else aeon_windows
+            )
+            self.runtime_stats.total_aeon_windows += len(grammar.base_windows) + len(grammar.derived_windows)
+            self._last_aeon_windows = grammar
+
+        if apxi_views is not None:
+            if isinstance(apxi_views, Mapping):
+                view_list = tuple(apxi_views.values())
+            else:
+                view_list = tuple(apxi_views)
+            self.runtime_stats.total_apxi_views += len(view_list)
+            self._last_apxi_views = view_list
+
         ticks = [ledger.tick for ledger in ledgers]
         start_tick, end_tick = min(ticks), max(ticks)
         resolved_window_id = window_id or f"{gid}_ticks_{start_tick}_{end_tick}"
@@ -228,6 +251,7 @@ class CodexContext:
 
         self._last_ingest_gid = gid
         self._last_ingest_window = resolved_window_id
+        self._last_ingest_tick_range = (start_tick, end_tick)
 
     def learn_edge_flux_motifs(self, *, threshold: int = 2) -> list[CodexLibraryEntryV1]:
         """Detect repeated ledger signatures as simple edge-flux motifs."""
@@ -299,6 +323,76 @@ class CodexContext:
                 accepted_entries.append(entry)
 
         return accepted_entries
+
+    def learn_apxi_descriptor_motifs(self) -> list[CodexLibraryEntryV1]:
+        """Surface APXi descriptor motifs from the last ingest."""
+
+        if self._last_ingest_gid is None or self._last_ingest_window is None:
+            raise ValueError("ingest must be called before learning motifs")
+
+        if not self._last_apxi_views:
+            return []
+
+        start_tick, end_tick = self._last_ingest_tick_range or (0, 0)
+
+        accepted: list[CodexLibraryEntryV1] = []
+        existing_keys = {
+            (
+                entry.pattern_descriptor.get("descriptor", {}).get("descriptor_id"),
+                entry.pattern_descriptor.get("descriptor", {}).get("window_id"),
+                entry.pattern_descriptor.get("descriptor", {}).get("stream_id"),
+                entry.pattern_descriptor.get("residual_scheme"),
+            )
+            for entry in self.library
+            if entry.pattern_descriptor.get("type") == "apxi_descriptor_v1"
+        }
+
+        motif_index = len(self.library) + 1
+        for view in sorted(self._last_apxi_views, key=lambda v: v.view_id):
+            for stream_name, breakdowns in sorted(view.descriptors_by_stream.items()):
+                for breakdown in breakdowns:
+                    descriptor = breakdown.descriptor
+                    key = (
+                        descriptor.descriptor_id,
+                        descriptor.window_id,
+                        descriptor.stream_id,
+                        breakdown.residual_scheme,
+                    )
+                    if key in existing_keys:
+                        continue
+
+                    entry = CodexLibraryEntryV1(
+                        library_id=self.library_id,
+                        motif_id=f"MOTIF_{motif_index:04d}",
+                        profile=self.profile,
+                        source_gid=self._last_ingest_gid,
+                        source_window_id=view.aeon_window_id or view.window_id,
+                        pattern_descriptor={
+                            "type": "apxi_descriptor_v1",
+                            "descriptor": descriptor.to_dict(),
+                            "residual_scheme": breakdown.residual_scheme,
+                            "stream_id": stream_name,
+                            "apx_name": view.apx_name,
+                            "aeon_window_id": descriptor.window_id,
+                        },
+                        mdl_stats={
+                            "L_self": breakdown.L_model,
+                            "L_usage": breakdown.L_residual,
+                            "L_total": breakdown.L_total,
+                            "delta_vs_baseline": -breakdown.L_residual,
+                        },
+                        usage_stats={"usage_count": 1},
+                        created_at_tick=start_tick,
+                        last_updated_tick=end_tick,
+                        meta={"runs": list(self.runtime_stats.ingested_runs)},
+                    )
+
+                    self.library.append(entry)
+                    accepted.append(entry)
+                    existing_keys.add(key)
+                    motif_index += 1
+
+        return accepted
 
     def emit_proposals(self, *, usage_threshold: int = 2, default_action: str = "PLACE") -> list[CodexProposalV1]:
         """Emit CodexProposalV1 records for motifs that meet a usage threshold."""

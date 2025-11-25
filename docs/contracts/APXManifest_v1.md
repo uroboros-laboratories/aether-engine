@@ -29,12 +29,17 @@ Top-level fields:
    - Compression/MDL profile identifier.  
    - For V0 GF-01, this is `"CMP-0"`.
 
-3. **manifest_check: int**  
-   - Decimal check value derived from the selected streams and their schemes.  
+3. **manifest_check: int**
+   - Decimal check value derived from the selected streams and their schemes.
    - This is the value that NAP `payload_ref` points to for that window.
 
-4. **streams: list<APXStream_v1>**  
+4. **streams: list<APXStream_v1>**
    - One entry per compressed stream in this capsule.
+
+5. **apxi_view_ref: string? (optional)**
+   - Deterministic identifier for a companion `APXiView_v1` when AEON/APXi is
+     enabled for the window.
+   - Defaults to `null`; when absent, behaviour is identical to Phase 2.
 
 ---
 

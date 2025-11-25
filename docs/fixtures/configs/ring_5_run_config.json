@@ -1,0 +1,27 @@
+{
+  "v": 1,
+  "gid": "RING5",
+  "run_id": "RING5_demo",
+  "topology_path": "../topologies/ring_5_topology_profile.json",
+  "profile_path": "../profiles/profile_cmp2.json",
+  "ticks": 5,
+  "initial_state": [10, 0, 0, 0, 0],
+  "windows": [
+    {
+      "window_id": "RING5_ticks_1_5",
+      "apx_name": "RING5_APX_full_window",
+      "start_tick": 1,
+      "end_tick": 5,
+      "streams": [
+        {"name": "S1_post_u_deltas", "source": "post_u_deltas"},
+        {"name": "S2_fluxes", "source": "fluxes"},
+        {"name": "S3_post_u", "source": "post_u"}
+      ]
+    }
+  ],
+  "primary_window_id": "RING5_ticks_1_5",
+  "nap": {"layer": "DATA", "mode": "P", "v": 1},
+  "enable_codex": true,
+  "enable_pfna": false,
+  "diagnostics": {"notes": "Ring demo with PFNA placeholder"}
+}

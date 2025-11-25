@@ -42,8 +42,10 @@ implementation pack, you already have things like:
 
 These correspond to the more generic contracts we’ve been using in planning:
 
-- **APXStream_v1**      → one compressed integer sequence + MDL stats.  
+- **APXStream_v1**      → one compressed integer sequence + MDL stats.
 - **APXManifest_v1**    → a bundle of streams + window metadata + manifest_check.
+- **AEONWindowGrammar_v1** → base/derived AEON windows and hierarchy mapped to the Loom tick axis.
+- **APXiDescriptor_v1** → descriptor/program format for APXi explanations over AEON windows and Press streams.
 
 Again, the plan is not to throw away the Astral Press contracts, but to:
 
@@ -116,6 +118,11 @@ These are the “core three” we called out for Sprint 1, plus a few others:
 - `APXStream_v1` / `APXManifest_v1` — described in Astral Press, not yet extracted.
 - `SceneFrame_v1`        — described conceptually in Trinity/plan, not yet written as the “one true per-tick bundle” contract.
 - `NAPEnvelope_v1`       — present in NAP/envelope docs, needs a small dedicated contract.
+- `StructuredLogging_v1` — new governance/ops logging contract captured for Phase 3 observability.
+- `Metrics_v1` — run-level metrics contract for Phase 3 governance visibility.
+- `Introspection_v1` — read-only introspection view for UMX/Loom/APX/NAP/U-ledger artefacts.
+- `RunConfig_v1`         — new Phase 3 governance contract binding topology, profile, and window config for runnable scenarios.
+- `ScenarioRegistry_v1`  — catalogue of named scenarios pointing at RunConfig documents for governance tooling.
 
 Those “missing files” are what I was pointing at when I suggested we firm up a
 few contracts before coding.

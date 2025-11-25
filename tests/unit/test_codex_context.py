@@ -2,10 +2,15 @@ from __future__ import annotations
 
 from codex import CodexContext
 from core import run_gf01
-from gate import NAPEnvelopeV1
+from gate import NAPEnvelopeV1, PressStreamSpecV1, SessionConfigV1, run_session
+from core.tick_loop import TickLoopWindowSpec
 from loom.loom import LoomPBlockV1
 from press import APXManifestV1
+from press.aeon import AEONDerivedWindowV1, AEONWindowDefV1, AEONWindowGrammarV1
+from press.apxi import APXiDescriptorV1
 from umx.tick_ledger import EdgeFluxV1, UMXTickLedgerV1
+from umx.profile_cmp0 import gf01_profile_cmp0
+from umx.topology_profile import load_topology_profile
 
 
 def _make_dummy_ledger(tick: int) -> UMXTickLedgerV1:
@@ -41,6 +46,108 @@ def _make_custom_ledger(tick: int, du1: int, du2: int) -> UMXTickLedgerV1:
         pre_u=[0, 0, 0],
         edges=edges,
         post_u=[0, 0, 0],
+    )
+
+
+def _demo_aeon_grammar() -> AEONWindowGrammarV1:
+    base_first = AEONWindowDefV1(
+        window_id="AEON_LINE4_W1_ticks_1_3",
+        tick_start=1,
+        tick_end=3,
+        labels=("demo", "first-half"),
+        press_window_id=None,
+    )
+    base_second = AEONWindowDefV1(
+        window_id="AEON_LINE4_W2_ticks_4_6",
+        tick_start=4,
+        tick_end=6,
+        labels=("demo", "second-half"),
+        press_window_id=None,
+    )
+    derived_all = AEONDerivedWindowV1(
+        window_id="AEON_LINE4_W_all",
+        source_ids=(base_first.window_id, base_second.window_id),
+        aggregation="concat",
+        labels=("demo", "aggregate"),
+        press_window_id="LINE4_APX_W1_T1_6",
+    )
+    return AEONWindowGrammarV1(
+        base_windows={base_first.window_id: base_first, base_second.window_id: base_second},
+        derived_windows={derived_all.window_id: derived_all},
+    )
+
+
+def _demo_streams() -> tuple[PressStreamSpecV1, ...]:
+    return (
+        PressStreamSpecV1(name="S1_post_u_deltas", source="post_u_deltas", description="post_u delta per node"),
+        PressStreamSpecV1(name="S2_fluxes", source="fluxes", description="edge flux per edge"),
+        PressStreamSpecV1(
+            name="S3_prev_chain",
+            source="prev_chain",
+            description="prev chain checksum per tick",
+        ),
+    )
+
+
+def _demo_descriptors() -> dict[str, tuple[APXiDescriptorV1, ...]]:
+    aeon_window_id = "AEON_LINE4_W_all"
+    return {
+        "S1_post_u_deltas": (
+            APXiDescriptorV1(
+                descriptor_id="apxi_delta_linear",
+                descriptor_type="LINEAR_TREND",
+                window_id=aeon_window_id,
+                stream_id="S1_post_u_deltas",
+                params={"intercept": 0, "slope": 1, "start_tick": 1},
+            ),
+        ),
+        "S2_fluxes": (
+            APXiDescriptorV1(
+                descriptor_id="apxi_flux_const",
+                descriptor_type="CONST_SEGMENT",
+                window_id=aeon_window_id,
+                stream_id="S2_fluxes",
+                params={"value": 0},
+            ),
+        ),
+        "S3_prev_chain": (
+            APXiDescriptorV1(
+                descriptor_id="apxi_chain_const",
+                descriptor_type="CONST_SEGMENT",
+                window_id=aeon_window_id,
+                stream_id="S3_prev_chain",
+                params={"value": 0},
+            ),
+        ),
+    }
+
+
+def _demo_config(*, apxi_enabled: bool) -> SessionConfigV1:
+    topo = load_topology_profile("docs/fixtures/topologies/line_4_topology_profile.json")
+    profile = gf01_profile_cmp0()
+
+    window_spec = TickLoopWindowSpec(
+        window_id="LINE4_W1_T1_6",
+        apx_name="LINE4_APX_W1_T1_6",
+        start_tick=1,
+        end_tick=6,
+        streams=_demo_streams(),
+        aeon_window_id="AEON_LINE4_W_all",
+        apxi_descriptors=_demo_descriptors() if apxi_enabled else {},
+        apxi_enabled=apxi_enabled,
+        apxi_residual_scheme="R",
+    )
+
+    return SessionConfigV1(
+        topo=topo,
+        profile=profile,
+        initial_state=[1, 0, 0, 0],
+        total_ticks=6,
+        window_specs=(window_spec,),
+        primary_window_id=window_spec.window_id,
+        run_id="AEON_APXI_DEMO_RUN",
+        nid="aeon-apxi-demo-node",
+        press_default_streams=_demo_streams(),
     )
 
 
@@ -268,4 +375,44 @@ def test_proposal_emission_is_repeatable_and_thresholded() -> None:
     assert replay_proposals[0].proposal_id == proposals[0].proposal_id
     assert replay_proposals[0].target_location == proposals[0].target_location
     assert replay_proposals[0].expected_effect == proposals[0].expected_effect
+
+
+def test_codex_ingests_aeon_apxi_motifs() -> None:
+    grammar = _demo_aeon_grammar()
+    cfg = _demo_config(apxi_enabled=True)
+    result = run_session(cfg)
+
+    ctx = CodexContext(library_id="CE_MAIN")
+    ctx.ingest(
+        gid=result.config.topo.gid,
+        run_id=result.tick_result.run_id,
+        ledgers=result.tick_result.ledgers,
+        p_blocks=result.tick_result.p_blocks,
+        i_blocks=result.tick_result.i_blocks,
+        manifests=result.tick_result.manifests.values(),
+        envelopes=result.tick_result.envelopes,
+        aeon_windows=grammar,
+        apxi_views=result.tick_result.apxi_views.values(),
+        window_id=grammar.derived_windows["AEON_LINE4_W_all"].window_id,
+    )
+
+    stats = ctx.runtime_stats
+    assert stats.total_aeon_windows == len(grammar.window_ids())
+    assert stats.total_apxi_views == len(result.tick_result.apxi_views)
+
+    motifs = ctx.learn_apxi_descriptor_motifs()
+    assert len(motifs) == 3
+    assert {motif.pattern_descriptor["descriptor"]["descriptor_id"] for motif in motifs} == {
+        "apxi_delta_linear",
+        "apxi_flux_const",
+        "apxi_chain_const",
+    }
+    for motif in motifs:
+        assert motif.pattern_descriptor["type"] == "apxi_descriptor_v1"
+        assert motif.created_at_tick == 1
+        assert motif.last_updated_tick == 6
+
+    # Replay should not duplicate motifs
+    replay = ctx.learn_apxi_descriptor_motifs()
+    assert replay == []
 

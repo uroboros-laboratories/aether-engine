@@ -1,0 +1,27 @@
+{
+  "v": 1,
+  "gid": "LINE4",
+  "run_id": "LINE4_demo_cmp1",
+  "topology_path": "../topologies/line_4_topology_profile.json",
+  "profile_path": "../profiles/profile_cmp1.json",
+  "ticks": 6,
+  "initial_state": [8, 4, 0, 0],
+  "windows": [
+    {
+      "window_id": "LINE4_ticks_1_6_cmp1",
+      "apx_name": "LINE4_APX_full_window",
+      "start_tick": 1,
+      "end_tick": 6,
+      "streams": [
+        {"name": "S1_post_u_deltas", "source": "post_u_deltas"},
+        {"name": "S2_fluxes", "source": "fluxes"},
+        {"name": "S3_prev_chain", "source": "prev_chain", "description": "Loom chain between ticks"}
+      ]
+    }
+  ],
+  "primary_window_id": "LINE4_ticks_1_6_cmp1",
+  "nap": {"layer": "DATA", "mode": "P", "v": 1},
+  "enable_codex": false,
+  "enable_pfna": false,
+  "diagnostics": {"notes": "CMP-1 placeholder profile selection test"}
+}

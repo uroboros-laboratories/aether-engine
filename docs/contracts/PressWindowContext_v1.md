@@ -38,6 +38,7 @@ Conceptually, a `PressWindowContext_v1` holds:
   - `run_id: string`     — Run identifier.
   - `window_id: string`  — Window identifier (e.g. `"ticks_1_8"`).
   - `profile_id: string` — Profile in use (e.g. `"CMP-0"`).
+  - `aeon_window_id: string?` — Optional AEON window linkage (Phase 3).
 
 - Configuration:
   - `start_tick: int`    — First tick in the window (inclusive).
@@ -46,6 +47,10 @@ Conceptually, a `PressWindowContext_v1` holds:
 
 - Streams:
   - `streams: map<string, PressStreamBuffer_v1>` — keyed by stream name.
+- APXi (Phase 3 optional):
+  - `apxi_descriptors: map<string, list<APXiDescriptor_v1>>` — optional APXi descriptors per stream.
+  - `apxi_residual_scheme: string` — residual scheme for APXi MDL (`"ID"`, `"R"`, `"GR"`).
+  - `apxi_view_ref: string?` — optional reference to the computed APXi view for the window.
 
 The exact in-memory representation is language-specific; the contract is about
 what this context must *do* and what data it must be able to produce.
@@ -105,6 +110,8 @@ close_window() -> APXManifest_v1
   - `L_model`, `L_residual`, `L_total` (bit-lengths).
 - Aggregates all streams and window metadata into an `APXManifest_v1`.
 - Computes `manifest_check` as defined in the APX spec.
+- If APXi is enabled for the window, computes an `APXiView_v1` and sets
+  `manifest.apxi_view_ref` to a deterministic identifier.
 - After this call, the context may either:
   - Become immutable, or
   - Reset its buffers for the next window (implementation choice).

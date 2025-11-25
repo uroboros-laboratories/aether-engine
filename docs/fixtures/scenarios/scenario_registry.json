@@ -1,0 +1,26 @@
+{
+  "v": 1,
+  "scenarios": [
+    {
+      "scenario_id": "gf01",
+      "description": "GF-01 baseline CMP-0 run with PFNA disabled.",
+      "pillars": ["gate", "press", "nap"],
+      "runtime_hint": "very-small",
+      "run_config_path": "../configs/gf01_run_config.json"
+    },
+    {
+      "scenario_id": "line-4",
+      "description": "4-node line topology exercising CMP-0 defaults.",
+      "pillars": ["gate", "press"],
+      "runtime_hint": "small",
+      "run_config_path": "../configs/line_4_run_config.json"
+    },
+    {
+      "scenario_id": "ring-5",
+      "description": "5-node ring topology covering wrap-around neighbourhoods.",
+      "pillars": ["gate", "press"],
+      "runtime_hint": "small",
+      "run_config_path": "../configs/ring_5_run_config.json"
+    }
+  ]
+}

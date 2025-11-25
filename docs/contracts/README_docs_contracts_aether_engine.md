@@ -16,6 +16,16 @@ Each file here should be treated as a mini‑spec for one record type (or a smal
   - How graphs/topologies are described: nodes, edges, parameters.
 - `Profile_CMP0_v1.md`
   - Numeric profile for CMP‑0: modulus, scaling constant, I‑block spacing, and rule hooks.
+- `RunConfig_v1.md`
+  - File-driven run configuration tying together topology, profile, windows, and runtime flags.
+- `ScenarioRegistry_v1.md`
+  - Catalogue of named scenarios pointing to runnable `RunConfig_v1` documents.
+- `StructuredLogging_v1.md`
+  - Structured lifecycle logging entries and configuration for Phase 3 runs.
+- `Metrics_v1.md`
+  - Run-level metrics snapshot structure for Phase 3 governance.
+- `Introspection_v1.md`
+  - Read-only APIs for querying UMX/Loom/APX/NAP/U-ledger artefacts from run results.
 - `UMXTickLedger_v1.md`
   - Per‑tick record of UMX flux application over a topology.
 - `LoomBlocks_v1.md`
@@ -24,6 +34,10 @@ Each file here should be treated as a mini‑spec for one record type (or a smal
   - APX manifest structure: streams, schemes, MDL lengths, `manifest_check`.
 - `PressWindowContext_v1.md`
   - Window‑level Press/APX context (streams, schemes, lifecycle).
+- `AEONWindowGrammar_v1.md`
+  - AEON window definitions (base + derived) and hierarchy, aligned to Loom ticks and Press windows.
+- `APXiDescriptor_v1.md`
+  - Descriptor language for APXi primitives over AEON windows and Press streams.
 - `NAPEnvelope_v1.md`
   - NAP envelopes emitted by Gate/TBP for each tick / scene.
 - `SceneFrame_v1.md`

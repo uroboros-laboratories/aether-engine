@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, Iterable, List, Sequence
+from typing import Dict, Iterable, List, Mapping, Sequence, Tuple
 
 from umx.profile_cmp0 import ProfileCMP0V1
 
@@ -36,6 +36,7 @@ class APXManifestV1:
     profile: str
     manifest_check: int
     streams: List[APXStreamV1] = field(default_factory=list)
+    apxi_view_ref: str | None = None
 
 
 @dataclass
@@ -213,6 +214,11 @@ class PressWindowContextV1:
         end_tick: int,
         profile: ProfileCMP0V1,
         clear_on_close: bool = True,
+        *,
+        aeon_window_id: str | None = None,
+        apxi_enabled: bool = False,
+        apxi_residual_scheme: str = "R",
+        apxi_descriptors: Mapping[str, Sequence["APXiDescriptorV1"]] | None = None,
     ) -> None:
         self.gid = gid
         self.run_id = run_id
@@ -225,6 +231,17 @@ class PressWindowContextV1:
         self.default_scheme = profile.press_defaults.get("preferred_schemes", ["R"])[0]
         self.streams: Dict[str, PressStreamBufferV1] = {}
         self._expected_tick: Dict[str, int] = {}
+        self.aeon_window_id = aeon_window_id
+        self.apxi_enabled = apxi_enabled
+        if apxi_residual_scheme not in {"ID", "R", "GR"}:
+            raise ValueError("apxi_residual_scheme must be one of 'ID', 'R', 'GR'")
+        self.apxi_residual_scheme = apxi_residual_scheme
+        normalized_descriptors: Dict[str, Tuple["APXiDescriptorV1", ...]] = {}
+        if apxi_descriptors:
+            for stream_name, descriptors in apxi_descriptors.items():
+                normalized_descriptors[stream_name] = tuple(descriptors)
+        self.apxi_descriptors = normalized_descriptors
+        self._apxi_view: "APXiViewV1 | None" = None
         self._scheme_handlers = {
             "ID": compute_id_mode_lengths,
             "R": compute_r_mode_lengths,
@@ -285,17 +302,67 @@ class PressWindowContextV1:
                 )
             )
 
+        apxi_view = self._build_apxi_view(apx_name)
         manifest_check = compute_manifest_check(apx_name, self.profile, apx_streams)
         manifest = APXManifestV1(
             apx_name=apx_name,
             profile=self.profile.name,
             manifest_check=manifest_check,
             streams=apx_streams,
+            apxi_view_ref=apxi_view.view_id if apxi_view else None,
         )
+        self._apxi_view = apxi_view
 
         if self.clear_on_close:
             for name, stream in self.streams.items():
                 stream.values.clear()
                 self._expected_tick[name] = self.start_tick
+            self._apxi_view = None if apxi_view is None else apxi_view
         return manifest
+
+    def get_apxi_view(self) -> "APXiViewV1 | None":
+        """Return the most recent APXi view computed for this window, if any."""
+
+        return self._apxi_view
+
+    def _build_apxi_view(self, apx_name: str) -> "APXiViewV1 | None":
+        if not self.apxi_enabled:
+            return None
+        if not self.apxi_descriptors:
+            return APXiViewV1(
+                apx_name=apx_name,
+                window_id=self.window_id,
+                aeon_window_id=self.aeon_window_id,
+                residual_scheme=self.apxi_residual_scheme,
+                descriptors_by_stream={},
+            )
+
+        from press.apxi import APXiViewV1, compute_apxi_breakdown
+
+        descriptors_by_stream: Dict[str, List[APXiViewV1._BreakdownType]] = {}
+        for stream_name, descriptors in sorted(self.apxi_descriptors.items()):
+            if stream_name not in self.streams:
+                raise ValueError(f"APXi descriptor references unknown stream '{stream_name}'")
+            values = self.streams[stream_name].values
+            for descriptor in descriptors:
+                if descriptor.stream_id != stream_name:
+                    raise ValueError("APXi descriptor stream_id must match the registered stream")
+                if self.aeon_window_id and descriptor.window_id != self.aeon_window_id:
+                    raise ValueError("APXi descriptor window_id must match AEON window mapping")
+                breakdown = compute_apxi_breakdown(
+                    values, descriptor, residual_scheme=self.apxi_residual_scheme
+                )
+                descriptors_by_stream.setdefault(stream_name, []).append(breakdown)
+
+        normalized: Dict[str, Tuple[APXiViewV1._BreakdownType, ...]] = {}
+        for stream_name, breakdowns in descriptors_by_stream.items():
+            normalized[stream_name] = tuple(sorted(breakdowns, key=lambda b: b.descriptor.descriptor_id))
+
+        return APXiViewV1(
+            apx_name=apx_name,
+            window_id=self.window_id,
+            aeon_window_id=self.aeon_window_id,
+            residual_scheme=self.apxi_residual_scheme,
+            descriptors_by_stream=normalized,
+        )
 

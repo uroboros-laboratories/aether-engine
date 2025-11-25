@@ -1,0 +1,36 @@
+{
+  "v": 1,
+  "gid": "GF01",
+  "run_id": "GF01_config",
+  "topology_path": "../topologies/gf01_topology_profile.json",
+  "profile_path": "../profiles/profile_cmp0.json",
+  "ticks": 8,
+  "initial_state": [3, 1, 0, 0, 0, 0],
+  "windows": [
+    {
+      "window_id": "GF01_W1_ticks_1_8",
+      "apx_name": "GF01_APX_v0_full_window",
+      "start_tick": 1,
+      "end_tick": 8,
+      "streams": [
+        {"name": "S1_post_u_deltas", "source": "post_u_deltas"},
+        {"name": "S2_fluxes", "source": "fluxes"}
+      ]
+    },
+    {
+      "window_id": "GF01_W1_ticks_1_2",
+      "apx_name": "GF01_APX_v0_ticks_1_2",
+      "start_tick": 1,
+      "end_tick": 2,
+      "streams": [
+        {"name": "S1_post_u_deltas", "source": "post_u_deltas"},
+        {"name": "S2_fluxes", "source": "fluxes"}
+      ]
+    }
+  ],
+  "primary_window_id": "GF01_W1_ticks_1_8",
+  "nap": {"layer": "DATA", "mode": "P", "v": 1},
+  "enable_codex": true,
+  "enable_pfna": false,
+  "diagnostics": {"notes": "GF-01 config baseline"}
+}

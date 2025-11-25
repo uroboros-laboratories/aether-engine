@@ -1,17 +1,125 @@
 """Minimal Gate/TBP types and helpers for CMP-0 GF-01."""
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from dataclasses import dataclass, field
-from typing import Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import (
+    Dict,
+    Iterable,
+    List,
+    Mapping,
+    Optional,
+    Sequence,
+    Tuple,
+    TYPE_CHECKING,
+    Union,
+)
 
 from loom.loom import LoomPBlockV1
 from umx.profile_cmp0 import ProfileCMP0V1
 from umx.tick_ledger import UMXTickLedgerV1
 
+from ops import (
+    LoggingConfigV1,
+    MetricsConfigV1,
+    MetricsSnapshotV1,
+    StructuredLogEntryV1,
+    StructuredLogger,
+)
+
+if TYPE_CHECKING:  # pragma: no cover - used for type hints only
+    from core.tick_loop import GF01RunResult, TickLoopWindowSpec
+    from umx.topology_profile import TopologyProfileV1
+
 
 # Allowed NAP layer/mode values for CMP-0 NAP envelopes.
 ALLOWED_NAP_LAYERS = ("INGRESS", "DATA", "CTRL", "EGRESS")
-ALLOWED_NAP_MODES = ("P", "S")
+ALLOWED_NAP_MODES = ("P", "I", "S")
+
+
+@dataclass(frozen=True)
+class PressStreamSpecV1:
+    """Configuration for a Press stream declared by Gate."""
+
+    name: str
+    source: str
+    scheme_hint: Optional[str] = None
+    description: str = ""
+
+    def __post_init__(self) -> None:
+        if not self.name:
+            raise ValueError("Press stream name must be provided")
+        if self.scheme_hint is not None and self.scheme_hint not in {"R", "GR", "ID"}:
+            raise ValueError("scheme_hint must be one of 'R', 'GR', or 'ID'")
+        allowed_sources = {
+            "post_u_deltas",
+            "fluxes",
+            "pre_u",
+            "post_u",
+            "prev_chain",
+        }
+        if self.source not in allowed_sources:
+            raise ValueError(f"source must be one of {sorted(allowed_sources)}")
+
+
+def _default_press_stream_specs() -> Tuple[PressStreamSpecV1, ...]:
+    """Default CMP-0 Press streams (GF-01 compatible)."""
+
+    return (
+        PressStreamSpecV1(
+            name="S1_post_u_deltas",
+            source="post_u_deltas",
+            description="post_u delta per node",
+        ),
+        PressStreamSpecV1(
+            name="S2_fluxes",
+            source="fluxes",
+            description="edge flux per edge",
+        ),
+    )
+
+
+@dataclass(frozen=True)
+class SessionConfigV1:
+    """Top-level Gate/TBP session configuration for TickLoop_v1 runs."""
+
+    topo: "TopologyProfileV1"
+    profile: ProfileCMP0V1
+    initial_state: Sequence[int]
+    total_ticks: int
+    window_specs: Sequence["TickLoopWindowSpec"]
+    primary_window_id: str
+    run_id: str = "SESSION"
+    nid: str = "N/A"
+    pfna_inputs: Tuple[PFNAInputV0, ...] = field(default_factory=tuple)
+    governance: Dict[str, object] = field(default_factory=dict)
+    press_default_streams: Tuple[PressStreamSpecV1, ...] = field(
+        default_factory=_default_press_stream_specs
+    )
+    logging_config: LoggingConfigV1 = field(default_factory=LoggingConfigV1)
+    metrics_config: MetricsConfigV1 = field(default_factory=MetricsConfigV1)
+
+    def __post_init__(self) -> None:
+        if self.total_ticks < 1:
+            raise ValueError("total_ticks must be >= 1")
+        if len(self.initial_state) != self.topo.N:
+            raise ValueError("initial_state length must match topology N")
+        if not self.window_specs:
+            raise ValueError("At least one window spec must be provided")
+        window_ids = {spec.window_id for spec in self.window_specs}
+        if self.primary_window_id not in window_ids:
+            raise ValueError("primary_window_id must reference a window spec")
+        if not self.run_id:
+            raise ValueError("run_id must be provided")
+        if not isinstance(self.pfna_inputs, tuple):
+            object.__setattr__(self, "pfna_inputs", tuple(self.pfna_inputs))
+        if not isinstance(self.press_default_streams, tuple):
+            object.__setattr__(self, "press_default_streams", tuple(self.press_default_streams))
+        if not isinstance(self.logging_config, LoggingConfigV1):
+            raise ValueError("logging_config must be a LoggingConfigV1 instance")
+        if not isinstance(self.metrics_config, MetricsConfigV1):
+            raise ValueError("metrics_config must be a MetricsConfigV1 instance")
 
 
 @dataclass(frozen=True)
@@ -33,14 +141,148 @@ class PFNAInputV0:
             raise ValueError("gid must be provided")
         if not self.run_id:
             raise ValueError("run_id must be provided")
-        if self.tick < 1:
-            raise ValueError("tick must be >= 1")
+        if self.tick < 0:
+            raise ValueError("tick must be >= 0")
         if not self.nid:
             raise ValueError("nid must be provided")
         if not self.values:
             raise ValueError("values must be a non-empty sequence")
         if not all(isinstance(v, int) for v in self.values):
             raise ValueError("values must be integers")
+
+
+def _load_pfna_source(source: Union[str, Path, Mapping[str, object]]) -> Mapping[str, object]:
+    """Load a PFNA document from a path, JSON string, or mapping."""
+
+    if isinstance(source, Mapping):
+        return source
+
+    if isinstance(source, (str, Path)):
+        path = Path(source)
+        if path.exists():
+            with path.open("r", encoding="utf-8") as handle:
+                return json.load(handle)
+        try:
+            return json.loads(str(source))
+        except json.JSONDecodeError as exc:  # pragma: no cover - error path
+            raise ValueError("PFNA source must be a valid path or JSON string") from exc
+
+    raise TypeError("PFNA source must be a mapping, JSON string, or path")
+
+
+def load_pfna_v0(
+    source: Union[str, Path, Mapping[str, object]], *, expected_length: Optional[int] = None
+) -> Tuple[PFNAInputV0, ...]:
+    """Load and validate PFNA V0 inputs deterministically.
+
+    The loader enforces the PFNA V0 schema (see docs/contracts/PFNA_V0_Schema_v1.md):
+    - top-level fields: v=0, pfna_id, gid, run_id, nid, entries
+    - each entry: pfna_id, tick>=0, values (non-empty int sequence), optional description
+    - optional `expected_length` enforces the vector length of each entry.
+    """
+
+    data = _load_pfna_source(source)
+
+    try:
+        version = int(data["v"])
+    except Exception as exc:  # pragma: no cover - schema error path
+        raise ValueError("PFNA V0 document must provide integer field 'v'") from exc
+
+    if version != 0:
+        raise ValueError("PFNA V0 requires v == 0")
+
+    for field_name in ("pfna_id", "gid", "run_id", "nid", "entries"):
+        if field_name not in data:
+            raise ValueError(f"PFNA V0 document missing required field '{field_name}'")
+
+    bundle_id = str(data["pfna_id"])
+    gid = str(data["gid"])
+    run_id = str(data["run_id"])
+    nid = str(data["nid"])
+    entries_raw = data["entries"]
+
+    if not bundle_id:
+        raise ValueError("PFNA bundle pfna_id must be non-empty")
+    if not gid:
+        raise ValueError("PFNA bundle gid must be non-empty")
+    if not run_id:
+        raise ValueError("PFNA bundle run_id must be non-empty")
+    if not nid:
+        raise ValueError("PFNA bundle nid must be non-empty")
+    if not isinstance(entries_raw, list) or not entries_raw:
+        raise ValueError("PFNA entries must be a non-empty list")
+
+    parsed: List[PFNAInputV0] = []
+    for entry in entries_raw:
+        if not isinstance(entry, Mapping):
+            raise ValueError("PFNA entry must be a mapping")
+        for field_name in ("pfna_id", "tick", "values"):
+            if field_name not in entry:
+                raise ValueError(f"PFNA entry missing required field '{field_name}'")
+
+        pfna_id = str(entry["pfna_id"])
+        description = str(entry.get("description", ""))
+        tick_raw = entry["tick"]
+        values_raw = entry["values"]
+
+        tick = int(tick_raw)
+        if tick < 0:
+            raise ValueError("PFNA entry tick must be >= 0")
+
+        if not isinstance(values_raw, (list, tuple)) or not values_raw:
+            raise ValueError("PFNA entry values must be a non-empty list of integers")
+        try:
+            values = tuple(int(val) for val in values_raw)
+        except Exception as exc:  # pragma: no cover - schema error path
+            raise ValueError("PFNA entry values must be integers") from exc
+
+        if expected_length is not None and len(values) != expected_length:
+            raise ValueError("PFNA entry values length must match expected_length")
+
+        parsed.append(
+            PFNAInputV0(
+                pfna_id=pfna_id,
+                gid=gid,
+                run_id=run_id,
+                tick=tick,
+                nid=nid,
+                values=values,
+                description=description,
+            )
+        )
+
+    parsed.sort(key=lambda item: (item.tick, item.pfna_id))
+    return tuple(parsed)
+
+
+def dump_pfna_v0(
+    *,
+    bundle_id: str,
+    gid: str,
+    run_id: str,
+    nid: str,
+    entries: Iterable[PFNAInputV0],
+) -> Dict[str, object]:
+    """Serialise PFNA inputs back to the PFNA V0 document shape."""
+
+    ordered_entries = [
+        {
+            "pfna_id": pfna.pfna_id,
+            "tick": pfna.tick,
+            "values": list(pfna.values),
+            **({"description": pfna.description} if pfna.description else {}),
+        }
+        for pfna in sorted(entries, key=lambda item: (item.tick, item.pfna_id))
+    ]
+
+    return {
+        "v": 0,
+        "pfna_id": bundle_id,
+        "gid": gid,
+        "run_id": run_id,
+        "nid": nid,
+        "entries": ordered_entries,
+    }
 
 
 @dataclass(frozen=True)
@@ -252,4 +494,200 @@ def build_scene_and_envelope(
         mode=nap_mode,
     )
     return scene, envelope
+
+
+def _pfna_payload_ref(pfna_inputs: Iterable[PFNAInputV0], *, modulus: int = 1_000_000_007) -> int:
+    """Deterministically derive an ingress payload_ref from PFNA inputs."""
+
+    acc = 0
+    for pfna in sorted(pfna_inputs, key=lambda p: p.pfna_id):
+        for ch in pfna.pfna_id:
+            acc = (acc * 31 + ord(ch)) % modulus
+        for val in pfna.values:
+            acc = (acc * 17 + int(val)) % modulus
+    return acc
+
+
+def _build_ctrl_envelope(
+    *,
+    gid: str,
+    nid: str,
+    profile: ProfileCMP0V1,
+    tick: int,
+    seq: int,
+    payload_ref: int,
+    prev_chain: int,
+) -> NAPEnvelopeV1:
+    return NAPEnvelopeV1(
+        v=int(profile.nap_defaults.get("v", 1)),
+        tick=int(tick),
+        gid=gid,
+        nid=nid,
+        layer="CTRL",
+        mode="P",
+        payload_ref=int(payload_ref),
+        seq=int(seq),
+        prev_chain=int(prev_chain),
+        sig="",
+    )
+
+
+@dataclass(frozen=True)
+class SessionRunResult:
+    """Outputs from a Gate/TBP session around TickLoop_v1."""
+
+    config: SessionConfigV1
+    lifecycle_envelopes: List[NAPEnvelopeV1]
+    tick_result: "GF01RunResult"
+    logs: List[StructuredLogEntryV1] = field(default_factory=list)
+    metrics: Optional[MetricsSnapshotV1] = None
+
+    @property
+    def all_envelopes(self) -> List[NAPEnvelopeV1]:
+        lifecycle = list(self.lifecycle_envelopes)
+        ingress_by_tick: Dict[int, List[NAPEnvelopeV1]] = {}
+        for env in self.tick_result.ingress_envelopes:
+            ingress_by_tick.setdefault(env.tick, []).append(env)
+
+        ordered: List[NAPEnvelopeV1] = []
+        if lifecycle:
+            ordered.append(lifecycle[0])
+
+        data_envelopes = list(self.tick_result.envelopes)
+        for idx in range(self.config.total_ticks):
+            tick = idx + 1
+            ordered.extend(ingress_by_tick.get(tick, []))
+            if idx < len(data_envelopes):
+                ordered.append(data_envelopes[idx])
+
+        if len(lifecycle) > 1:
+            ordered.append(lifecycle[1])
+
+        ordered.extend(self.tick_result.egress_envelopes)
+
+        return ordered
+
+
+def run_session(config: SessionConfigV1) -> SessionRunResult:
+    """Run a CMP-0 session via Gate/TBP and TickLoop_v1."""
+
+    from core.tick_loop import run_cmp0_tick_loop
+
+    logger = StructuredLogger(config.logging_config)
+    logger.log(
+        "run_start",
+        gid=config.topo.gid,
+        run_id=config.run_id,
+        payload={
+            "total_ticks": config.total_ticks,
+            "windows": sorted(spec.window_id for spec in config.window_specs),
+            "primary_window_id": config.primary_window_id,
+        },
+    )
+
+    tick_result = run_cmp0_tick_loop(
+        topo=config.topo,
+        profile=config.profile,
+        initial_state=config.initial_state,
+        total_ticks=config.total_ticks,
+        window_specs=config.window_specs,
+        primary_window_id=config.primary_window_id,
+        run_id=config.run_id,
+        nid=config.nid,
+        pfna_inputs=config.pfna_inputs,
+        press_default_streams=config.press_default_streams,
+        logger=logger,
+    )
+
+    lifecycle: List[NAPEnvelopeV1] = []
+    lifecycle.append(
+        _build_ctrl_envelope(
+            gid=config.topo.gid,
+            nid=config.nid,
+            profile=config.profile,
+            tick=1,
+            seq=1,
+            payload_ref=0,
+            prev_chain=config.profile.C0,
+        )
+    )
+
+    final_chain = tick_result.p_blocks[-1].C_t if tick_result.p_blocks else config.profile.C0
+    payload_ref = tick_result.envelopes[-1].payload_ref if tick_result.envelopes else 0
+    lifecycle.append(
+        _build_ctrl_envelope(
+            gid=config.topo.gid,
+            nid=config.nid,
+            profile=config.profile,
+            tick=config.total_ticks,
+            seq=config.total_ticks + 1,
+            payload_ref=payload_ref,
+            prev_chain=final_chain,
+        )
+    )
+
+    logger.log(
+        "run_end",
+        gid=config.topo.gid,
+        run_id=config.run_id,
+        payload={
+            "envelopes": len(tick_result.envelopes),
+            "ingress": len(tick_result.ingress_envelopes),
+            "egress": len(tick_result.egress_envelopes),
+        },
+    )
+
+    metrics: Optional[MetricsSnapshotV1] = None
+    if config.metrics_config.enabled:
+        metrics = _build_metrics_snapshot(
+            config=config,
+            tick_result=tick_result,
+            lifecycle_envelopes=lifecycle,
+        )
+
+    return SessionRunResult(
+        config=config,
+        lifecycle_envelopes=lifecycle,
+        tick_result=tick_result,
+        logs=logger.entries,
+        metrics=metrics,
+    )
+
+
+def _build_metrics_snapshot(
+    *,
+    config: SessionConfigV1,
+    tick_result: "GF01RunResult",
+    lifecycle_envelopes: Sequence[NAPEnvelopeV1],
+) -> MetricsSnapshotV1:
+    """Derive a deterministic metrics snapshot for a completed run."""
+
+    from uledger.canonical import hash_record
+
+    uledger_entries = list(tick_result.u_ledger_entries)
+    last_hash: Optional[str]
+    if uledger_entries:
+        last_hash = hash_record(uledger_entries[-1])
+    else:
+        last_hash = None
+
+    nap_ingress = len(tick_result.ingress_envelopes)
+    nap_data = len(tick_result.envelopes)
+    nap_egress = len(tick_result.egress_envelopes)
+    nap_total = nap_ingress + nap_data + nap_egress + len(lifecycle_envelopes)
+
+    return MetricsSnapshotV1(
+        gid=config.topo.gid,
+        run_id=config.run_id,
+        total_ticks=config.total_ticks,
+        window_count=len(config.window_specs),
+        nap_total=nap_total,
+        nap_ingress=nap_ingress,
+        nap_data=nap_data,
+        nap_egress=nap_egress,
+        uledger_entries=len(uledger_entries),
+        uledger_last_hash=last_hash,
+        apx_manifests=len(tick_result.manifests),
+        apxi_views=len(tick_result.apxi_views),
+    )
 

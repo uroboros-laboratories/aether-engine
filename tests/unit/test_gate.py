@@ -3,9 +3,15 @@ from __future__ import annotations
 import pytest
 
 from core.tick_loop import TickLoopWindowSpec, run_cmp0_tick_loop, run_gf01
-from gate import ALLOWED_NAP_LAYERS, build_pfna_placeholder, emit_nap_envelope
+from gate import (
+    ALLOWED_NAP_LAYERS,
+    PressStreamSpecV1,
+    _default_press_stream_specs,
+    build_pfna_placeholder,
+    emit_nap_envelope,
+)
 from umx.profile_cmp0 import gf01_profile_cmp0
-from umx.topology_profile import load_topology_profile
+from umx.topology_profile import gf01_topology_profile, load_topology_profile
 
 
 def test_gf01_scene_frames_anchor_nap_envelopes():
@@ -170,3 +176,80 @@ def test_pfna_inputs_feed_state_and_scene_meta():
         nid="engine-line",
     )
     assert tuple(baseline.ledgers[0].pre_u) == (2, 2, 2, 2)
+
+
+def test_gate_drives_press_window_streams_config():
+    profile = gf01_profile_cmp0()
+    topo = gf01_topology_profile()
+
+    stream_specs = _default_press_stream_specs()
+    gf_window = TickLoopWindowSpec(
+        window_id="GF01_W1_ticks_1_8",
+        apx_name="GF01_APX_v0_full_window",
+        start_tick=1,
+        end_tick=8,
+        streams=stream_specs,
+    )
+    gf_window_short = TickLoopWindowSpec(
+        window_id="GF01_W1_ticks_1_2",
+        apx_name="GF01_APX_v0_ticks_1_2",
+        start_tick=1,
+        end_tick=2,
+        streams=stream_specs,
+    )
+
+    result = run_cmp0_tick_loop(
+        topo=topo,
+        profile=profile,
+        initial_state=[3, 1, 0, 0, 0, 0],
+        total_ticks=8,
+        window_specs=[gf_window, gf_window_short],
+        primary_window_id=gf_window.window_id,
+        run_id="GF01_CONFIGURED",
+        nid="config-gf01",
+    )
+
+    manifest = result.manifests[gf_window.apx_name]
+    assert manifest.manifest_check == 487809945
+    stream_ids = [stream.stream_id for stream in manifest.streams]
+    assert stream_ids == [spec.name for spec in stream_specs]
+
+
+def test_press_streams_accept_chain_value_source():
+    profile = gf01_profile_cmp0()
+    topo = load_topology_profile("docs/fixtures/topologies/line_4_topology_profile.json")
+
+    stream_specs = _default_press_stream_specs() + (
+        PressStreamSpecV1(
+            name="S3_prev_chain",
+            source="prev_chain",
+            scheme_hint="ID",
+            description="chain accumulator per tick",
+        ),
+    )
+
+    window_spec = TickLoopWindowSpec(
+        window_id="LINE_W1_ticks_1_3",
+        apx_name="LINE_APX_v0_ticks_1_3",
+        start_tick=1,
+        end_tick=3,
+        streams=stream_specs,
+    )
+
+    result = run_cmp0_tick_loop(
+        topo=topo,
+        profile=profile,
+        initial_state=[1, 1, 1, 1],
+        total_ticks=3,
+        window_specs=[window_spec],
+        primary_window_id=window_spec.window_id,
+        run_id="LINE_CHAIN_STREAM",
+        nid="line-chain",
+    )
+
+    manifest = result.manifests[window_spec.apx_name]
+    chain_stream = next(stream for stream in manifest.streams if stream.stream_id == "S3_prev_chain")
+    assert chain_stream.scheme == "ID"
+    assert chain_stream.L_model == 1
+    assert chain_stream.L_residual == 3
+    assert chain_stream.L_total == 4

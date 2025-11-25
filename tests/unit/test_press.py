@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import pytest
 
-from press import PressWindowContextV1
+from press import APXiDescriptorV1, PressWindowContextV1
 from umx.profile_cmp0 import gf01_profile_cmp0
 from umx.run_context import UMXRunContext
 from umx.topology_profile import gf01_topology_profile
@@ -209,3 +209,79 @@ def test_manifest_check_reflects_scheme_choice():
     manifest_id = press_ctx_id.close_window("manifest_id")
 
     assert manifest_r.manifest_check != manifest_id.manifest_check
+
+
+def test_apxi_disabled_matches_phase2_behaviour():
+    profile = gf01_profile_cmp0()
+    press_ctx = PressWindowContextV1(
+        gid="G", run_id="R", window_id="w_apxi_off", start_tick=1, end_tick=2, profile=profile
+    )
+    press_ctx.register_stream("S_delta", scheme_hint="R")
+    press_ctx.append("S_delta", 1)
+    press_ctx.append("S_delta", 1)
+
+    manifest = press_ctx.close_window("w_apxi_off_manifest")
+    assert manifest.apxi_view_ref is None
+    assert press_ctx.get_apxi_view() is None
+
+
+def test_apxi_view_attaches_to_manifest_and_window():
+    profile = gf01_profile_cmp0()
+    descriptor = APXiDescriptorV1(
+        descriptor_id="apxi_const",
+        descriptor_type="CONST_SEGMENT",
+        window_id="AEON_W1",
+        stream_id="S_delta",
+        params={"value": 7},
+    )
+    press_ctx = PressWindowContextV1(
+        gid="G",
+        run_id="R",
+        window_id="w_apxi_on",
+        start_tick=1,
+        end_tick=2,
+        profile=profile,
+        aeon_window_id="AEON_W1",
+        apxi_enabled=True,
+        apxi_descriptors={"S_delta": (descriptor,)},
+    )
+    press_ctx.register_stream("S_delta", scheme_hint="ID")
+    press_ctx.append("S_delta", 7)
+    press_ctx.append("S_delta", 7)
+
+    manifest = press_ctx.close_window("w_apxi_on_manifest")
+    view = press_ctx.get_apxi_view()
+
+    assert view is not None
+    assert manifest.apxi_view_ref == view.view_id
+    assert view.residual_scheme == "R"
+    breakdown = view.descriptors_by_stream["S_delta"][0]
+    assert breakdown.L_model == 1
+    assert breakdown.L_residual == 0
+
+
+def test_apxi_window_id_mismatch_raises():
+    profile = gf01_profile_cmp0()
+    descriptor = APXiDescriptorV1(
+        descriptor_id="apxi_wrong_window",
+        descriptor_type="CONST_SEGMENT",
+        window_id="AEON_W2",
+        stream_id="S_delta",
+        params={"value": 3},
+    )
+    press_ctx = PressWindowContextV1(
+        gid="G",
+        run_id="R",
+        window_id="w_apxi_on",
+        start_tick=1,
+        end_tick=1,
+        profile=profile,
+        aeon_window_id="AEON_W1",
+        apxi_enabled=True,
+        apxi_descriptors={"S_delta": (descriptor,)},
+    )
+    press_ctx.register_stream("S_delta", scheme_hint="ID")
+    press_ctx.append("S_delta", 3)
+
+    with pytest.raises(ValueError):
+        press_ctx.close_window("w_apxi_on_manifest")
