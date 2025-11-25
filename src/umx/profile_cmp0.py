@@ -7,7 +7,7 @@ from typing import Dict
 
 @dataclass(frozen=True)
 class ProfileCMP0V1:
-    """Numeric constants and rule metadata for CMP-0."""
+    """Numeric constants and rule metadata for CMP-style numeric profiles."""
 
     name: str = "CMP-0"
     modulus_M: int = 1_000_000_007
@@ -42,10 +42,15 @@ class ProfileCMP0V1:
     })
 
     def __post_init__(self) -> None:
-        if self.name != "CMP-0":
-            raise ValueError("CMP-0 profile must have name 'CMP-0'")
-        if not all(isinstance(v, int) and v > 0 for v in (self.modulus_M, self.C0, self.SC, self.I_block_spacing_W)):
-            raise ValueError("CMP-0 numeric constants must be positive integers")
+        if not isinstance(self.name, str) or not self.name:
+            raise ValueError("Profile name must be a non-empty string")
+        if not self.name.startswith("CMP-"):
+            raise ValueError("Profile name must start with 'CMP-'")
+        if not all(
+            isinstance(v, int) and v > 0
+            for v in (self.modulus_M, self.C0, self.SC, self.I_block_spacing_W)
+        ):
+            raise ValueError("CMP numeric constants must be positive integers")
 
 
 def gf01_profile_cmp0() -> ProfileCMP0V1:

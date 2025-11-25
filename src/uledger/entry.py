@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import dataclasses
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Sequence
 
@@ -11,6 +12,13 @@ from press import APXManifestV1
 from umx.tick_ledger import UMXTickLedgerV1
 
 from .canonical import hash_record
+
+
+def _manifest_hash_payload(manifest: APXManifestV1) -> dict:
+    payload = dataclasses.asdict(manifest)
+    if payload.get("apxi_view_ref") is None:
+        payload.pop("apxi_view_ref", None)
+    return payload
 
 
 @dataclass(frozen=True)
@@ -80,7 +88,7 @@ def build_uledger_entries(
 
     _validate_alignment(ledgers, p_blocks, envelopes)
 
-    manifest_hash = hash_record(manifest)
+    manifest_hash = hash_record(_manifest_hash_payload(manifest))
     prev_hash = start_prev_hash
     entries: List[ULedgerEntryV1] = []
     last_tick = 0

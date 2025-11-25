@@ -32,13 +32,15 @@ Fields (canonical key order):
    - Node/engine ID.  
    - For the single-engine GF-01 fixture you can use `"N/A"` (or a stable ID string).
 
-5. **layer: enum { "INGRESS", "EGRESS", "CTRL", "DATA" }**  
+5. **layer: enum { "INGRESS", "EGRESS", "CTRL", "DATA" }**
    - Logical layer of this envelope.
    - GF-01 uses `"DATA"`.
+   - CTRL is reserved for lifecycle events, INGRESS for external inputs (PFNA), EGRESS for export/snapshot messages.
 
-6. **mode: enum { "I", "P" }**  
-   - `"I"` for I-block (checkpoint) windows.  
-   - `"P"` for P-block (per-tick) entries within a window.  
+6. **mode: enum { "I", "P", "S" }**
+   - `"I"` for I-block (checkpoint) windows.
+   - `"P"` for P-block (per-tick) entries within a window.
+   - `"S"` for secondary/auxiliary messages that accompany P-blocks when needed (e.g. PFNA ingress summaries).
    - GF-01 uses `"P"` for ticks 1–8 in the worked examples.
 
 7. **payload_ref: int**  
@@ -107,3 +109,14 @@ For the GF-01 8-tick window (ticks 1–8):
   - `C_1..C_8` as defined in the Loom contract.
 
 Any implementation that claims parity with V0 must emit NAP envelopes that match this fixture exactly for GF-01.
+
+---
+
+## Phase 3 Layer Usage (INGRESS / DATA / CTRL / EGRESS)
+
+To keep Phase 3 behaviour deterministic while adding external inputs and session summaries, use layers as follows:
+
+- **CTRL/P** – lifecycle events such as `SESSION_START` (tick 1) and `SESSION_END` (final tick).
+- **INGRESS/P** – PFNA ingress summaries emitted on the tick where PFNA batches are applied.
+- **DATA/P** – per-tick SceneFrame-derived envelopes (unchanged from GF-01).
+- **EGRESS/P** – end-of-session summary/export envelopes, typically referencing the primary APX manifest.

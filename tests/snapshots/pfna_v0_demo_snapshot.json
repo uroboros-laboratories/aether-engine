@@ -1,0 +1,667 @@
+{
+  "config": {
+    "gid": "LINE4",
+    "initial_state": [
+      2,
+      1,
+      0,
+      0
+    ],
+    "nid": "pfna-demo-node",
+    "pfna_inputs": [
+      {
+        "description": "adjust initial state before tick 1",
+        "gid": "LINE4",
+        "nid": "pfna-demo-source",
+        "pfna_id": "init_boost",
+        "run_id": "PFNA_DEMO_RUN",
+        "tick": 0,
+        "values": [
+          1,
+          -1,
+          0,
+          0
+        ]
+      },
+      {
+        "description": "modify nodes mid-run",
+        "gid": "LINE4",
+        "nid": "pfna-demo-source",
+        "pfna_id": "tick2_adjust",
+        "run_id": "PFNA_DEMO_RUN",
+        "tick": 2,
+        "values": [
+          0,
+          2,
+          0,
+          -1
+        ]
+      }
+    ],
+    "press_default_streams": [
+      {
+        "description": "post_u delta per node",
+        "name": "S1_post_u_deltas",
+        "scheme_hint": null,
+        "source": "post_u_deltas"
+      },
+      {
+        "description": "edge flux per edge",
+        "name": "S2_fluxes",
+        "scheme_hint": null,
+        "source": "fluxes"
+      },
+      {
+        "description": "prev chain checksum per tick",
+        "name": "S3_prev_chain",
+        "scheme_hint": null,
+        "source": "prev_chain"
+      }
+    ],
+    "primary_window_id": "LINE_DEMO_W1_ticks_1_4",
+    "run_id": "PFNA_DEMO_RUN",
+    "total_ticks": 4,
+    "window_ids": [
+      "LINE_DEMO_W1_ticks_1_4"
+    ]
+  },
+  "lifecycle_envelopes": [
+    {
+      "gid": "LINE4",
+      "layer": "CTRL",
+      "mode": "P",
+      "nid": "pfna-demo-node",
+      "payload_ref": 0,
+      "prev_chain": 1234567,
+      "seq": 1,
+      "sig": "",
+      "tick": 1,
+      "v": 1
+    },
+    {
+      "gid": "LINE4",
+      "layer": "CTRL",
+      "mode": "P",
+      "nid": "pfna-demo-node",
+      "payload_ref": 735397692,
+      "prev_chain": 113355772,
+      "seq": 5,
+      "sig": "",
+      "tick": 4,
+      "v": 1
+    }
+  ],
+  "tick_result": {
+    "egress_envelopes": [
+      {
+        "gid": "LINE4",
+        "layer": "EGRESS",
+        "mode": "P",
+        "nid": "pfna-demo-node",
+        "payload_ref": 735397692,
+        "prev_chain": 113355772,
+        "seq": 6,
+        "sig": "",
+        "tick": 4,
+        "v": 1
+      }
+    ],
+    "envelopes": [
+      {
+        "gid": "LINE4",
+        "layer": "DATA",
+        "mode": "P",
+        "nid": "pfna-demo-node",
+        "payload_ref": 735397692,
+        "prev_chain": 1234567,
+        "seq": 1,
+        "sig": "",
+        "tick": 1,
+        "v": 1
+      },
+      {
+        "gid": "LINE4",
+        "layer": "DATA",
+        "mode": "P",
+        "nid": "pfna-demo-node",
+        "payload_ref": 735397692,
+        "prev_chain": 20987847,
+        "seq": 2,
+        "sig": "",
+        "tick": 2,
+        "v": 1
+      },
+      {
+        "gid": "LINE4",
+        "layer": "DATA",
+        "mode": "P",
+        "nid": "pfna-demo-node",
+        "payload_ref": 735397692,
+        "prev_chain": 356793608,
+        "seq": 3,
+        "sig": "",
+        "tick": 3,
+        "v": 1
+      },
+      {
+        "gid": "LINE4",
+        "layer": "DATA",
+        "mode": "P",
+        "nid": "pfna-demo-node",
+        "payload_ref": 735397692,
+        "prev_chain": 65491504,
+        "seq": 4,
+        "sig": "",
+        "tick": 4,
+        "v": 1
+      }
+    ],
+    "i_blocks": [],
+    "ingress_envelopes": [
+      {
+        "gid": "LINE4",
+        "layer": "INGRESS",
+        "mode": "P",
+        "nid": "pfna-demo-node",
+        "payload_ref": 597562739,
+        "prev_chain": 20987847,
+        "seq": 2,
+        "sig": "",
+        "tick": 2,
+        "v": 1
+      }
+    ],
+    "ledgers": [
+      {
+        "edges": [
+          {
+            "cap": 64,
+            "du": 3,
+            "e_id": 1,
+            "f_e": 0,
+            "i": 1,
+            "j": 2,
+            "raw": 0
+          },
+          {
+            "cap": 64,
+            "du": 0,
+            "e_id": 2,
+            "f_e": 0,
+            "i": 2,
+            "j": 3,
+            "raw": 0
+          },
+          {
+            "cap": 64,
+            "du": 0,
+            "e_id": 3,
+            "f_e": 0,
+            "i": 3,
+            "j": 4,
+            "raw": 0
+          }
+        ],
+        "post_u": [
+          3,
+          0,
+          0,
+          0
+        ],
+        "pre_u": [
+          3,
+          0,
+          0,
+          0
+        ],
+        "sum_post_u": 3,
+        "sum_pre_u": 3,
+        "tick": 1,
+        "z_check": 3
+      },
+      {
+        "edges": [
+          {
+            "cap": 64,
+            "du": 1,
+            "e_id": 1,
+            "f_e": 0,
+            "i": 1,
+            "j": 2,
+            "raw": 0
+          },
+          {
+            "cap": 64,
+            "du": 2,
+            "e_id": 2,
+            "f_e": 0,
+            "i": 2,
+            "j": 3,
+            "raw": 0
+          },
+          {
+            "cap": 64,
+            "du": 1,
+            "e_id": 3,
+            "f_e": 0,
+            "i": 3,
+            "j": 4,
+            "raw": 0
+          }
+        ],
+        "post_u": [
+          3,
+          2,
+          0,
+          -1
+        ],
+        "pre_u": [
+          3,
+          2,
+          0,
+          -1
+        ],
+        "sum_post_u": 4,
+        "sum_pre_u": 4,
+        "tick": 2,
+        "z_check": 4
+      },
+      {
+        "edges": [
+          {
+            "cap": 64,
+            "du": 1,
+            "e_id": 1,
+            "f_e": 0,
+            "i": 1,
+            "j": 2,
+            "raw": 0
+          },
+          {
+            "cap": 64,
+            "du": 2,
+            "e_id": 2,
+            "f_e": 0,
+            "i": 2,
+            "j": 3,
+            "raw": 0
+          },
+          {
+            "cap": 64,
+            "du": 1,
+            "e_id": 3,
+            "f_e": 0,
+            "i": 3,
+            "j": 4,
+            "raw": 0
+          }
+        ],
+        "post_u": [
+          3,
+          2,
+          0,
+          -1
+        ],
+        "pre_u": [
+          3,
+          2,
+          0,
+          -1
+        ],
+        "sum_post_u": 4,
+        "sum_pre_u": 4,
+        "tick": 3,
+        "z_check": 4
+      },
+      {
+        "edges": [
+          {
+            "cap": 64,
+            "du": 1,
+            "e_id": 1,
+            "f_e": 0,
+            "i": 1,
+            "j": 2,
+            "raw": 0
+          },
+          {
+            "cap": 64,
+            "du": 2,
+            "e_id": 2,
+            "f_e": 0,
+            "i": 2,
+            "j": 3,
+            "raw": 0
+          },
+          {
+            "cap": 64,
+            "du": 1,
+            "e_id": 3,
+            "f_e": 0,
+            "i": 3,
+            "j": 4,
+            "raw": 0
+          }
+        ],
+        "post_u": [
+          3,
+          2,
+          0,
+          -1
+        ],
+        "pre_u": [
+          3,
+          2,
+          0,
+          -1
+        ],
+        "sum_post_u": 4,
+        "sum_pre_u": 4,
+        "tick": 4,
+        "z_check": 4
+      }
+    ],
+    "manifests": {
+      "LINE_APX_demo_ticks_1_4": {
+        "apx_name": "LINE_APX_demo_ticks_1_4",
+        "manifest_check": 735397692,
+        "profile": "CMP-0",
+        "streams": [
+          {
+            "L_model": 0,
+            "L_residual": 3,
+            "L_total": 3,
+            "description": "post_u delta per node",
+            "params": 0,
+            "scheme": "R",
+            "stream_id": "S1_post_u_deltas"
+          },
+          {
+            "L_model": 0,
+            "L_residual": 3,
+            "L_total": 3,
+            "description": "edge flux per edge",
+            "params": 0,
+            "scheme": "R",
+            "stream_id": "S2_fluxes"
+          },
+          {
+            "L_model": 0,
+            "L_residual": 3,
+            "L_total": 3,
+            "description": "prev chain checksum per tick",
+            "params": 0,
+            "scheme": "R",
+            "stream_id": "S3_prev_chain"
+          }
+        ]
+      }
+    },
+    "p_blocks": [
+      {
+        "C_t": 20987847,
+        "edge_flux_summary": [
+          {
+            "e_id": 1,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "f_e": 0
+          }
+        ],
+        "s_t": 9,
+        "seq": 1,
+        "tick": 1
+      },
+      {
+        "C_t": 356793608,
+        "edge_flux_summary": [
+          {
+            "e_id": 1,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "f_e": 0
+          }
+        ],
+        "s_t": 9,
+        "seq": 2,
+        "tick": 2
+      },
+      {
+        "C_t": 65491504,
+        "edge_flux_summary": [
+          {
+            "e_id": 1,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "f_e": 0
+          }
+        ],
+        "s_t": 9,
+        "seq": 3,
+        "tick": 3
+      },
+      {
+        "C_t": 113355772,
+        "edge_flux_summary": [
+          {
+            "e_id": 1,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "f_e": 0
+          }
+        ],
+        "s_t": 9,
+        "seq": 4,
+        "tick": 4
+      }
+    ],
+    "run_id": "PFNA_DEMO_RUN",
+    "scenes": [
+      {
+        "C_prev": 1234567,
+        "C_t": 20987847,
+        "gid": "LINE4",
+        "ledger_ref": "umx_ledger_1",
+        "manifest_check": 735397692,
+        "meta": {
+          "manifest_ref": "LINE_APX_demo_ticks_1_4",
+          "p_block_ref": "loom_p_block_1"
+        },
+        "nap_envelope_ref": null,
+        "nid": "pfna-demo-node",
+        "post_u": [
+          3,
+          0,
+          0,
+          0
+        ],
+        "pre_u": [
+          3,
+          0,
+          0,
+          0
+        ],
+        "run_id": "PFNA_DEMO_RUN",
+        "tick": 1,
+        "window_id": "LINE_DEMO_W1_ticks_1_4"
+      },
+      {
+        "C_prev": 20987847,
+        "C_t": 356793608,
+        "gid": "LINE4",
+        "ledger_ref": "umx_ledger_2",
+        "manifest_check": 735397692,
+        "meta": {
+          "manifest_ref": "LINE_APX_demo_ticks_1_4",
+          "p_block_ref": "loom_p_block_2",
+          "pfna_refs": [
+            "tick2_adjust"
+          ]
+        },
+        "nap_envelope_ref": null,
+        "nid": "pfna-demo-node",
+        "post_u": [
+          3,
+          2,
+          0,
+          -1
+        ],
+        "pre_u": [
+          3,
+          2,
+          0,
+          -1
+        ],
+        "run_id": "PFNA_DEMO_RUN",
+        "tick": 2,
+        "window_id": "LINE_DEMO_W1_ticks_1_4"
+      },
+      {
+        "C_prev": 356793608,
+        "C_t": 65491504,
+        "gid": "LINE4",
+        "ledger_ref": "umx_ledger_3",
+        "manifest_check": 735397692,
+        "meta": {
+          "manifest_ref": "LINE_APX_demo_ticks_1_4",
+          "p_block_ref": "loom_p_block_3"
+        },
+        "nap_envelope_ref": null,
+        "nid": "pfna-demo-node",
+        "post_u": [
+          3,
+          2,
+          0,
+          -1
+        ],
+        "pre_u": [
+          3,
+          2,
+          0,
+          -1
+        ],
+        "run_id": "PFNA_DEMO_RUN",
+        "tick": 3,
+        "window_id": "LINE_DEMO_W1_ticks_1_4"
+      },
+      {
+        "C_prev": 65491504,
+        "C_t": 113355772,
+        "gid": "LINE4",
+        "ledger_ref": "umx_ledger_4",
+        "manifest_check": 735397692,
+        "meta": {
+          "manifest_ref": "LINE_APX_demo_ticks_1_4",
+          "p_block_ref": "loom_p_block_4"
+        },
+        "nap_envelope_ref": null,
+        "nid": "pfna-demo-node",
+        "post_u": [
+          3,
+          2,
+          0,
+          -1
+        ],
+        "pre_u": [
+          3,
+          2,
+          0,
+          -1
+        ],
+        "run_id": "PFNA_DEMO_RUN",
+        "tick": 4,
+        "window_id": "LINE_DEMO_W1_ticks_1_4"
+      }
+    ],
+    "u_ledger_entries": [
+      {
+        "C_t": 20987847,
+        "apx_manifest_hash": "a31c47d3c16d771421f7bfce66015f3c8218e18dfba78e01a39dc66ef030977b",
+        "codex_library_hash": null,
+        "gid": "LINE4",
+        "loom_block_hash": "f851bb753278f1b9185199cea4bc9ceaa1126ebe16c666f274a7c82018881e33",
+        "manifest_check": 735397692,
+        "meta": {},
+        "nap_envelope_hash": "2c9f45190a32693056e38d4047db83f5314bbf3cb12205440666d3110b413e87",
+        "prev_entry_hash": null,
+        "run_id": "PFNA_DEMO_RUN",
+        "tick": 1,
+        "timestamp_utc": null,
+        "umx_ledger_hash": "4ec45bd7dcaab2674a35f7eb1b61f592e7b395208ad3d9568511128fb3f631d0",
+        "window_id": "LINE_DEMO_W1_ticks_1_4"
+      },
+      {
+        "C_t": 356793608,
+        "apx_manifest_hash": "a31c47d3c16d771421f7bfce66015f3c8218e18dfba78e01a39dc66ef030977b",
+        "codex_library_hash": null,
+        "gid": "LINE4",
+        "loom_block_hash": "dce4b1f9d93e2102fd464a1e879a9a4f880b121ea9781cc0bad8950f293f360f",
+        "manifest_check": 735397692,
+        "meta": {},
+        "nap_envelope_hash": "4881838d884902c73d640301141fef04a1191fea24780112e6065c3a37042158",
+        "prev_entry_hash": "0f54ca238de6b4f3c3b53f9359365fff3fede37e89f8ca51874c99c495d2b02b",
+        "run_id": "PFNA_DEMO_RUN",
+        "tick": 2,
+        "timestamp_utc": null,
+        "umx_ledger_hash": "64d976ee3b817e2ae20b43c877fb804c18985f8e927507ae9f3d687d4a7f436a",
+        "window_id": "LINE_DEMO_W1_ticks_1_4"
+      },
+      {
+        "C_t": 65491504,
+        "apx_manifest_hash": "a31c47d3c16d771421f7bfce66015f3c8218e18dfba78e01a39dc66ef030977b",
+        "codex_library_hash": null,
+        "gid": "LINE4",
+        "loom_block_hash": "6dc16f2d5db72209df2a43768242169ae525ea6712adf8b3e20995ac60abd7e9",
+        "manifest_check": 735397692,
+        "meta": {},
+        "nap_envelope_hash": "8538b9d1201475932d99dce2bb0836232ad7428d053f7b1bd673a22e461acf75",
+        "prev_entry_hash": "ca58de02fab94a997449ccc861f33340669a2cdcdadd8fbf43c8884d1bc5be79",
+        "run_id": "PFNA_DEMO_RUN",
+        "tick": 3,
+        "timestamp_utc": null,
+        "umx_ledger_hash": "cb771f2a8e8b2ee514393fb0c7c92123239d153e66e0f3740d855a3b9877634c",
+        "window_id": "LINE_DEMO_W1_ticks_1_4"
+      },
+      {
+        "C_t": 113355772,
+        "apx_manifest_hash": "a31c47d3c16d771421f7bfce66015f3c8218e18dfba78e01a39dc66ef030977b",
+        "codex_library_hash": null,
+        "gid": "LINE4",
+        "loom_block_hash": "a5c0a8e78d8746f074cccab104af213cf459d0d2b13a3c65601773192597a06c",
+        "manifest_check": 735397692,
+        "meta": {},
+        "nap_envelope_hash": "e61ac2850c386cf6740d7201d43e86581ba93760a5477562257f96df1e3f60e4",
+        "prev_entry_hash": "1e6bce54ca8e95abe718afb17685a97ac16bdadb0cffe4cc4f34a3fef112ca26",
+        "run_id": "PFNA_DEMO_RUN",
+        "tick": 4,
+        "timestamp_utc": null,
+        "umx_ledger_hash": "1b0ad3790194153a8554b7656f031c5fa3f23dc3ffe22ae93120008bcac0d110",
+        "window_id": "LINE_DEMO_W1_ticks_1_4"
+      }
+    ]
+  }
+}

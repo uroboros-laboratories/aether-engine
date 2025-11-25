@@ -1,0 +1,862 @@
+{
+  "config": {
+    "gid": "LINE4",
+    "initial_state": [
+      8,
+      4,
+      0,
+      0
+    ],
+    "nid": "LINE4",
+    "pfna_inputs": [],
+    "press_default_streams": [
+      {
+        "description": "post_u delta per node",
+        "name": "S1_post_u_deltas",
+        "scheme_hint": null,
+        "source": "post_u_deltas"
+      },
+      {
+        "description": "edge flux per edge",
+        "name": "S2_fluxes",
+        "scheme_hint": null,
+        "source": "fluxes"
+      }
+    ],
+    "primary_window_id": "LINE4_ticks_1_6",
+    "run_id": "LINE4_demo",
+    "total_ticks": 6,
+    "window_ids": [
+      "LINE4_ticks_1_6"
+    ]
+  },
+  "lifecycle_envelopes": [
+    {
+      "gid": "LINE4",
+      "layer": "CTRL",
+      "mode": "P",
+      "nid": "LINE4",
+      "payload_ref": 0,
+      "prev_chain": 1234567,
+      "seq": 1,
+      "sig": "",
+      "tick": 1,
+      "v": 1
+    },
+    {
+      "gid": "LINE4",
+      "layer": "CTRL",
+      "mode": "P",
+      "nid": "LINE4",
+      "payload_ref": 286776878,
+      "prev_chain": 759821701,
+      "seq": 7,
+      "sig": "",
+      "tick": 6,
+      "v": 1
+    }
+  ],
+  "tick_result": {
+    "egress_envelopes": [
+      {
+        "gid": "LINE4",
+        "layer": "EGRESS",
+        "mode": "P",
+        "nid": "LINE4",
+        "payload_ref": 286776878,
+        "prev_chain": 759821701,
+        "seq": 8,
+        "sig": "",
+        "tick": 6,
+        "v": 1
+      }
+    ],
+    "envelopes": [
+      {
+        "gid": "LINE4",
+        "layer": "DATA",
+        "mode": "P",
+        "nid": "LINE4",
+        "payload_ref": 286776878,
+        "prev_chain": 1234567,
+        "seq": 1,
+        "sig": "",
+        "tick": 1,
+        "v": 1
+      },
+      {
+        "gid": "LINE4",
+        "layer": "DATA",
+        "mode": "P",
+        "nid": "LINE4",
+        "payload_ref": 286776878,
+        "prev_chain": 20987847,
+        "seq": 2,
+        "sig": "",
+        "tick": 2,
+        "v": 1
+      },
+      {
+        "gid": "LINE4",
+        "layer": "DATA",
+        "mode": "P",
+        "nid": "LINE4",
+        "payload_ref": 286776878,
+        "prev_chain": 356793608,
+        "seq": 3,
+        "sig": "",
+        "tick": 3,
+        "v": 1
+      },
+      {
+        "gid": "LINE4",
+        "layer": "DATA",
+        "mode": "P",
+        "nid": "LINE4",
+        "payload_ref": 286776878,
+        "prev_chain": 65491504,
+        "seq": 4,
+        "sig": "",
+        "tick": 4,
+        "v": 1
+      },
+      {
+        "gid": "LINE4",
+        "layer": "DATA",
+        "mode": "P",
+        "nid": "LINE4",
+        "payload_ref": 286776878,
+        "prev_chain": 113355772,
+        "seq": 5,
+        "sig": "",
+        "tick": 5,
+        "v": 1
+      },
+      {
+        "gid": "LINE4",
+        "layer": "DATA",
+        "mode": "P",
+        "nid": "LINE4",
+        "payload_ref": 286776878,
+        "prev_chain": 927048329,
+        "seq": 6,
+        "sig": "",
+        "tick": 6,
+        "v": 1
+      }
+    ],
+    "i_blocks": [],
+    "ingress_envelopes": [],
+    "ledgers": [
+      {
+        "edges": [
+          {
+            "cap": 64,
+            "du": 4,
+            "e_id": 1,
+            "f_e": 0,
+            "i": 1,
+            "j": 2,
+            "raw": 0
+          },
+          {
+            "cap": 64,
+            "du": 4,
+            "e_id": 2,
+            "f_e": 0,
+            "i": 2,
+            "j": 3,
+            "raw": 0
+          },
+          {
+            "cap": 64,
+            "du": 0,
+            "e_id": 3,
+            "f_e": 0,
+            "i": 3,
+            "j": 4,
+            "raw": 0
+          }
+        ],
+        "post_u": [
+          8,
+          4,
+          0,
+          0
+        ],
+        "pre_u": [
+          8,
+          4,
+          0,
+          0
+        ],
+        "sum_post_u": 12,
+        "sum_pre_u": 12,
+        "tick": 1,
+        "z_check": 12
+      },
+      {
+        "edges": [
+          {
+            "cap": 64,
+            "du": 4,
+            "e_id": 1,
+            "f_e": 0,
+            "i": 1,
+            "j": 2,
+            "raw": 0
+          },
+          {
+            "cap": 64,
+            "du": 4,
+            "e_id": 2,
+            "f_e": 0,
+            "i": 2,
+            "j": 3,
+            "raw": 0
+          },
+          {
+            "cap": 64,
+            "du": 0,
+            "e_id": 3,
+            "f_e": 0,
+            "i": 3,
+            "j": 4,
+            "raw": 0
+          }
+        ],
+        "post_u": [
+          8,
+          4,
+          0,
+          0
+        ],
+        "pre_u": [
+          8,
+          4,
+          0,
+          0
+        ],
+        "sum_post_u": 12,
+        "sum_pre_u": 12,
+        "tick": 2,
+        "z_check": 12
+      },
+      {
+        "edges": [
+          {
+            "cap": 64,
+            "du": 4,
+            "e_id": 1,
+            "f_e": 0,
+            "i": 1,
+            "j": 2,
+            "raw": 0
+          },
+          {
+            "cap": 64,
+            "du": 4,
+            "e_id": 2,
+            "f_e": 0,
+            "i": 2,
+            "j": 3,
+            "raw": 0
+          },
+          {
+            "cap": 64,
+            "du": 0,
+            "e_id": 3,
+            "f_e": 0,
+            "i": 3,
+            "j": 4,
+            "raw": 0
+          }
+        ],
+        "post_u": [
+          8,
+          4,
+          0,
+          0
+        ],
+        "pre_u": [
+          8,
+          4,
+          0,
+          0
+        ],
+        "sum_post_u": 12,
+        "sum_pre_u": 12,
+        "tick": 3,
+        "z_check": 12
+      },
+      {
+        "edges": [
+          {
+            "cap": 64,
+            "du": 4,
+            "e_id": 1,
+            "f_e": 0,
+            "i": 1,
+            "j": 2,
+            "raw": 0
+          },
+          {
+            "cap": 64,
+            "du": 4,
+            "e_id": 2,
+            "f_e": 0,
+            "i": 2,
+            "j": 3,
+            "raw": 0
+          },
+          {
+            "cap": 64,
+            "du": 0,
+            "e_id": 3,
+            "f_e": 0,
+            "i": 3,
+            "j": 4,
+            "raw": 0
+          }
+        ],
+        "post_u": [
+          8,
+          4,
+          0,
+          0
+        ],
+        "pre_u": [
+          8,
+          4,
+          0,
+          0
+        ],
+        "sum_post_u": 12,
+        "sum_pre_u": 12,
+        "tick": 4,
+        "z_check": 12
+      },
+      {
+        "edges": [
+          {
+            "cap": 64,
+            "du": 4,
+            "e_id": 1,
+            "f_e": 0,
+            "i": 1,
+            "j": 2,
+            "raw": 0
+          },
+          {
+            "cap": 64,
+            "du": 4,
+            "e_id": 2,
+            "f_e": 0,
+            "i": 2,
+            "j": 3,
+            "raw": 0
+          },
+          {
+            "cap": 64,
+            "du": 0,
+            "e_id": 3,
+            "f_e": 0,
+            "i": 3,
+            "j": 4,
+            "raw": 0
+          }
+        ],
+        "post_u": [
+          8,
+          4,
+          0,
+          0
+        ],
+        "pre_u": [
+          8,
+          4,
+          0,
+          0
+        ],
+        "sum_post_u": 12,
+        "sum_pre_u": 12,
+        "tick": 5,
+        "z_check": 12
+      },
+      {
+        "edges": [
+          {
+            "cap": 64,
+            "du": 4,
+            "e_id": 1,
+            "f_e": 0,
+            "i": 1,
+            "j": 2,
+            "raw": 0
+          },
+          {
+            "cap": 64,
+            "du": 4,
+            "e_id": 2,
+            "f_e": 0,
+            "i": 2,
+            "j": 3,
+            "raw": 0
+          },
+          {
+            "cap": 64,
+            "du": 0,
+            "e_id": 3,
+            "f_e": 0,
+            "i": 3,
+            "j": 4,
+            "raw": 0
+          }
+        ],
+        "post_u": [
+          8,
+          4,
+          0,
+          0
+        ],
+        "pre_u": [
+          8,
+          4,
+          0,
+          0
+        ],
+        "sum_post_u": 12,
+        "sum_pre_u": 12,
+        "tick": 6,
+        "z_check": 12
+      }
+    ],
+    "manifests": {
+      "LINE4_APX_full_window": {
+        "apx_name": "LINE4_APX_full_window",
+        "manifest_check": 286776878,
+        "profile": "CMP-1",
+        "streams": [
+          {
+            "L_model": 0,
+            "L_residual": 5,
+            "L_total": 5,
+            "description": "S1_post_u_deltas",
+            "params": 0,
+            "scheme": "R",
+            "stream_id": "S1_post_u_deltas"
+          },
+          {
+            "L_model": 0,
+            "L_residual": 5,
+            "L_total": 5,
+            "description": "S2_fluxes",
+            "params": 0,
+            "scheme": "R",
+            "stream_id": "S2_fluxes"
+          },
+          {
+            "L_model": 0,
+            "L_residual": 5,
+            "L_total": 5,
+            "description": "Loom chain between ticks",
+            "params": 0,
+            "scheme": "R",
+            "stream_id": "S3_prev_chain"
+          }
+        ]
+      }
+    },
+    "p_blocks": [
+      {
+        "C_t": 20987847,
+        "edge_flux_summary": [
+          {
+            "e_id": 1,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "f_e": 0
+          }
+        ],
+        "s_t": 9,
+        "seq": 1,
+        "tick": 1
+      },
+      {
+        "C_t": 356793608,
+        "edge_flux_summary": [
+          {
+            "e_id": 1,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "f_e": 0
+          }
+        ],
+        "s_t": 9,
+        "seq": 2,
+        "tick": 2
+      },
+      {
+        "C_t": 65491504,
+        "edge_flux_summary": [
+          {
+            "e_id": 1,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "f_e": 0
+          }
+        ],
+        "s_t": 9,
+        "seq": 3,
+        "tick": 3
+      },
+      {
+        "C_t": 113355772,
+        "edge_flux_summary": [
+          {
+            "e_id": 1,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "f_e": 0
+          }
+        ],
+        "s_t": 9,
+        "seq": 4,
+        "tick": 4
+      },
+      {
+        "C_t": 927048329,
+        "edge_flux_summary": [
+          {
+            "e_id": 1,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "f_e": 0
+          }
+        ],
+        "s_t": 9,
+        "seq": 5,
+        "tick": 5
+      },
+      {
+        "C_t": 759821701,
+        "edge_flux_summary": [
+          {
+            "e_id": 1,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "f_e": 0
+          }
+        ],
+        "s_t": 9,
+        "seq": 6,
+        "tick": 6
+      }
+    ],
+    "run_id": "LINE4_demo",
+    "scenes": [
+      {
+        "C_prev": 1234567,
+        "C_t": 20987847,
+        "gid": "LINE4",
+        "ledger_ref": "umx_ledger_1",
+        "manifest_check": 286776878,
+        "meta": {
+          "manifest_ref": "LINE4_APX_full_window",
+          "p_block_ref": "loom_p_block_1"
+        },
+        "nap_envelope_ref": null,
+        "nid": "LINE4",
+        "post_u": [
+          8,
+          4,
+          0,
+          0
+        ],
+        "pre_u": [
+          8,
+          4,
+          0,
+          0
+        ],
+        "run_id": "LINE4_demo",
+        "tick": 1,
+        "window_id": "LINE4_ticks_1_6"
+      },
+      {
+        "C_prev": 20987847,
+        "C_t": 356793608,
+        "gid": "LINE4",
+        "ledger_ref": "umx_ledger_2",
+        "manifest_check": 286776878,
+        "meta": {
+          "manifest_ref": "LINE4_APX_full_window",
+          "p_block_ref": "loom_p_block_2"
+        },
+        "nap_envelope_ref": null,
+        "nid": "LINE4",
+        "post_u": [
+          8,
+          4,
+          0,
+          0
+        ],
+        "pre_u": [
+          8,
+          4,
+          0,
+          0
+        ],
+        "run_id": "LINE4_demo",
+        "tick": 2,
+        "window_id": "LINE4_ticks_1_6"
+      },
+      {
+        "C_prev": 356793608,
+        "C_t": 65491504,
+        "gid": "LINE4",
+        "ledger_ref": "umx_ledger_3",
+        "manifest_check": 286776878,
+        "meta": {
+          "manifest_ref": "LINE4_APX_full_window",
+          "p_block_ref": "loom_p_block_3"
+        },
+        "nap_envelope_ref": null,
+        "nid": "LINE4",
+        "post_u": [
+          8,
+          4,
+          0,
+          0
+        ],
+        "pre_u": [
+          8,
+          4,
+          0,
+          0
+        ],
+        "run_id": "LINE4_demo",
+        "tick": 3,
+        "window_id": "LINE4_ticks_1_6"
+      },
+      {
+        "C_prev": 65491504,
+        "C_t": 113355772,
+        "gid": "LINE4",
+        "ledger_ref": "umx_ledger_4",
+        "manifest_check": 286776878,
+        "meta": {
+          "manifest_ref": "LINE4_APX_full_window",
+          "p_block_ref": "loom_p_block_4"
+        },
+        "nap_envelope_ref": null,
+        "nid": "LINE4",
+        "post_u": [
+          8,
+          4,
+          0,
+          0
+        ],
+        "pre_u": [
+          8,
+          4,
+          0,
+          0
+        ],
+        "run_id": "LINE4_demo",
+        "tick": 4,
+        "window_id": "LINE4_ticks_1_6"
+      },
+      {
+        "C_prev": 113355772,
+        "C_t": 927048329,
+        "gid": "LINE4",
+        "ledger_ref": "umx_ledger_5",
+        "manifest_check": 286776878,
+        "meta": {
+          "manifest_ref": "LINE4_APX_full_window",
+          "p_block_ref": "loom_p_block_5"
+        },
+        "nap_envelope_ref": null,
+        "nid": "LINE4",
+        "post_u": [
+          8,
+          4,
+          0,
+          0
+        ],
+        "pre_u": [
+          8,
+          4,
+          0,
+          0
+        ],
+        "run_id": "LINE4_demo",
+        "tick": 5,
+        "window_id": "LINE4_ticks_1_6"
+      },
+      {
+        "C_prev": 927048329,
+        "C_t": 759821701,
+        "gid": "LINE4",
+        "ledger_ref": "umx_ledger_6",
+        "manifest_check": 286776878,
+        "meta": {
+          "manifest_ref": "LINE4_APX_full_window",
+          "p_block_ref": "loom_p_block_6"
+        },
+        "nap_envelope_ref": null,
+        "nid": "LINE4",
+        "post_u": [
+          8,
+          4,
+          0,
+          0
+        ],
+        "pre_u": [
+          8,
+          4,
+          0,
+          0
+        ],
+        "run_id": "LINE4_demo",
+        "tick": 6,
+        "window_id": "LINE4_ticks_1_6"
+      }
+    ],
+    "u_ledger_entries": [
+      {
+        "C_t": 20987847,
+        "apx_manifest_hash": "104a3a341a7cedd580f4ce15f3913b63b38c58b976a0269a2293498908b1f796",
+        "codex_library_hash": null,
+        "gid": "LINE4",
+        "loom_block_hash": "f851bb753278f1b9185199cea4bc9ceaa1126ebe16c666f274a7c82018881e33",
+        "manifest_check": 286776878,
+        "meta": {},
+        "nap_envelope_hash": "11d5444657d2ce1db305570001dfd62151cf0353866f260fd3e7655a21cbf567",
+        "prev_entry_hash": null,
+        "run_id": "LINE4_demo",
+        "tick": 1,
+        "timestamp_utc": null,
+        "umx_ledger_hash": "32a5d1316c3bbcf5b1d4621c0900789c2887e9255128e6e1cc28ac42a92bc7f8",
+        "window_id": "LINE4_ticks_1_6"
+      },
+      {
+        "C_t": 356793608,
+        "apx_manifest_hash": "104a3a341a7cedd580f4ce15f3913b63b38c58b976a0269a2293498908b1f796",
+        "codex_library_hash": null,
+        "gid": "LINE4",
+        "loom_block_hash": "dce4b1f9d93e2102fd464a1e879a9a4f880b121ea9781cc0bad8950f293f360f",
+        "manifest_check": 286776878,
+        "meta": {},
+        "nap_envelope_hash": "d3af730078907c848f9ffef46ecf2ba11b68579d86347cb42da5fd16822797bc",
+        "prev_entry_hash": "3324119947d880c4196c7d17b5f2cb08ab9e231822aff5110520e2a25a36b51d",
+        "run_id": "LINE4_demo",
+        "tick": 2,
+        "timestamp_utc": null,
+        "umx_ledger_hash": "956205532b3001074cecd52405c0c0ec9e5fd1a2c85f20fd1b31b90c9241522e",
+        "window_id": "LINE4_ticks_1_6"
+      },
+      {
+        "C_t": 65491504,
+        "apx_manifest_hash": "104a3a341a7cedd580f4ce15f3913b63b38c58b976a0269a2293498908b1f796",
+        "codex_library_hash": null,
+        "gid": "LINE4",
+        "loom_block_hash": "6dc16f2d5db72209df2a43768242169ae525ea6712adf8b3e20995ac60abd7e9",
+        "manifest_check": 286776878,
+        "meta": {},
+        "nap_envelope_hash": "9b6727e2a14b4b19db40c60440949e72d40a87a84c0577d51dd366e15e4811fe",
+        "prev_entry_hash": "5b467dbdbf263f9a73e7f97f7b9d74aab1397a6d9835fc0bf251b1e2ab03d098",
+        "run_id": "LINE4_demo",
+        "tick": 3,
+        "timestamp_utc": null,
+        "umx_ledger_hash": "6e553679d392d2f9a104ed87776647128a6ea6634057e5a7792d94702b2a3859",
+        "window_id": "LINE4_ticks_1_6"
+      },
+      {
+        "C_t": 113355772,
+        "apx_manifest_hash": "104a3a341a7cedd580f4ce15f3913b63b38c58b976a0269a2293498908b1f796",
+        "codex_library_hash": null,
+        "gid": "LINE4",
+        "loom_block_hash": "a5c0a8e78d8746f074cccab104af213cf459d0d2b13a3c65601773192597a06c",
+        "manifest_check": 286776878,
+        "meta": {},
+        "nap_envelope_hash": "d97c65b4bf53ee7c68a4c0fd23bf946c4d1b54d94e5e9e17689afafc4059e6ca",
+        "prev_entry_hash": "eb36d7227f236b949757a33ef1780f9cd9f9f9393e3ab77412640990202fa563",
+        "run_id": "LINE4_demo",
+        "tick": 4,
+        "timestamp_utc": null,
+        "umx_ledger_hash": "89e4f5e44f880c3d7bdc0f8dcfa94d7e2f37c88e15e53edea9a47eaa2d714f91",
+        "window_id": "LINE4_ticks_1_6"
+      },
+      {
+        "C_t": 927048329,
+        "apx_manifest_hash": "104a3a341a7cedd580f4ce15f3913b63b38c58b976a0269a2293498908b1f796",
+        "codex_library_hash": null,
+        "gid": "LINE4",
+        "loom_block_hash": "535d0ae44a36657f7fbbee5520033907b8b21d3a169241d93473eb8e5090715b",
+        "manifest_check": 286776878,
+        "meta": {},
+        "nap_envelope_hash": "cfa5ebffeebce85616d249963990a6fa0de0aed266b869a63942e2059532a819",
+        "prev_entry_hash": "484aebeefac964b68c7c0a1e45e35294e17560ffbaa47e0be8e58945b193aa1a",
+        "run_id": "LINE4_demo",
+        "tick": 5,
+        "timestamp_utc": null,
+        "umx_ledger_hash": "47c9beb783f39c4cbd724b0e2e85e01b2aa4135c5329d51c7bd0f46b36528977",
+        "window_id": "LINE4_ticks_1_6"
+      },
+      {
+        "C_t": 759821701,
+        "apx_manifest_hash": "104a3a341a7cedd580f4ce15f3913b63b38c58b976a0269a2293498908b1f796",
+        "codex_library_hash": null,
+        "gid": "LINE4",
+        "loom_block_hash": "10447bdc0235ed3497398167e24a47f1945e461c291b6c77fa13f385756e8a1a",
+        "manifest_check": 286776878,
+        "meta": {},
+        "nap_envelope_hash": "301069781763524d73d46cc6cfaab2c9596556ae37df565ed0711c04e7272922",
+        "prev_entry_hash": "deafbc8d8b0ccb796b9e9017dd646524e84a0f82096e7158d4f0ae9c2619fc90",
+        "run_id": "LINE4_demo",
+        "tick": 6,
+        "timestamp_utc": null,
+        "umx_ledger_hash": "dc95e3857e6fc56ec7ec9903c888979557bcb74e94d1e19134c9f805961c61ec",
+        "window_id": "LINE4_ticks_1_6"
+      }
+    ]
+  }
+}

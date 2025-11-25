@@ -354,6 +354,17 @@ Scale the regression harness beyond GF-01 and formalise CI expectations:
   - CI fails on any test failure,
   - Flaky tests are identified and stabilised.
 
+**Implementation notes (Phase 3):**
+
+- GitHub Actions workflow: `.github/workflows/ci.yml`.
+- Runner: `ubuntu-latest` with Python 3.11.
+- Commands:
+  - `python -m pip install --upgrade pip`
+  - `python -m pip install pytest`
+  - `PYTHONPATH=src python -m pytest` (covers unit + integration + snapshot regressions for GF-01, line, ring, AEON/APXi demos).
+- Triggered on every push and pull request; fails on any test or regression difference.
+- Contributor guidance: documented in `docs/ops/ci.md`.
+
 **Acceptance Criteria:**
 
 - [ ] CI reliably enforces that main branch is always green for GF-01 and other reference scenarios.

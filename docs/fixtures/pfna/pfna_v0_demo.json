@@ -1,0 +1,21 @@
+{
+  "v": 0,
+  "pfna_id": "PFNA_DEMO_BUNDLE",
+  "gid": "LINE4",
+  "run_id": "PFNA_DEMO_RUN",
+  "nid": "pfna-demo-source",
+  "entries": [
+    {
+      "pfna_id": "init_boost",
+      "tick": 0,
+      "values": [1, -1, 0, 0],
+      "description": "adjust initial state before tick 1"
+    },
+    {
+      "pfna_id": "tick2_adjust",
+      "tick": 2,
+      "values": [0, 2, 0, -1],
+      "description": "modify nodes mid-run"
+    }
+  ]
+}

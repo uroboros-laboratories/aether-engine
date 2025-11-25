@@ -9,13 +9,14 @@ import json
 from typing import Dict, List
 
 from core.tick_loop import GF01RunResult
-from gate.gate import NAPEnvelopeV1, SceneFrameV1
+from gate.gate import NAPEnvelopeV1, SceneFrameV1, SessionRunResult
 from loom.loom import (
     FluxSummaryV1,
     LoomIBlockV1,
     LoomPBlockV1,
     TopologyEdgeSnapshotV1,
 )
+from press.apxi import APXiViewV1
 from press.press import APXManifestV1, APXStreamV1
 from uledger.entry import ULedgerEntryV1
 from umx.tick_ledger import EdgeFluxV1, UMXTickLedgerV1
@@ -102,12 +103,39 @@ def _serialize_apx_stream(stream: APXStreamV1) -> Dict[str, object]:
 
 
 def serialize_apx_manifest(manifest: APXManifestV1) -> Dict[str, object]:
-    return {
+    payload = {
         "apx_name": manifest.apx_name,
         "profile": manifest.profile,
         "manifest_check": manifest.manifest_check,
         "streams": [_serialize_apx_stream(stream) for stream in manifest.streams],
     }
+    if manifest.apxi_view_ref is not None:
+        payload["apxi_view_ref"] = manifest.apxi_view_ref
+    return payload
+
+
+def serialize_apxi_view(view: APXiViewV1) -> Dict[str, object]:
+    payload: Dict[str, object] = {
+        "apx_name": view.apx_name,
+        "window_id": view.window_id,
+        "aeon_window_id": view.aeon_window_id,
+        "residual_scheme": view.residual_scheme,
+        "descriptors_by_stream": {},
+    }
+
+    for stream_name, breakdowns in sorted(view.descriptors_by_stream.items()):
+        payload["descriptors_by_stream"][stream_name] = [
+            {
+                "descriptor": breakdown.descriptor.to_dict(),
+                "residual_scheme": breakdown.residual_scheme,
+                "L_model": breakdown.L_model,
+                "L_residual": breakdown.L_residual,
+                "L_total": breakdown.L_total,
+            }
+            for breakdown in breakdowns
+        ]
+
+    return payload
 
 
 def serialize_scene_frame(scene: SceneFrameV1) -> Dict[str, object]:
@@ -162,8 +190,26 @@ def serialize_uledger_entry(entry: ULedgerEntryV1) -> Dict[str, object]:
     }
 
 
-def serialize_gf01_run(result: GF01RunResult) -> Dict[str, object]:
+def _serialize_pfna_input(config_entry: object) -> Dict[str, object]:
+    from gate.gate import PFNAInputV0
+
+    pfna = config_entry
+    if not isinstance(pfna, PFNAInputV0):  # pragma: no cover - defensive
+        raise TypeError("serialize_pfna_input expects PFNAInputV0")
+
     return {
+        "pfna_id": pfna.pfna_id,
+        "gid": pfna.gid,
+        "run_id": pfna.run_id,
+        "tick": pfna.tick,
+        "nid": pfna.nid,
+        "values": list(pfna.values),
+        **({"description": pfna.description} if pfna.description else {}),
+    }
+
+
+def serialize_gf01_run(result: GF01RunResult) -> Dict[str, object]:
+    payload: Dict[str, object] = {
         "run_id": result.run_id,
         "ledgers": [serialize_umx_tick_ledger(ledger) for ledger in result.ledgers],
         "p_blocks": [serialize_loom_p_block(block) for block in result.p_blocks],
@@ -176,6 +222,64 @@ def serialize_gf01_run(result: GF01RunResult) -> Dict[str, object]:
         "envelopes": [serialize_nap_envelope(env) for env in result.envelopes],
         "u_ledger_entries": [serialize_uledger_entry(entry) for entry in result.u_ledger_entries],
     }
+
+    if result.apxi_views:
+        payload["apxi_views"] = {
+            name: serialize_apxi_view(result.apxi_views[name])
+            for name in sorted(result.apxi_views.keys())
+        }
+
+    return payload
+
+
+def serialize_session_run(result: SessionRunResult) -> Dict[str, object]:
+    """Canonical serialisation for Gate/TBP session runs with PFNA and NAP layers."""
+
+    tick_payload = serialize_gf01_run(result.tick_result)
+    tick_payload["ingress_envelopes"] = [
+        serialize_nap_envelope(env) for env in result.tick_result.ingress_envelopes
+    ]
+    tick_payload["egress_envelopes"] = [
+        serialize_nap_envelope(env) for env in result.tick_result.egress_envelopes
+    ]
+
+    config = result.config
+    return {
+        "config": {
+            "run_id": config.run_id,
+            "gid": config.topo.gid,
+            "nid": config.nid,
+            "total_ticks": config.total_ticks,
+            "primary_window_id": config.primary_window_id,
+            "window_ids": sorted(spec.window_id for spec in config.window_specs),
+            "press_default_streams": [
+                {
+                    "name": stream.name,
+                    "source": stream.source,
+                    "scheme_hint": stream.scheme_hint,
+                    "description": stream.description,
+                }
+                for stream in config.press_default_streams
+            ],
+            "pfna_inputs": [
+                _serialize_pfna_input(pfna) for pfna in sorted(config.pfna_inputs, key=lambda p: (p.tick, p.pfna_id))
+            ],
+            "initial_state": list(config.initial_state),
+        },
+        "lifecycle_envelopes": [serialize_nap_envelope(env) for env in result.lifecycle_envelopes],
+        "tick_result": tick_payload,
+        **(
+            {"metrics": result.metrics.to_dict()}
+            if result.metrics is not None
+            else {}
+        ),
+    }
+
+
+def dumps_session_run(result: SessionRunResult) -> str:
+    """Return canonical JSON string for a Gate/TBP session run."""
+
+    return json.dumps(serialize_session_run(result), separators=(",", ":"), sort_keys=True)
 
 
 def dumps_gf01_run(result: GF01RunResult) -> str:

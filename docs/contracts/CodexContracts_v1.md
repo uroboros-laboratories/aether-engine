@@ -9,6 +9,10 @@ For the initial implementation phases, we define **skeleton contracts**:
 - `CodexLibraryEntry_v1` — describes a learned motif or pattern.
 - `CodexProposal_v1` — describes a proposed placement or structural change.
 
+Phase 3 extends these skeletons so Codex can **ingest AEON/APXi artefacts** in an
+observer-only fashion. APXi descriptors and AEON windows are made visible to
+Codex for motif learning while keeping engine behaviour unchanged.
+
 These contracts are designed to be:
 
 - Simple enough for early “observer-only” implementations,
@@ -103,6 +107,29 @@ Example (very rough, CMP-0 placeholder):
   "meta": {}
 }
 ```
+
+### APXi descriptor motifs (Phase 3 observer-only)
+
+When APXi views are ingested, Codex may emit library entries with a
+`pattern_descriptor` of type `apxi_descriptor_v1`:
+
+```jsonc
+{
+  "type": "apxi_descriptor_v1",
+  "descriptor": { /* APXiDescriptor_v1.to_dict() */ },
+  "residual_scheme": "R",
+  "stream_id": "S1_post_u_deltas",
+  "apx_name": "LINE4_APX_W1_T1_6",
+  "aeon_window_id": "AEON_LINE4_W_all"
+}
+```
+
+`mdl_stats` for these entries mirror the APXi view breakdown:
+
+- `L_self` ← descriptor model cost,
+- `L_usage` ← residual cost for the view,
+- `L_total` ← `L_self + L_usage`,
+- `delta_vs_baseline` ← deterministic delta vs no descriptor (negative residuals).
 
 ---
 
