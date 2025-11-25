@@ -70,10 +70,42 @@ class LoomIBlockV1:
 
 
 def compute_s_t(ledger: UMXTickLedgerV1, profile: ProfileCMP0V1) -> int:
-    """Compute CMP-0 s_t; GF-01 uses the fixed constant."""
+    """Compute CMP-0 s_t using the profile's configured rule.
 
-    _ = ledger  # placeholder for future derived calculations
-    return profile.s_t_rule.get("gf01_constant", 9)
+    Supported rule modes:
+    - ``constant`` (default): use ``value`` (falls back to ``gf01_constant`` or 9).
+    - ``sum_abs_flux``: derive ``s_t`` from the absolute flux magnitudes with optional
+      ``offset`` and ``scale`` multipliers, and an optional ``max_value`` clamp.
+    """
+
+    rule = profile.s_t_rule or {}
+    mode = rule.get("mode", "constant")
+
+    if mode == "constant":
+        value = rule.get("value", rule.get("gf01_constant", 9))
+        if not isinstance(value, int):
+            raise ValueError("constant s_t value must be an integer")
+        return value
+
+    if mode == "sum_abs_flux":
+        offset = rule.get("offset", 0)
+        scale = rule.get("scale", 1)
+        max_value = rule.get("max_value")
+
+        if not isinstance(offset, int) or not isinstance(scale, int):
+            raise ValueError("sum_abs_flux offset and scale must be integers")
+
+        total_abs_flux = sum(abs(edge.f_e) for edge in ledger.edges)
+        value = offset + scale * total_abs_flux
+
+        if max_value is not None:
+            if not isinstance(max_value, int):
+                raise ValueError("max_value must be an integer when provided")
+            value = min(value, max_value)
+
+        return value
+
+    raise ValueError(f"Unsupported s_t rule mode: {mode}")
 
 
 def compute_chain_value(C_prev: int, s_t: int, seq: int, profile: ProfileCMP0V1) -> int:
@@ -107,6 +139,8 @@ def step(
     seq: int,
     topo: TopologyProfileV1,
     profile: ProfileCMP0V1,
+    W: Optional[int] = None,
+    s_t: Optional[int] = None,
 ) -> Tuple[LoomPBlockV1, int, Optional[LoomIBlockV1]]:
     """Process one tick through the Loom chain.
 
@@ -114,7 +148,8 @@ def step(
     an I-block when the tick hits the configured window spacing.
     """
 
-    s_t = compute_s_t(ledger, profile)
+    W = profile.I_block_spacing_W if W is None else W
+    s_t = compute_s_t(ledger, profile) if s_t is None else s_t
     C_t = compute_chain_value(C_prev, s_t, seq, profile)
     p_block = LoomPBlockV1(
         tick=ledger.tick,
@@ -125,10 +160,10 @@ def step(
     )
 
     i_block: Optional[LoomIBlockV1] = None
-    if ledger.tick % profile.I_block_spacing_W == 0:
+    if ledger.tick % W == 0:
         i_block = LoomIBlockV1(
             tick=ledger.tick,
-            W=profile.I_block_spacing_W,
+            W=W,
             C_t=C_t,
             profile_version=profile.name,
             post_u=list(ledger.post_u),

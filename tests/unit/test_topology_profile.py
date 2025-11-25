@@ -6,6 +6,8 @@ from umx import (
     TopologyProfileV1,
     gf01_profile_cmp0,
     gf01_topology_profile,
+    load_topology_profile,
+    topology_profile_from_dict,
 )
 
 
@@ -49,6 +51,89 @@ def test_topology_invariants():
         SC=32,
     )
     assert topo.N == 2
+
+
+def test_load_gf01_topology_from_fixture():
+    topo = load_topology_profile("docs/fixtures/topologies/gf01_topology_profile.json")
+
+    assert topo == gf01_topology_profile()
+
+
+def test_load_additional_topologies():
+    line_topology = load_topology_profile("docs/fixtures/topologies/line_4_topology_profile.json")
+    assert line_topology.N == 4
+    assert [edge.e_id for edge in line_topology.edges] == [1, 2, 3]
+    assert line_topology.meta.get("description") == "Four-node line topology"
+
+    ring_topology = load_topology_profile("docs/fixtures/topologies/ring_5_topology_profile.json")
+    assert ring_topology.N == 5
+    assert ring_topology.edges[0].SC == ring_topology.SC
+    assert ring_topology.edges[-1].j == 5
+
+    star_topology = load_topology_profile("docs/fixtures/topologies/star_5_topology_profile.json")
+    assert star_topology.N == 5
+    assert star_topology.edges[0].i == 1
+    assert all(edge.i == 1 for edge in star_topology.edges)
+
+
+def test_rejects_invalid_profiles():
+    # Non-contiguous nodes
+    invalid_nodes = {
+        "gid": "TEST",
+        "profile": "CMP-0",
+        "N": 3,
+        "nodes": [
+            {"node_id": 1},
+            {"node_id": 3},
+        ],
+        "edges": [],
+        "SC": 8,
+    }
+    try:
+        topology_profile_from_dict(invalid_nodes)
+        assert False, "Expected ValueError for missing node 2"
+    except ValueError as exc:
+        assert "Nodes must be contiguous" in str(exc)
+
+    # Edge references out of range
+    invalid_edges = {
+        "gid": "TEST",
+        "profile": "CMP-0",
+        "N": 2,
+        "nodes": [
+            {"node_id": 1},
+            {"node_id": 2},
+        ],
+        "edges": [
+            {"e_id": 1, "i": 1, "j": 3, "k": 1, "cap": 10, "SC": 8, "c": 0},
+        ],
+        "SC": 8,
+    }
+    try:
+        topology_profile_from_dict(invalid_edges)
+        assert False, "Expected ValueError for j out of range"
+    except ValueError as exc:
+        assert "Edge endpoints" in str(exc)
+
+    # Non-integer k
+    invalid_k = {
+        "gid": "TEST",
+        "profile": "CMP-0",
+        "N": 2,
+        "nodes": [
+            {"node_id": 1},
+            {"node_id": 2},
+        ],
+        "edges": [
+            {"e_id": 1, "i": 1, "j": 2, "k": 1.5, "cap": 10, "SC": 8, "c": 0},
+        ],
+        "SC": 8,
+    }
+    try:
+        topology_profile_from_dict(invalid_k)
+        assert False, "Expected ValueError for non-integer k"
+    except ValueError as exc:
+        assert "edge.k must be an integer" in str(exc)
 
 
 def test_gf01_profile_constants():

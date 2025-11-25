@@ -1,0 +1,28 @@
+{
+  "gid": "GF01",
+  "profile": "CMP-0",
+  "N": 6,
+  "nodes": [
+    { "node_id": 1, "label": "n1", "attrs": {} },
+    { "node_id": 2, "label": "n2", "attrs": {} },
+    { "node_id": 3, "label": "n3", "attrs": {} },
+    { "node_id": 4, "label": "n4", "attrs": {} },
+    { "node_id": 5, "label": "n5", "attrs": {} },
+    { "node_id": 6, "label": "n6", "attrs": {} }
+  ],
+  "edges": [
+    { "e_id": 1, "i": 1, "j": 2, "k": 1, "cap": 2147483647, "SC": 32, "c": 0, "attrs": {} },
+    { "e_id": 2, "i": 1, "j": 4, "k": 2, "cap": 2147483647, "SC": 32, "c": 0, "attrs": {} },
+    { "e_id": 3, "i": 1, "j": 6, "k": 1, "cap": 2147483647, "SC": 32, "c": 0, "attrs": {} },
+    { "e_id": 4, "i": 2, "j": 3, "k": 1, "cap": 2147483647, "SC": 32, "c": 0, "attrs": {} },
+    { "e_id": 5, "i": 2, "j": 5, "k": 2, "cap": 2147483647, "SC": 32, "c": 0, "attrs": {} },
+    { "e_id": 6, "i": 3, "j": 4, "k": 1, "cap": 2147483647, "SC": 32, "c": 0, "attrs": {} },
+    { "e_id": 7, "i": 4, "j": 5, "k": 1, "cap": 2147483647, "SC": 32, "c": 0, "attrs": {} },
+    { "e_id": 8, "i": 5, "j": 6, "k": 1, "cap": 2147483647, "SC": 32, "c": 0, "attrs": {} }
+  ],
+  "SC": 32,
+  "meta": {
+    "description": "GF-01 CMP-0 baseline topology",
+    "source": "docs/fixtures/gf01/GF01_Ticks_1_8_Worked_Examples.pdf"
+  }
+}

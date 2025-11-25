@@ -17,6 +17,7 @@ from loom.loom import (
     TopologyEdgeSnapshotV1,
 )
 from press.press import APXManifestV1, APXStreamV1
+from uledger.entry import ULedgerEntryV1
 from umx.tick_ledger import EdgeFluxV1, UMXTickLedgerV1
 
 
@@ -142,8 +143,28 @@ def serialize_nap_envelope(envelope: NAPEnvelopeV1) -> Dict[str, object]:
     }
 
 
+def serialize_uledger_entry(entry: ULedgerEntryV1) -> Dict[str, object]:
+    return {
+        "gid": entry.gid,
+        "run_id": entry.run_id,
+        "tick": entry.tick,
+        "window_id": entry.window_id,
+        "C_t": entry.C_t,
+        "manifest_check": entry.manifest_check,
+        "nap_envelope_hash": entry.nap_envelope_hash,
+        "umx_ledger_hash": entry.umx_ledger_hash,
+        "loom_block_hash": entry.loom_block_hash,
+        "apx_manifest_hash": entry.apx_manifest_hash,
+        "prev_entry_hash": entry.prev_entry_hash,
+        "codex_library_hash": entry.codex_library_hash,
+        "timestamp_utc": entry.timestamp_utc,
+        "meta": dict(entry.meta),
+    }
+
+
 def serialize_gf01_run(result: GF01RunResult) -> Dict[str, object]:
     return {
+        "run_id": result.run_id,
         "ledgers": [serialize_umx_tick_ledger(ledger) for ledger in result.ledgers],
         "p_blocks": [serialize_loom_p_block(block) for block in result.p_blocks],
         "i_blocks": [serialize_loom_i_block(block) for block in result.i_blocks],
@@ -153,6 +174,7 @@ def serialize_gf01_run(result: GF01RunResult) -> Dict[str, object]:
         },
         "scenes": [serialize_scene_frame(scene) for scene in result.scenes],
         "envelopes": [serialize_nap_envelope(env) for env in result.envelopes],
+        "u_ledger_entries": [serialize_uledger_entry(entry) for entry in result.u_ledger_entries],
     }
 
 

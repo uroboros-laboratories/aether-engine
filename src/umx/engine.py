@@ -20,12 +20,12 @@ def _sign(value: int) -> int:
     return 0
 
 
-def _compute_flux(edge: EdgeProfileV1, pre_u: List[int]) -> EdgeFluxV1:
+def _compute_flux(edge: EdgeProfileV1, pre_u: List[int], scale: int) -> EdgeFluxV1:
     i_idx = edge.i - 1
     j_idx = edge.j - 1
     du = pre_u[i_idx] - pre_u[j_idx]
     magnitude = abs(du)
-    raw = (edge.k * magnitude) // edge.SC
+    raw = (edge.k * magnitude) // scale
     f_e = _sign(du) * min(raw, edge.cap, magnitude)
     return EdgeFluxV1(
         e_id=edge.e_id,
@@ -48,7 +48,7 @@ def step(tick: int, state: List[int], topo: TopologyProfileV1, profile: ProfileC
     fluxes: List[EdgeFluxV1] = []
 
     for edge in topo.edges:
-        flux = _compute_flux(edge, pre_u)
+        flux = _compute_flux(edge, pre_u, topo.SC)
         fluxes.append(flux)
         i_idx = edge.i - 1
         j_idx = edge.j - 1

@@ -1,65 +1,18 @@
 from __future__ import annotations
 
-from gate import build_scene_and_envelope
-from loom.loom import step as loom_step
-from press import PressWindowContextV1
-from umx.engine import step as umx_step
+import pytest
+
+from core.tick_loop import TickLoopWindowSpec, run_cmp0_tick_loop, run_gf01
+from gate import ALLOWED_NAP_LAYERS, build_pfna_placeholder, emit_nap_envelope
 from umx.profile_cmp0 import gf01_profile_cmp0
-from umx.topology_profile import gf01_topology_profile
+from umx.topology_profile import load_topology_profile
 
 
-def test_gf01_nap_envelopes_match_contract_values():
-    profile = gf01_profile_cmp0()
-    topo = gf01_topology_profile()
-    state = [3, 1, 0, 0, 0, 0]
-    gid = "GF01"
-    run_id = "GF01"
-    window_id = "GF01_W1_ticks_1_8"
+def test_gf01_scene_frames_anchor_nap_envelopes():
+    result = run_gf01()
+    manifest = result.manifests["GF01_APX_v0_full_window"]
+    profile = result.profile
 
-    press_ctx = PressWindowContextV1(
-        gid=gid,
-        run_id=run_id,
-        window_id=window_id,
-        start_tick=1,
-        end_tick=8,
-        profile=profile,
-    )
-    press_ctx.register_stream("S1_post_u_deltas", description="post_u delta per node")
-    press_ctx.register_stream("S2_fluxes", description="edge flux per edge")
-
-    tick_outputs = []
-    C_prev = profile.C0
-    for tick in range(1, 9):
-        ledger = umx_step(tick, state, topo, profile)
-        deltas = tuple(post - pre for post, pre in zip(ledger.post_u, ledger.pre_u))
-        fluxes = tuple(edge.f_e for edge in ledger.edges)
-        press_ctx.append("S1_post_u_deltas", deltas)
-        press_ctx.append("S2_fluxes", fluxes)
-
-        prev_for_scene = C_prev
-        p_block, C_prev, _ = loom_step(ledger, C_prev, tick, topo, profile)
-        tick_outputs.append((ledger, p_block, prev_for_scene))
-        state = ledger.post_u
-
-    manifest = press_ctx.close_window("GF01_APX_v0_full_window")
-    assert manifest.manifest_check == 487809945
-
-    scenes_and_envelopes = [
-        build_scene_and_envelope(
-            gid=gid,
-            run_id=run_id,
-            nid="N/A",
-            window_id=window_id,
-            ledger=ledger,
-            p_block=p_block,
-            C_prev=C_prev_tick,
-            manifest_check=manifest.manifest_check,
-            profile=profile,
-        )
-        for (ledger, p_block, C_prev_tick) in tick_outputs
-    ]
-
-    envelopes = [env for (_, env) in scenes_and_envelopes]
     expected_chain = [
         20987847,
         356793608,
@@ -72,12 +25,148 @@ def test_gf01_nap_envelopes_match_contract_values():
     ]
     expected_prev_chain = [profile.C0] + expected_chain[:-1]
 
+    assert manifest.manifest_check == 487809945
+    assert [scene.C_t for scene in result.scenes] == expected_chain
+    assert [scene.C_prev for scene in result.scenes] == expected_prev_chain
+    assert [env.prev_chain for env in result.envelopes] == expected_prev_chain
+    assert all(scene.manifest_check == manifest.manifest_check for scene in result.scenes)
+    assert all(scene.meta["manifest_ref"] == manifest.apx_name for scene in result.scenes)
+    assert all(scene.meta["p_block_ref"] == f"loom_p_block_{scene.tick}" for scene in result.scenes)
+
+    envelopes = result.envelopes
     assert all(env.v == 1 for env in envelopes)
-    assert all(env.gid == gid for env in envelopes)
+    assert all(env.gid == result.topo.gid for env in envelopes)
     assert all(env.nid == "N/A" for env in envelopes)
     assert all(env.layer == "DATA" for env in envelopes)
     assert all(env.mode == "P" for env in envelopes)
-    assert all(env.payload_ref == 487809945 for env in envelopes)
+    assert all(env.payload_ref == manifest.manifest_check for env in envelopes)
     assert [env.seq for env in envelopes] == list(range(1, 9))
     assert [env.tick for env in envelopes] == list(range(1, 9))
-    assert [env.prev_chain for env in envelopes] == expected_prev_chain
+
+
+def test_nap_envelopes_support_layers_and_modes():
+    result = run_gf01()
+    profile = result.profile
+    scene = result.scenes[0]
+
+    ctrl_env = emit_nap_envelope(
+        scene,
+        profile,
+        layer="CTRL",
+        mode="P",
+        seq=99,
+        payload_ref=scene.manifest_check,
+    )
+
+    assert ctrl_env.layer == "CTRL"
+    assert ctrl_env.mode == "P"
+    assert ctrl_env.seq == 99
+    assert ctrl_env.payload_ref == scene.manifest_check
+
+    default_env = emit_nap_envelope(scene, profile)
+    assert default_env.layer == profile.nap_defaults.get("layer") == "DATA"
+    assert default_env.mode == profile.nap_defaults.get("mode") == "P"
+
+    with pytest.raises(ValueError):
+        emit_nap_envelope(scene, profile, layer="INVALID")
+    with pytest.raises(ValueError):
+        emit_nap_envelope(scene, profile, mode="X")
+    with pytest.raises(ValueError):
+        emit_nap_envelope(scene, profile, layer=ALLOWED_NAP_LAYERS[0], mode="")
+
+
+def test_scene_frames_emitted_for_line_topology():
+    topo = load_topology_profile("docs/fixtures/topologies/line_4_topology_profile.json")
+    profile = gf01_profile_cmp0()
+
+    window_spec = TickLoopWindowSpec(
+        window_id="LINE_W1_ticks_1_4",
+        apx_name="LINE_APX_v0_ticks_1_4",
+        start_tick=1,
+        end_tick=4,
+    )
+
+    result = run_cmp0_tick_loop(
+        topo=topo,
+        profile=profile,
+        initial_state=[5, 4, 3, 2],
+        total_ticks=4,
+        window_specs=[window_spec],
+        primary_window_id=window_spec.window_id,
+        run_id="LINE",
+        nid="engine-line",
+    )
+
+    manifest = result.manifests[window_spec.apx_name]
+    assert len(result.scenes) == 4
+    assert len(result.envelopes) == 4
+    assert all(scene.window_id == window_spec.window_id for scene in result.scenes)
+    assert all(scene.manifest_check == manifest.manifest_check for scene in result.scenes)
+    assert all(scene.meta["manifest_ref"] == manifest.apx_name for scene in result.scenes)
+    assert all(scene.meta["p_block_ref"].startswith("loom_p_block_") for scene in result.scenes)
+
+    for scene, p_block in zip(result.scenes, result.p_blocks):
+        assert scene.C_t == p_block.C_t
+        assert scene.tick == p_block.tick
+
+    assert [env.payload_ref for env in result.envelopes] == [manifest.manifest_check] * 4
+    assert [env.prev_chain for env in result.envelopes] == [scene.C_prev for scene in result.scenes]
+
+
+def test_pfna_inputs_feed_state_and_scene_meta():
+    topo = load_topology_profile("docs/fixtures/topologies/line_4_topology_profile.json")
+    profile = gf01_profile_cmp0()
+
+    window_spec = TickLoopWindowSpec(
+        window_id="LINE_W1_ticks_1_3",
+        apx_name="LINE_APX_v0_ticks_1_3",
+        start_tick=1,
+        end_tick=3,
+    )
+
+    pfna = build_pfna_placeholder(
+        pfna_id="ext_seq_tick1",
+        gid=topo.gid,
+        run_id="LINE_PFNA",
+        tick=1,
+        nid="ext-source",
+        values=[1, 0, 0, 0],
+        description="add one to the first node at tick 1",
+    )
+
+    result = run_cmp0_tick_loop(
+        topo=topo,
+        profile=profile,
+        initial_state=[2, 2, 2, 2],
+        total_ticks=3,
+        window_specs=[window_spec],
+        primary_window_id=window_spec.window_id,
+        run_id="LINE_PFNA",
+        nid="engine-line",
+        pfna_inputs=[pfna],
+    )
+
+    first_ledger = result.ledgers[0]
+    assert tuple(first_ledger.pre_u) == (3, 2, 2, 2)
+
+    scene = result.scenes[0]
+    assert scene.pfna_refs == (pfna.pfna_id,)
+    assert scene.meta["pfna_refs"] == [pfna.pfna_id]
+
+    baseline_window_spec = TickLoopWindowSpec(
+        window_id="LINE_W1_ticks_1_1",
+        apx_name="LINE_APX_v0_tick_1",
+        start_tick=1,
+        end_tick=1,
+    )
+    baseline = run_cmp0_tick_loop(
+        topo=topo,
+        profile=profile,
+        initial_state=[2, 2, 2, 2],
+        total_ticks=1,
+        window_specs=[baseline_window_spec],
+        primary_window_id=baseline_window_spec.window_id,
+        run_id="LINE_BASE",
+        nid="engine-line",
+    )
+    assert tuple(baseline.ledgers[0].pre_u) == (2, 2, 2, 2)
