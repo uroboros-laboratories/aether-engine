@@ -1331,6 +1331,7 @@
       "tick": 8
     }
   ],
+  "run_id": "GF01",
   "scenes": [
     {
       "C_prev": 1234567,
@@ -1338,7 +1339,10 @@
       "gid": "GF01",
       "ledger_ref": "umx_ledger_1",
       "manifest_check": 487809945,
-      "meta": {},
+      "meta": {
+        "manifest_ref": "GF01_APX_v0_full_window",
+        "p_block_ref": "loom_p_block_1"
+      },
       "nap_envelope_ref": null,
       "nid": "N/A",
       "post_u": [
@@ -1367,7 +1371,10 @@
       "gid": "GF01",
       "ledger_ref": "umx_ledger_2",
       "manifest_check": 487809945,
-      "meta": {},
+      "meta": {
+        "manifest_ref": "GF01_APX_v0_full_window",
+        "p_block_ref": "loom_p_block_2"
+      },
       "nap_envelope_ref": null,
       "nid": "N/A",
       "post_u": [
@@ -1396,7 +1403,10 @@
       "gid": "GF01",
       "ledger_ref": "umx_ledger_3",
       "manifest_check": 487809945,
-      "meta": {},
+      "meta": {
+        "manifest_ref": "GF01_APX_v0_full_window",
+        "p_block_ref": "loom_p_block_3"
+      },
       "nap_envelope_ref": null,
       "nid": "N/A",
       "post_u": [
@@ -1425,7 +1435,10 @@
       "gid": "GF01",
       "ledger_ref": "umx_ledger_4",
       "manifest_check": 487809945,
-      "meta": {},
+      "meta": {
+        "manifest_ref": "GF01_APX_v0_full_window",
+        "p_block_ref": "loom_p_block_4"
+      },
       "nap_envelope_ref": null,
       "nid": "N/A",
       "post_u": [
@@ -1454,7 +1467,10 @@
       "gid": "GF01",
       "ledger_ref": "umx_ledger_5",
       "manifest_check": 487809945,
-      "meta": {},
+      "meta": {
+        "manifest_ref": "GF01_APX_v0_full_window",
+        "p_block_ref": "loom_p_block_5"
+      },
       "nap_envelope_ref": null,
       "nid": "N/A",
       "post_u": [
@@ -1483,7 +1499,10 @@
       "gid": "GF01",
       "ledger_ref": "umx_ledger_6",
       "manifest_check": 487809945,
-      "meta": {},
+      "meta": {
+        "manifest_ref": "GF01_APX_v0_full_window",
+        "p_block_ref": "loom_p_block_6"
+      },
       "nap_envelope_ref": null,
       "nid": "N/A",
       "post_u": [
@@ -1512,7 +1531,10 @@
       "gid": "GF01",
       "ledger_ref": "umx_ledger_7",
       "manifest_check": 487809945,
-      "meta": {},
+      "meta": {
+        "manifest_ref": "GF01_APX_v0_full_window",
+        "p_block_ref": "loom_p_block_7"
+      },
       "nap_envelope_ref": null,
       "nid": "N/A",
       "post_u": [
@@ -1541,7 +1563,10 @@
       "gid": "GF01",
       "ledger_ref": "umx_ledger_8",
       "manifest_check": 487809945,
-      "meta": {},
+      "meta": {
+        "manifest_ref": "GF01_APX_v0_full_window",
+        "p_block_ref": "loom_p_block_8"
+      },
       "nap_envelope_ref": null,
       "nid": "N/A",
       "post_u": [
@@ -1562,6 +1587,136 @@
       ],
       "run_id": "GF01",
       "tick": 8,
+      "window_id": "GF01_W1_ticks_1_8"
+    }
+  ],
+  "u_ledger_entries": [
+    {
+      "C_t": 20987847,
+      "apx_manifest_hash": "0fbd3bd3abf44eacba9e549b4b543f50832a288c3d1acfa1d802f16feaf03307",
+      "codex_library_hash": null,
+      "gid": "GF01",
+      "loom_block_hash": "dfa45be0c39ed84dd3aca6ca08c2426ada356fdd553f1b329b7da8c1a8d3e80e",
+      "manifest_check": 487809945,
+      "meta": {},
+      "nap_envelope_hash": "7ffe1c1d0983599b484c4f100c593e48256d73052f5c1a32420016e4f9adf87e",
+      "prev_entry_hash": null,
+      "run_id": "GF01",
+      "tick": 1,
+      "timestamp_utc": null,
+      "umx_ledger_hash": "2e3d4d6579469e15d80c50e1c7091bfca3b159c51235ef63fc989929747c3272",
+      "window_id": "GF01_W1_ticks_1_8"
+    },
+    {
+      "C_t": 356793608,
+      "apx_manifest_hash": "0fbd3bd3abf44eacba9e549b4b543f50832a288c3d1acfa1d802f16feaf03307",
+      "codex_library_hash": null,
+      "gid": "GF01",
+      "loom_block_hash": "f53bfe18870ec0938b6eda47f47022f3aa06f56e7fbb198b5dbbe78374e54a0e",
+      "manifest_check": 487809945,
+      "meta": {},
+      "nap_envelope_hash": "dcfa9305a8bae5087752884acf8002ee7e3011ae730038f6527bc9f83207eac1",
+      "prev_entry_hash": "3e915909cc818dda52b1759902dcbc349074b48482e7a96dd3152bd9d8c13f08",
+      "run_id": "GF01",
+      "tick": 2,
+      "timestamp_utc": null,
+      "umx_ledger_hash": "d58c3cd0c0b4e19f1a916915947755337831079dbe818e4638fb0fec503ce36f",
+      "window_id": "GF01_W1_ticks_1_8"
+    },
+    {
+      "C_t": 65491504,
+      "apx_manifest_hash": "0fbd3bd3abf44eacba9e549b4b543f50832a288c3d1acfa1d802f16feaf03307",
+      "codex_library_hash": null,
+      "gid": "GF01",
+      "loom_block_hash": "68981fc5fbacf761bbe731f7cd3f116feb572f3644edfd1eeae7f97f02c37749",
+      "manifest_check": 487809945,
+      "meta": {},
+      "nap_envelope_hash": "6ef781c60a952bfbf871fd3c993905e64d8fc8d8b2e40f907f9d517ce881834b",
+      "prev_entry_hash": "f423a5d9c2e04d718af9f91d15166fc6de24302b7ea4378c2f5b83ea22944124",
+      "run_id": "GF01",
+      "tick": 3,
+      "timestamp_utc": null,
+      "umx_ledger_hash": "96c5ce653e64fb7bc757bada905e0b80959f4c0c951f892263c30dff2e0a96e4",
+      "window_id": "GF01_W1_ticks_1_8"
+    },
+    {
+      "C_t": 113355772,
+      "apx_manifest_hash": "0fbd3bd3abf44eacba9e549b4b543f50832a288c3d1acfa1d802f16feaf03307",
+      "codex_library_hash": null,
+      "gid": "GF01",
+      "loom_block_hash": "435dabb3b0d675776148be1802edcbe7bebdb2d2f9557dd2c0993564e276b320",
+      "manifest_check": 487809945,
+      "meta": {},
+      "nap_envelope_hash": "71bb06da1d2b6ef0e49b308114f9e1886e406d0502124101ffab88a999bdad3a",
+      "prev_entry_hash": "8a94d7e5f501264a85a0d54ee52828496d7ae328a9a620200c64b62b4d11db8c",
+      "run_id": "GF01",
+      "tick": 4,
+      "timestamp_utc": null,
+      "umx_ledger_hash": "f7ecbd2bc04e49376799a536338973e9a033c5410d9b4ee121fcb4245063c3b8",
+      "window_id": "GF01_W1_ticks_1_8"
+    },
+    {
+      "C_t": 927048329,
+      "apx_manifest_hash": "0fbd3bd3abf44eacba9e549b4b543f50832a288c3d1acfa1d802f16feaf03307",
+      "codex_library_hash": null,
+      "gid": "GF01",
+      "loom_block_hash": "757f371ac740c291dbf7339d2f30c53cbaf4a52856015231c0c99254d565b028",
+      "manifest_check": 487809945,
+      "meta": {},
+      "nap_envelope_hash": "6bb03b10909c2ca74b1679ded81a60b8e6ba2354253b4799741cba5a61e0a186",
+      "prev_entry_hash": "db860c7b5320adc0f18d05db0aadfac49d55baf1faeab8a0a683347f8f325d51",
+      "run_id": "GF01",
+      "tick": 5,
+      "timestamp_utc": null,
+      "umx_ledger_hash": "703c442ce6379e551eee23078ed38eda31911d13a17bcf13380a7c86be3b2e62",
+      "window_id": "GF01_W1_ticks_1_8"
+    },
+    {
+      "C_t": 759821701,
+      "apx_manifest_hash": "0fbd3bd3abf44eacba9e549b4b543f50832a288c3d1acfa1d802f16feaf03307",
+      "codex_library_hash": null,
+      "gid": "GF01",
+      "loom_block_hash": "f566a9294b8a7f106fb1ff2b613f607d5bc65ed175b2971037b65f409cc67a7a",
+      "manifest_check": 487809945,
+      "meta": {},
+      "nap_envelope_hash": "56b09b92138674cb8e696d3988217ebf9cd81ba7569ea7e8d621cfc6318e7b1b",
+      "prev_entry_hash": "94056e59637c5a50c528d3b64accd91ed66ea25ae7a20571970a958d62386705",
+      "run_id": "GF01",
+      "tick": 6,
+      "timestamp_utc": null,
+      "umx_ledger_hash": "616b7462f21bb272260b460c3aa5cf064bbced8f7b7f44ba6e619885ea093136",
+      "window_id": "GF01_W1_ticks_1_8"
+    },
+    {
+      "C_t": 916969047,
+      "apx_manifest_hash": "0fbd3bd3abf44eacba9e549b4b543f50832a288c3d1acfa1d802f16feaf03307",
+      "codex_library_hash": null,
+      "gid": "GF01",
+      "loom_block_hash": "597a4d5c2b8a0db12e6397094639ae5dccfd7c755c9764c71867c5fe81d01765",
+      "manifest_check": 487809945,
+      "meta": {},
+      "nap_envelope_hash": "8e196f356377b6eb2697d2ca691fd94c16fec16ec924f945e00f61c6a8b31c8f",
+      "prev_entry_hash": "ac982a0e3c4d079679312bf028fcf855e7b0af907e4d4de235ca037e3260ddda",
+      "run_id": "GF01",
+      "tick": 7,
+      "timestamp_utc": null,
+      "umx_ledger_hash": "d5e7f68b9e17965f190fd7a70b87380c804578adec8c71e8b2c726ef1f3c31f0",
+      "window_id": "GF01_W1_ticks_1_8"
+    },
+    {
+      "C_t": 588473909,
+      "apx_manifest_hash": "0fbd3bd3abf44eacba9e549b4b543f50832a288c3d1acfa1d802f16feaf03307",
+      "codex_library_hash": null,
+      "gid": "GF01",
+      "loom_block_hash": "7aadba204c9e36137c80d0248337b2965dcd6dba6e78fe3a378141db990331db",
+      "manifest_check": 487809945,
+      "meta": {},
+      "nap_envelope_hash": "68c5392e49a838cedd85041764a6c0d2780e46bb6c897c8a7dc7470fcf328b65",
+      "prev_entry_hash": "99a02e4f8dee9a839be8f2bd1bfebefcfb12a20bb82d149111ec9ad5be5a0b24",
+      "run_id": "GF01",
+      "tick": 8,
+      "timestamp_utc": null,
+      "umx_ledger_hash": "09db5e74ca0374b16b6f05ac7c0bc0bf75e17861c384db993024bc7cad22515d",
       "window_id": "GF01_W1_ticks_1_8"
     }
   ]

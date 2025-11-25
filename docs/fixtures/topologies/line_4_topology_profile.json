@@ -1,0 +1,18 @@
+{
+  "gid": "LINE4",
+  "profile": "CMP-0",
+  "N": 4,
+  "nodes": [
+    { "node_id": 1, "label": "n1", "attrs": {} },
+    { "node_id": 2, "label": "n2", "attrs": {} },
+    { "node_id": 3, "label": "n3", "attrs": {} },
+    { "node_id": 4, "label": "n4", "attrs": {} }
+  ],
+  "edges": [
+    { "e_id": 1, "i": 1, "j": 2, "k": 1, "cap": 64, "SC": 16, "c": 0, "attrs": {} },
+    { "e_id": 2, "i": 2, "j": 3, "k": 1, "cap": 64, "SC": 16, "c": 0, "attrs": {} },
+    { "e_id": 3, "i": 3, "j": 4, "k": 1, "cap": 64, "SC": 16, "c": 0, "attrs": {} }
+  ],
+  "SC": 16,
+  "meta": { "description": "Four-node line topology" }
+}

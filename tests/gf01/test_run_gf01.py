@@ -5,11 +5,13 @@ from gate import NAPEnvelopeV1, SceneFrameV1
 from loom.loom import LoomIBlockV1, LoomPBlockV1
 from press import APXManifestV1
 from umx.tick_ledger import EdgeFluxV1, UMXTickLedgerV1
+from uledger import build_uledger_entries, hash_record
 
 
 def test_run_gf01_emits_expected_artefacts():
     result = run_gf01()
 
+    assert result.run_id == "GF01"
     assert len(result.ledgers) == 8
     assert len(result.p_blocks) == 8
     assert len(result.i_blocks) == 1
@@ -77,6 +79,23 @@ def test_run_gf01_emits_expected_artefacts():
     assert all(env.payload_ref == manifest_full.manifest_check for env in result.envelopes)
     expected_prev_chain = [result.profile.C0] + expected_chain[:-1]
     assert [env.prev_chain for env in result.envelopes] == expected_prev_chain
+
+    assert len(result.u_ledger_entries) == 8
+    expected_prev_hashes = [None]
+    for entry in result.u_ledger_entries[:-1]:
+        expected_prev_hashes.append(hash_record(entry))
+    assert [entry.prev_entry_hash for entry in result.u_ledger_entries] == expected_prev_hashes
+
+    rebuilt_entries = build_uledger_entries(
+        gid=result.topo.gid,
+        run_id=result.run_id,
+        window_id="GF01_W1_ticks_1_8",
+        ledgers=result.ledgers,
+        p_blocks=result.p_blocks,
+        envelopes=result.envelopes,
+        manifest=manifest_full,
+    )
+    assert rebuilt_entries == result.u_ledger_entries
 
 
 def test_run_gf01_is_deterministic():
