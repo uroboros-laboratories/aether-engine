@@ -18,6 +18,8 @@ Each file here should be treated as a mini‑spec for one record type (or a smal
   - Numeric profile for CMP‑0: modulus, scaling constant, I‑block spacing, and rule hooks.
 - `RunConfig_v1.md`
   - File-driven run configuration tying together topology, profile, windows, and runtime flags.
+- `GovernanceConfig_v1.md`
+  - Governance policy sets (budgets, safety, topology constraints) with canonical hashes for ledger binding.
 - `ScenarioRegistry_v1.md`
   - Catalogue of named scenarios pointing to runnable `RunConfig_v1` documents.
 - `StructuredLogging_v1.md`

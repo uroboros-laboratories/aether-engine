@@ -29,6 +29,8 @@ def test_gf01_example_config_matches_schema_and_topology():
     session_cfg = load_run_session_config(cfg_path)
     assert session_cfg.topo.N == topo.N
     assert session_cfg.profile.name == "CMP-0"
+    assert session_cfg.governance.codex_action_mode == "OBSERVE"
+    assert session_cfg.governance.gid == cfg.gid
 
 
 def test_line_and_ring_examples_cover_integer_vectors():

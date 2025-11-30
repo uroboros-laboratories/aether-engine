@@ -94,6 +94,7 @@ def test_run_gf01_emits_expected_artefacts():
         p_blocks=result.p_blocks,
         envelopes=result.envelopes,
         manifest=manifest_full,
+        policy_set_hash=result.u_ledger_entries[0].policy_set_hash,
     )
     assert rebuilt_entries == result.u_ledger_entries
 

@@ -193,14 +193,23 @@ Top-level fields:
 10. **created_at_tick: int**  
     - Tick when the proposal was created.
 
-11. **status: enum { "PENDING", "ACCEPTED", "REJECTED" }**  
-    - Evaluation status.
+11. **status: enum { "PENDING", "ACCEPTED", "REJECTED" }**
+    - Proposal lifecycle status.
 
-12. **evaluated_at_tick: int (optional)**  
-    - Tick when the proposal was accepted/rejected.
+12. **governance_status: enum { "UNEVALUATED", "OK", "SOFT_FAIL", "HARD_FAIL" }**
+    - Outcome of governance evaluation.
 
-13. **governance_notes: object (optional)**  
+13. **violated_policies: array<string> (optional)**
+    - Policy IDs that were not satisfied.
+
+14. **governance_scores: object (optional)**
+    - Structured evaluation scores (e.g. `topology_change_count`).
+
+15. **governance_notes: object (optional)**
     - Notes from the evaluator (e.g. Gate/UMX/governance layer).
+
+16. **evaluated_at_tick: int (optional)**
+    - Tick when the proposal was evaluated.
 
 Example (sketch):
 

@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any, Dict, Mapping, Optional, Sequence, Tuple, Union
 
 from gate import PressStreamSpecV1, SessionConfigV1, load_pfna_v0
+from governance import GovernanceConfigV1, governance_config_from_mapping
 from ops import LoggingConfigV1, MetricsConfigV1
 from core.tick_loop import TickLoopWindowSpec
 from umx.profile_cmp0 import ProfileCMP0V1
@@ -86,6 +87,7 @@ class RunConfigV1:
     windows: Tuple[RunWindowConfigV1, ...]
     primary_window_id: str
     nap: Dict[str, Any] = field(default_factory=dict)
+    governance: Dict[str, Any] = field(default_factory=dict)
     enable_codex: bool = False
     enable_pfna: bool = False
     pfna_path: Optional[str] = None
@@ -116,6 +118,8 @@ class RunConfigV1:
             raise ValueError("pfna_path must be a string when provided")
         if not isinstance(self.nap, Mapping):
             raise ValueError("nap must be a mapping if provided")
+        if not isinstance(self.governance, Mapping):
+            raise ValueError("governance must be a mapping if provided")
         if not isinstance(self.diagnostics, Mapping):
             raise ValueError("diagnostics must be a mapping if provided")
         if not isinstance(self.logging, LoggingConfigV1):
@@ -234,6 +238,25 @@ def metrics_config_from_mapping(data: Mapping[str, Any]) -> MetricsConfigV1:
     return MetricsConfigV1(enabled=bool(data.get("enabled", False)))
 
 
+def _derive_governance_config(run_config: RunConfigV1) -> GovernanceConfigV1:
+    base = dict(run_config.governance)
+    if "governance_mode" not in base:
+        if "codex_action_mode" in base:
+            base["governance_mode"] = base["codex_action_mode"]
+        else:
+            base["governance_mode"] = "OBSERVE" if run_config.enable_codex else "OFF"
+    base.setdefault("codex_action_mode", base.get("governance_mode"))
+    base.setdefault("gid", run_config.gid)
+    base.setdefault("run_id", run_config.run_id)
+
+    meta = dict(base.get("meta", {}))
+    meta.setdefault("nap", dict(run_config.nap))
+    meta.setdefault("diagnostics", dict(run_config.diagnostics))
+    base["meta"] = meta
+
+    return governance_config_from_mapping(base)
+
+
 def run_config_from_mapping(data: Mapping[str, Any]) -> RunConfigV1:
     if not isinstance(data, Mapping):
         raise ValueError("RunConfig source must be a mapping")
@@ -268,6 +291,7 @@ def run_config_from_mapping(data: Mapping[str, Any]) -> RunConfigV1:
         windows=windows,
         primary_window_id=primary_window_id,
         nap=dict(data.get("nap", {})),
+        governance=dict(data.get("governance", {})),
         enable_codex=bool(data.get("enable_codex", False)),
         enable_pfna=bool(data.get("enable_pfna", False)),
         pfna_path=data.get("pfna_path"),
@@ -472,11 +496,7 @@ def load_run_session_config(source: Union[str, Path]) -> SessionConfigV1:
         run_id=run_config.run_id,
         nid=run_config.gid,
         pfna_inputs=pfna_inputs,
-        governance={
-            "enable_codex": run_config.enable_codex,
-            "diagnostics": dict(run_config.diagnostics),
-            "nap": dict(run_config.nap),
-        },
+        governance=_derive_governance_config(run_config),
         logging_config=run_config.logging,
         metrics_config=run_config.metrics,
     )

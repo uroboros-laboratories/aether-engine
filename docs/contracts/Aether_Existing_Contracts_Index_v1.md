@@ -123,6 +123,7 @@ These are the “core three” we called out for Sprint 1, plus a few others:
 - `Introspection_v1` — read-only introspection view for UMX/Loom/APX/NAP/U-ledger artefacts.
 - `RunConfig_v1`         — new Phase 3 governance contract binding topology, profile, and window config for runnable scenarios.
 - `ScenarioRegistry_v1`  — catalogue of named scenarios pointing at RunConfig documents for governance tooling.
+- `GovernanceConfig_v1`  — Phase 5 governance policy sets (budgets, safety, topology) hashed for ledger binding.
 
 Those “missing files” are what I was pointing at when I suggested we firm up a
 few contracts before coding.

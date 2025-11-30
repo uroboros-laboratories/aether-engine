@@ -35,39 +35,225 @@
     {
       "gid": "RING5",
       "layer": "CTRL",
+      "meta": {},
       "mode": "P",
       "nid": "RING5",
       "payload_ref": 0,
       "prev_chain": 1234567,
       "seq": 1,
       "sig": "",
+      "slp_event_ids": [],
       "tick": 1,
       "v": 1
     },
     {
       "gid": "RING5",
       "layer": "CTRL",
+      "meta": {},
       "mode": "P",
       "nid": "RING5",
       "payload_ref": 379271437,
       "prev_chain": 927048329,
       "seq": 6,
       "sig": "",
+      "slp_event_ids": [],
       "tick": 5,
       "v": 1
     }
   ],
   "tick_result": {
+    "codex_motifs": [
+      {
+        "created_at_tick": 2,
+        "last_updated_tick": 5,
+        "library_id": "RING5_demo_LIB",
+        "mdl_stats": {
+          "L_self": 10,
+          "L_total": 14,
+          "L_usage": 4,
+          "delta_vs_baseline": -4
+        },
+        "meta": {
+          "runs": [
+            "RING5_demo"
+          ]
+        },
+        "motif_id": "MOTIF_0001",
+        "pattern_descriptor": {
+          "du_signature": [
+            7,
+            1,
+            0,
+            -1,
+            7
+          ],
+          "edge_ids": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "f_e_signature": [
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "type": "edge_flux_pattern_v1"
+        },
+        "profile": "CMP-2",
+        "source_gid": "RING5",
+        "source_window_id": "RING5_ticks_1_5",
+        "usage_stats": {
+          "first_tick": 2,
+          "last_tick": 5,
+          "usage_count": 4
+        }
+      },
+      {
+        "created_at_tick": 1,
+        "last_updated_tick": 1,
+        "library_id": "RING5_demo_LIB",
+        "mdl_stats": {
+          "L_self": 10,
+          "L_total": 11,
+          "L_usage": 1,
+          "delta_vs_baseline": -1
+        },
+        "meta": {
+          "runs": [
+            "RING5_demo"
+          ]
+        },
+        "motif_id": "MOTIF_0002",
+        "pattern_descriptor": {
+          "du_signature": [
+            10,
+            0,
+            0,
+            0,
+            10
+          ],
+          "edge_ids": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "f_e_signature": [
+            1,
+            0,
+            0,
+            0,
+            1
+          ],
+          "type": "edge_flux_pattern_v1"
+        },
+        "profile": "CMP-2",
+        "source_gid": "RING5",
+        "source_window_id": "RING5_ticks_1_5",
+        "usage_stats": {
+          "first_tick": 1,
+          "last_tick": 1,
+          "usage_count": 1
+        }
+      }
+    ],
+    "codex_proposals": [
+      {
+        "action": "PLACE",
+        "budget_effect": {},
+        "created_at_tick": 5,
+        "evaluated_at_tick": 5,
+        "expected_effect": {
+          "delta_L_total": -4,
+          "notes": "edge_flux_pattern_v1"
+        },
+        "gid": "RING5",
+        "governance_notes": {
+          "notes": [
+            "Governance mode OBSERVE (no actions applied)"
+          ]
+        },
+        "governance_scores": {},
+        "governance_status": "OK",
+        "library_id": "RING5_demo_LIB",
+        "meta": {
+          "runs": [
+            "RING5_demo"
+          ]
+        },
+        "motif_id": "MOTIF_0001",
+        "proposal_id": "PROPOSAL_0001",
+        "status": "REJECTED",
+        "target_location": {
+          "edge_ids": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "profile": "CMP-2"
+        },
+        "target_window_id": "RING5_ticks_1_5",
+        "violated_policies": []
+      },
+      {
+        "action": "PLACE",
+        "budget_effect": {},
+        "created_at_tick": 1,
+        "evaluated_at_tick": 5,
+        "expected_effect": {
+          "delta_L_total": -1,
+          "notes": "edge_flux_pattern_v1"
+        },
+        "gid": "RING5",
+        "governance_notes": {
+          "notes": [
+            "Governance mode OBSERVE (no actions applied)"
+          ]
+        },
+        "governance_scores": {},
+        "governance_status": "OK",
+        "library_id": "RING5_demo_LIB",
+        "meta": {
+          "runs": [
+            "RING5_demo"
+          ]
+        },
+        "motif_id": "MOTIF_0002",
+        "proposal_id": "PROPOSAL_0002",
+        "status": "REJECTED",
+        "target_location": {
+          "edge_ids": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "profile": "CMP-2"
+        },
+        "target_window_id": "RING5_ticks_1_5",
+        "violated_policies": []
+      }
+    ],
     "egress_envelopes": [
       {
         "gid": "RING5",
         "layer": "EGRESS",
+        "meta": {},
         "mode": "P",
         "nid": "RING5",
         "payload_ref": 379271437,
         "prev_chain": 927048329,
         "seq": 7,
         "sig": "",
+        "slp_event_ids": [],
         "tick": 5,
         "v": 1
       }
@@ -76,60 +262,165 @@
       {
         "gid": "RING5",
         "layer": "DATA",
+        "meta": {},
         "mode": "P",
         "nid": "RING5",
         "payload_ref": 379271437,
         "prev_chain": 1234567,
         "seq": 1,
         "sig": "",
+        "slp_event_ids": [],
         "tick": 1,
         "v": 1
       },
       {
         "gid": "RING5",
         "layer": "DATA",
+        "meta": {},
         "mode": "P",
         "nid": "RING5",
         "payload_ref": 379271437,
         "prev_chain": 20987847,
         "seq": 2,
         "sig": "",
+        "slp_event_ids": [],
         "tick": 2,
         "v": 1
       },
       {
         "gid": "RING5",
         "layer": "DATA",
+        "meta": {},
         "mode": "P",
         "nid": "RING5",
         "payload_ref": 379271437,
         "prev_chain": 356793608,
         "seq": 3,
         "sig": "",
+        "slp_event_ids": [],
         "tick": 3,
         "v": 1
       },
       {
         "gid": "RING5",
         "layer": "DATA",
+        "meta": {},
         "mode": "P",
         "nid": "RING5",
         "payload_ref": 379271437,
         "prev_chain": 65491504,
         "seq": 4,
         "sig": "",
+        "slp_event_ids": [],
         "tick": 4,
         "v": 1
       },
       {
         "gid": "RING5",
         "layer": "DATA",
+        "meta": {},
         "mode": "P",
         "nid": "RING5",
         "payload_ref": 379271437,
         "prev_chain": 113355772,
         "seq": 5,
         "sig": "",
+        "slp_event_ids": [],
+        "tick": 5,
+        "v": 1
+      }
+    ],
+    "governance_budget_usage": {
+      "actions_accepted": 0,
+      "caps": [
+        {
+          "attr": "max_proposals_per_window",
+          "exhausted": false,
+          "limit": null,
+          "policy_id": null,
+          "used": 2
+        },
+        {
+          "attr": "max_actions_per_window",
+          "exhausted": false,
+          "limit": null,
+          "policy_id": null,
+          "used": 0
+        },
+        {
+          "attr": "max_topology_changes",
+          "exhausted": false,
+          "limit": null,
+          "policy_id": null,
+          "used": 0
+        }
+      ],
+      "proposals_seen": 2,
+      "topology_changes_applied": 0
+    },
+    "governance_envelopes": [
+      {
+        "gid": "RING5",
+        "layer": "GOV",
+        "meta": {
+          "codex_action_mode": "OBSERVE",
+          "event": "POLICY_SET_LOADED",
+          "governance_mode": "OBSERVE",
+          "policy_ids": [],
+          "policy_set_hash": "0a7621b8c6ef02a795db54b23571e77962c3917a388ad9d11f4f6f411ea2e0c9"
+        },
+        "mode": "G",
+        "nid": "RING5",
+        "payload_ref": 0,
+        "prev_chain": 1234567,
+        "seq": 1,
+        "sig": "",
+        "slp_event_ids": [],
+        "tick": 1,
+        "v": 1
+      },
+      {
+        "gid": "RING5",
+        "layer": "GOV",
+        "meta": {
+          "actions_accepted": 0,
+          "caps": [
+            {
+              "attr": "max_proposals_per_window",
+              "exhausted": false,
+              "limit": null,
+              "policy_id": null,
+              "used": 2
+            },
+            {
+              "attr": "max_actions_per_window",
+              "exhausted": false,
+              "limit": null,
+              "policy_id": null,
+              "used": 0
+            },
+            {
+              "attr": "max_topology_changes",
+              "exhausted": false,
+              "limit": null,
+              "policy_id": null,
+              "used": 0
+            }
+          ],
+          "event": "GOVERNANCE_DECISION_SUMMARY",
+          "governance_mode": "OBSERVE",
+          "policy_set_hash": "0a7621b8c6ef02a795db54b23571e77962c3917a388ad9d11f4f6f411ea2e0c9",
+          "proposals_seen": 2,
+          "topology_changes_applied": 0,
+          "window_id": "RING5_ticks_1_5"
+        },
+        "mode": "G",
+        "nid": "RING5",
+        "payload_ref": 0,
+        "prev_chain": 927048329,
+        "seq": 5,
+        "sig": "",
+        "slp_event_ids": [],
         "tick": 5,
         "v": 1
       }
@@ -812,8 +1103,37 @@
         "gid": "RING5",
         "loom_block_hash": "a22d170488672a61f7d3d95dfb5943ba904abb293819f2ca7f8d9d6efb982e56",
         "manifest_check": 379271437,
-        "meta": {},
-        "nap_envelope_hash": "215af611b921f382dd9de26ffb2bf47975552b66f304dbf6594eff4b98761c72",
+        "meta": {
+          "governance_budget": {
+            "actions_accepted": 0,
+            "caps": [
+              {
+                "attr": "max_proposals_per_window",
+                "exhausted": false,
+                "limit": null,
+                "policy_id": null,
+                "used": 2
+              },
+              {
+                "attr": "max_actions_per_window",
+                "exhausted": false,
+                "limit": null,
+                "policy_id": null,
+                "used": 0
+              },
+              {
+                "attr": "max_topology_changes",
+                "exhausted": false,
+                "limit": null,
+                "policy_id": null,
+                "used": 0
+              }
+            ],
+            "proposals_seen": 2,
+            "topology_changes_applied": 0
+          }
+        },
+        "nap_envelope_hash": "2e183ebf33fca1887273947154eab708e25ef397eb2d534defdc7667efbc0f78",
         "prev_entry_hash": null,
         "run_id": "RING5_demo",
         "tick": 1,
@@ -828,9 +1148,38 @@
         "gid": "RING5",
         "loom_block_hash": "d82ad90f93695692b9ad3945db800b33cfb2b97b08b95bce3b58169420e0694e",
         "manifest_check": 379271437,
-        "meta": {},
-        "nap_envelope_hash": "4e6324c415dc9a1c512ee4c9a99799b1e2835d98293fd7cba5b5ee9bd6c3e8e6",
-        "prev_entry_hash": "ebb5e0905c0ee884a4d4320d853053094b733df44cdaa42b106474b6e93cdcf9",
+        "meta": {
+          "governance_budget": {
+            "actions_accepted": 0,
+            "caps": [
+              {
+                "attr": "max_proposals_per_window",
+                "exhausted": false,
+                "limit": null,
+                "policy_id": null,
+                "used": 2
+              },
+              {
+                "attr": "max_actions_per_window",
+                "exhausted": false,
+                "limit": null,
+                "policy_id": null,
+                "used": 0
+              },
+              {
+                "attr": "max_topology_changes",
+                "exhausted": false,
+                "limit": null,
+                "policy_id": null,
+                "used": 0
+              }
+            ],
+            "proposals_seen": 2,
+            "topology_changes_applied": 0
+          }
+        },
+        "nap_envelope_hash": "05e548224a8b62c29d363c1eab63246ccb1e789b434c1547be08d4e36ea592fa",
+        "prev_entry_hash": "e46950378e6835b53da3f95ff406e333c0661194112866cb4437bc1c10586d40",
         "run_id": "RING5_demo",
         "tick": 2,
         "timestamp_utc": null,
@@ -844,9 +1193,38 @@
         "gid": "RING5",
         "loom_block_hash": "e69239088ec67fff63ef594b2f49033b11a8c6c3d222cce3e077a89a4fa0b939",
         "manifest_check": 379271437,
-        "meta": {},
-        "nap_envelope_hash": "584c5c6e5247b52f571962f1a61b410522f3aef51bf360584959a3846d1225c1",
-        "prev_entry_hash": "9e500438c8d1d857754e4930470fccb2d365905499d0126221d8f033e2d0c2f7",
+        "meta": {
+          "governance_budget": {
+            "actions_accepted": 0,
+            "caps": [
+              {
+                "attr": "max_proposals_per_window",
+                "exhausted": false,
+                "limit": null,
+                "policy_id": null,
+                "used": 2
+              },
+              {
+                "attr": "max_actions_per_window",
+                "exhausted": false,
+                "limit": null,
+                "policy_id": null,
+                "used": 0
+              },
+              {
+                "attr": "max_topology_changes",
+                "exhausted": false,
+                "limit": null,
+                "policy_id": null,
+                "used": 0
+              }
+            ],
+            "proposals_seen": 2,
+            "topology_changes_applied": 0
+          }
+        },
+        "nap_envelope_hash": "ba345f54895d3c1b230a9c4e0cb0e49c41baa0981eaee9a2e94a1c1280214757",
+        "prev_entry_hash": "be82f256453af383faac5f1f8c1cd95bd50e5da3cf3ea8a77fccb12dcc08f568",
         "run_id": "RING5_demo",
         "tick": 3,
         "timestamp_utc": null,
@@ -860,9 +1238,38 @@
         "gid": "RING5",
         "loom_block_hash": "11ff719ebdf71176e06ffff383ddedb24e3ee634a6b5f444e8e96fe1b1ee709e",
         "manifest_check": 379271437,
-        "meta": {},
-        "nap_envelope_hash": "03a0dc2f71ce7bd70259f38c098fc21e5df498df5a2d1736aa92cebae64239e3",
-        "prev_entry_hash": "95aa425bf4a31bdf2f04480515a366d2470cdf9a4f1b149dd9eb2d6dec984edb",
+        "meta": {
+          "governance_budget": {
+            "actions_accepted": 0,
+            "caps": [
+              {
+                "attr": "max_proposals_per_window",
+                "exhausted": false,
+                "limit": null,
+                "policy_id": null,
+                "used": 2
+              },
+              {
+                "attr": "max_actions_per_window",
+                "exhausted": false,
+                "limit": null,
+                "policy_id": null,
+                "used": 0
+              },
+              {
+                "attr": "max_topology_changes",
+                "exhausted": false,
+                "limit": null,
+                "policy_id": null,
+                "used": 0
+              }
+            ],
+            "proposals_seen": 2,
+            "topology_changes_applied": 0
+          }
+        },
+        "nap_envelope_hash": "33976ad8caf1957f657bd5eae01a35e178fbbbdf0f31df4ef7082490e35d84ce",
+        "prev_entry_hash": "fdda12c60012d25ed80cfbe4d88059834c7c63035bc161115791c7025eba6241",
         "run_id": "RING5_demo",
         "tick": 4,
         "timestamp_utc": null,
@@ -876,9 +1283,38 @@
         "gid": "RING5",
         "loom_block_hash": "ebb5e94a00d1c5ae9376c4dfd322cba02f3d39b67d9d722e129ac09fd6e84765",
         "manifest_check": 379271437,
-        "meta": {},
-        "nap_envelope_hash": "496675cebc53388025b416889033742c2d3056a330736ec297b18ea25ff102d2",
-        "prev_entry_hash": "d59257d1004b1c1340555d193244c221b2c9c0bf092db525940b2feec23c1216",
+        "meta": {
+          "governance_budget": {
+            "actions_accepted": 0,
+            "caps": [
+              {
+                "attr": "max_proposals_per_window",
+                "exhausted": false,
+                "limit": null,
+                "policy_id": null,
+                "used": 2
+              },
+              {
+                "attr": "max_actions_per_window",
+                "exhausted": false,
+                "limit": null,
+                "policy_id": null,
+                "used": 0
+              },
+              {
+                "attr": "max_topology_changes",
+                "exhausted": false,
+                "limit": null,
+                "policy_id": null,
+                "used": 0
+              }
+            ],
+            "proposals_seen": 2,
+            "topology_changes_applied": 0
+          }
+        },
+        "nap_envelope_hash": "130c07234313eb41a2be9b10e62c88c4baa3517e1ba272d244a8a35fd78161f5",
+        "prev_entry_hash": "368af23d2e9a295a6f0794d54863befbb945609f4b00cbb5f4c81d9409542f22",
         "run_id": "RING5_demo",
         "tick": 5,
         "timestamp_utc": null,

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import dataclasses
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Sequence
+from typing import Dict, List, Mapping, Optional, Sequence
 
 from gate import NAPEnvelopeV1
 from loom.loom import LoomPBlockV1
@@ -41,6 +41,7 @@ class ULedgerEntryV1:
     meta: Dict[str, object] = field(default_factory=dict)
     slp_event_refs: tuple[str, ...] = field(default_factory=tuple)
     topology_version: str = ""
+    policy_set_hash: Optional[str] = None
 
     def __post_init__(self) -> None:
         if not self.gid:
@@ -58,6 +59,10 @@ class ULedgerEntryV1:
                 raise ValueError("slp_event_refs must be non-empty strings when provided")
         if not isinstance(self.topology_version, str):
             raise ValueError("topology_version must be a string")
+        if self.policy_set_hash is not None and (
+            not isinstance(self.policy_set_hash, str) or not self.policy_set_hash
+        ):
+            raise ValueError("policy_set_hash must be a non-empty string when provided")
 
 
 def _validate_alignment(
@@ -84,6 +89,8 @@ def build_uledger_entries(
     manifest: APXManifestV1,
     start_prev_hash: Optional[str] = None,
     slp_events_by_tick: Optional[Mapping[int, Sequence[str]]] = None,
+    policy_set_hash: Optional[str] = None,
+    governance_meta: Optional[Mapping[str, object]] = None,
 ) -> List[ULedgerEntryV1]:
     """Construct a ULedgerEntry chain for a run segment.
 
@@ -120,6 +127,8 @@ def build_uledger_entries(
             prev_entry_hash=prev_hash,
             slp_event_refs=slp_refs,
             topology_version=p_block.topology_version,
+            policy_set_hash=policy_set_hash,
+            meta=dict(governance_meta or {}),
         )
 
         prev_hash = hash_record(entry)

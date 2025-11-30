@@ -1,0 +1,46 @@
+{
+  "v": 1,
+  "gid": "GF01",
+  "run_id": "GOV_CODEX_DEMO",
+  "topology_path": "../topologies/gf01_topology_profile.json",
+  "profile_path": "../profiles/profile_cmp0.json",
+  "ticks": 8,
+  "initial_state": [3, 1, 0, 0, 0, 0],
+  "windows": [
+    {
+      "window_id": "GF01_W1_ticks_1_8",
+      "apx_name": "GF01_APX_v0_full_window",
+      "start_tick": 1,
+      "end_tick": 8,
+      "streams": [
+        {"name": "S1_post_u_deltas", "source": "post_u_deltas"},
+        {"name": "S2_fluxes", "source": "fluxes"}
+      ]
+    }
+  ],
+  "primary_window_id": "GF01_W1_ticks_1_8",
+  "nap": {"layer": "DATA", "mode": "P", "v": 1},
+  "enable_codex": true,
+  "enable_pfna": false,
+  "governance": {
+    "codex_action_mode": "GOVERNED_APPLY",
+    "budget_policies": [
+      {
+        "policy_id": "budget-demo",
+        "max_actions_per_window": 1,
+        "max_proposals_per_window": 2,
+        "max_topology_changes": 8,
+        "notes": "Allow the demo action to cover the full GF01 edge set"
+      }
+    ],
+    "topology_policies": [
+      {
+        "policy_id": "topology-demo",
+        "description": "Allow Codex to place a single edge for the demo run"
+      }
+    ]
+  },
+  "diagnostics": {
+    "notes": "Governance + Codex demo scenario with a single governed action"
+  }
+}

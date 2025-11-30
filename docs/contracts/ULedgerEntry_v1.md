@@ -50,17 +50,22 @@ Top-level fields:
 10. **apx_manifest_hash: string**  
     - Hash of the `APXManifest_v1` for the relevant window.
 
-11. **codex_library_hash: string (optional)**  
+11. **codex_library_hash: string (optional)**
     - Hash of the Codex library snapshot after processing tick `t`.
 
-12. **prev_entry_hash: string (optional)**  
+12. **policy_set_hash: string (optional)**
+    - Hash of the `GovernanceConfig_v1` policy set bound to the run/session.
+
+13. **prev_entry_hash: string (optional)**
     - Hash of the previous `ULedgerEntry_v1` in the run, forming a commit chain.
 
-13. **timestamp_utc: string (optional)**  
+14. **timestamp_utc: string (optional)**
     - ISO 8601 timestamp when the entry was committed.
 
-14. **meta: object (optional)**  
-    - Additional metadata (e.g. operator annotations, tags, environment info).
+15. **meta: object (optional)**
+   - Additional metadata (e.g. operator annotations, tags, environment info).
+   - In Phase 5 runs this may include governance budget usage summaries (caps, usage,
+     exhaustion status) under a `governance_budget` key.
 
 ---
 

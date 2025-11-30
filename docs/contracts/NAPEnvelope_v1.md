@@ -17,49 +17,58 @@ Logical record name: `NAPEnvelope_v1`
 
 Fields (canonical key order):
 
-1. **v: int**  
-   - Schema version of the envelope.  
+1. **v: int**
+   - Schema version of the envelope.
    - For GF-01 V0, this MUST be `1`.
 
-2. **tick: int**  
+2. **tick: int**
    - Global tick index `t ≥ 1` within the run.
 
-3. **gid: string**  
-   - Graph/run ID.  
+3. **gid: string**
+   - Graph/run ID.
    - For GF-01, this MUST be `"GF01"`.
 
-4. **nid: string**  
-   - Node/engine ID.  
+4. **nid: string**
+   - Node/engine ID.
    - For the single-engine GF-01 fixture you can use `"N/A"` (or a stable ID string).
 
-5. **layer: enum { "INGRESS", "EGRESS", "CTRL", "DATA" }**
+5. **layer: enum { "INGRESS", "EGRESS", "CTRL", "DATA", "GOV" }**
    - Logical layer of this envelope.
    - GF-01 uses `"DATA"`.
-   - CTRL is reserved for lifecycle events, INGRESS for external inputs (PFNA), EGRESS for export/snapshot messages.
+   - CTRL is reserved for lifecycle events, INGRESS for external inputs (PFNA), EGRESS for export/snapshot messages, and GOV for governance signalling.
 
-6. **mode: enum { "I", "P", "S" }**
+6. **mode: enum { "I", "P", "S", "G" }**
    - `"I"` for I-block (checkpoint) windows.
    - `"P"` for P-block (per-tick) entries within a window.
    - `"S"` for secondary/auxiliary messages that accompany P-blocks when needed (e.g. PFNA ingress summaries).
+   - `"G"` for governance signalling envelopes on the GOV/CTRL path (policy loaded, budget exhaustion, decision summaries).
    - GF-01 uses `"P"` for ticks 1–8 in the worked examples.
 
-7. **payload_ref: int**  
-   - Decimal check value from the APX Manifest (`manifest_check`) of the current window.  
+7. **payload_ref: int**
+   - Decimal check value from the APX Manifest (`manifest_check`) of the current window.
    - No raw state goes here; it is **only** a reference.
 
-8. **seq: int**  
-   - Monotone sequence number per envelope.  
+8. **seq: int**
+   - Monotone sequence number per envelope.
    - In GF-01, this is simply `seq = tick`.
 
-9. **prev_chain: int**  
-   - Previous Loom chain value `C_{t-1}`.  
-   - For tick 1, this is the profile’s starting `C_0`.  
+9. **prev_chain: int**
+   - Previous Loom chain value `C_{t-1}`.
+   - For tick 1, this is the profile’s starting `C_0`.
    - For tick t>1, this is the `C_{t-1}` that Loom computed.
 
-10. **sig: string**  
-    - Signature / witness field.  
-    - On paper V0 this is just human text (e.g. initials, “witness at I-block”).  
+10. **sig: string**
+    - Signature / witness field.
+    - On paper V0 this is just human text (e.g. initials, “witness at I-block”).
     - Digitally this can start as an empty string, and later be upgraded to a cryptographic signature.
+
+11. **slp_event_ids: array<string>**
+    - Optional references to SLP events applied during this tick.
+    - Empty for most CMP-0/GF-01 envelopes.
+
+12. **meta: dict**
+    - Optional auxiliary metadata for governance and audit signalling.
+    - For GOV envelopes this includes fields like `event`, `policy_set_hash`, `caps`, and `exhausted_caps`.
 
 ---
 
@@ -78,7 +87,9 @@ In code, treat this as a struct or JSON object with exactly these fields:
   "payload_ref": 487809945,
   "seq": 1,
   "prev_chain": 1234567,
-  "sig": ""
+  "sig": "",
+  "slp_event_ids": [],
+  "meta": {}
 }
 ```
 
@@ -120,3 +131,4 @@ To keep Phase 3 behaviour deterministic while adding external inputs and session
 - **INGRESS/P** – PFNA ingress summaries emitted on the tick where PFNA batches are applied.
 - **DATA/P** – per-tick SceneFrame-derived envelopes (unchanged from GF-01).
 - **EGRESS/P** – end-of-session summary/export envelopes, typically referencing the primary APX manifest.
+- **GOV/G** – governance signalling envelopes for policy set loading, governance decision summaries, and budget exhaustion alerts. These are metadata-only wrappers; payload_ref stays aligned to the primary APX manifest or `0` when no manifest is relevant.
