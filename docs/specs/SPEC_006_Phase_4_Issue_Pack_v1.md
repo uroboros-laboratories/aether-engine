@@ -67,23 +67,23 @@ This is the foundation for multi-graph runs and SLP (dynamic topology) in Phase 
 
 ## Tasks
 
-- [ ] Extend or define `MultiGraphRunConfig_v1` including:
-  - [ ] List of graph configs (each with `gid`, topology/profile refs, initial state source).
-  - [ ] Optional inter-graph metadata (labels, grouping).
-- [ ] Implement a topology registry:
-  - [ ] Load one or more `TopologyProfile_v1` instances from config/fixtures.
-  - [ ] Index by `gid` and version.
-  - [ ] Validate uniqueness and consistency (no duplicated `gid` within a run).
-- [ ] Integrate with Gate/TBP:
-  - [ ] Gate creates one `UMXRunContext` per graph based on registry + config.
-- [ ] Add tests:
-  - [ ] Multi-graph config with 2–3 graphs loads successfully.
-  - [ ] Invalid configs (duplicate `gid`, missing topology) fail with clear errors.
+- [x] Extend or define `MultiGraphRunConfig_v1` including:
+  - [x] List of graph configs (each with `gid`, topology/profile refs, initial state source).
+  - [x] Optional inter-graph metadata (labels, grouping).
+- [x] Implement a topology registry:
+  - [x] Load one or more `TopologyProfile_v1` instances from config/fixtures.
+  - [x] Index by `gid` and version.
+  - [x] Validate uniqueness and consistency (no duplicated `gid` within a run).
+- [x] Integrate with Gate/TBP:
+  - [x] Gate creates one `UMXRunContext` per graph based on registry + config.
+- [x] Add tests:
+  - [x] Multi-graph config with 2–3 graphs loads successfully.
+  - [x] Invalid configs (duplicate `gid`, missing topology) fail with clear errors.
 
 ## Acceptance Criteria
 
-- [ ] Multi-graph session config is defined and can be parsed/validated.
-- [ ] Topology registry can supply per-graph topology/profile data deterministically.
+- [x] Multi-graph session config is defined and can be parsed/validated.
+- [x] Topology registry can supply per-graph topology/profile data deterministically.
 ```
 
 ---
@@ -121,25 +121,25 @@ This enables multi-graph runs driven by a single Gate/TBP tick loop.
 
 ## Tasks
 
-- [ ] Define `MultiGraphRunContext` holding:
-  - [ ] Map `gid -> UMXRunContext`.
-  - [ ] Map `gid -> LoomRunContext`.
-  - [ ] Session-level tick counter.
-  - [ ] Global config (e.g. list of active graphs, scheduling flags).
-- [ ] Implement stepping API:
-  - [ ] `step_all()` — advance all graphs one tick:
-    - [ ] For each `gid`, call UMX `step()` then Loom ingest.
-  - [ ] Optional: scheduling hooks for skipping certain graphs per tick if needed.
-- [ ] Ensure integration with `SceneFrame_v1`:
-  - [ ] Each tick and `gid` combination yields a scene frame keyed by `gid`.
-- [ ] Add tests:
-  - [ ] Multi-graph run with 2 simple graphs (line + ring) advances deterministically.
-  - [ ] GF-01 alone can still be run via MultiGraphRunContext as a special case.
+- [x] Define `MultiGraphRunContext` holding:
+  - [x] Map `gid -> UMXRunContext`.
+  - [x] Map `gid -> LoomRunContext`.
+  - [x] Session-level tick counter.
+  - [x] Global config (e.g. list of active graphs, scheduling flags).
+- [x] Implement stepping API:
+  - [x] `step_all()` — advance all graphs one tick:
+    - [x] For each `gid`, call UMX `step()` then Loom ingest.
+-  - [x] Optional: scheduling hooks for skipping certain graphs per tick if needed.
+- [x] Ensure integration with `SceneFrame_v1`:
+  - [x] Each tick and `gid` combination yields a scene frame keyed by `gid`.
+- [x] Add tests:
+  - [x] Multi-graph run with 2 simple graphs (line + ring) advances deterministically.
+  - [x] GF-01 alone can still be run via MultiGraphRunContext as a special case.
 
 ## Acceptance Criteria
 
-- [ ] MultiGraphRunContext can coordinate multiple graphs’ UMX & Loom contexts under a shared tick axis.
-- [ ] Tests confirm deterministic behaviour across multi-graph runs.
+- [x] MultiGraphRunContext can coordinate multiple graphs’ UMX & Loom contexts under a shared tick axis.
+- [x] Tests confirm deterministic behaviour across multi-graph runs.
 ```
 
 ---
@@ -177,22 +177,22 @@ These events will be applied between ticks to modify graph structure.
 
 ## Tasks
 
-- [ ] Define `SLPEvent_v1` base fields:
-  - [ ] `event_id`, `gid`, `tick_effective`, `op_type`, `payload`, etc.
-- [ ] Define minimal operation types, e.g.:
-  - [ ] `ADD_NODE`, `REMOVE_NODE`, `UPDATE_NODE`.
-  - [ ] `ADD_EDGE`, `REMOVE_EDGE`, `UPDATE_EDGE`.
-  - [ ] `GRAPH_ENABLE`, `GRAPH_DISABLE`.
-- [ ] Define invariants:
-  - [ ] No orphan edges, no duplicate node IDs, etc.
-- [ ] Add tests:
-  - [ ] Construct events of each type and serialise/deserialise.
-  - [ ] Validate invariants at the event level.
+- [x] Define `SLPEvent_v1` base fields:
+  - [x] `event_id`, `gid`, `tick_effective`, `op_type`, `payload`, etc.
+- [x] Define minimal operation types, e.g.:
+  - [x] `ADD_NODE`, `REMOVE_NODE`, `UPDATE_NODE`.
+  - [x] `ADD_EDGE`, `REMOVE_EDGE`, `UPDATE_EDGE`.
+  - [x] `GRAPH_ENABLE`, `GRAPH_DISABLE`.
+- [x] Define invariants:
+  - [x] No orphan edges, no duplicate node IDs, etc.
+- [x] Add tests:
+  - [x] Construct events of each type and serialise/deserialise.
+  - [x] Validate invariants at the event level.
 
 ## Acceptance Criteria
 
-- [ ] SLPEvent_v1 is defined with a small but expressive operation set.
-- [ ] Operation types cover basic dynamic topology needs for Phase 4.
+- [x] SLPEvent_v1 is defined with a small but expressive operation set.
+- [x] Operation types cover basic dynamic topology needs for Phase 4.
 ```
 
 ---
@@ -224,25 +224,25 @@ Implement logic to **apply SLPEvent_v1 operations** to live topologies safely an
 
 ## Tasks
 
-- [ ] Define when SLP events are applied:
-  - [ ] e.g. between ticks `t` and `t+1` for each `gid`.
-- [ ] Implement application logic:
-  - [ ] Take `TopologyProfile_v1` and a list of SLP events for `gid`.
-  - [ ] Apply operations in a deterministic order.
-- [ ] On each event application:
-  - [ ] Validate resulting topology (no orphan edges, etc.).
-  - [ ] If invalid, fail with a clear error and/or mark run as aborted.
-- [ ] Integration with MultiGraphRunContext:
-  - [ ] Maintain per-graph SLP event queues keyed by tick.
-  - [ ] On each tick boundary, apply relevant SLP events before the next `step_all()`.
-- [ ] Add tests:
-  - [ ] Simple scenarios of edge/node add/remove during a run.
-  - [ ] Event ordering tests, including conflicting events.
+- [x] Define when SLP events are applied:
+  - [x] e.g. between ticks `t` and `t+1` for each `gid`.
+- [x] Implement application logic:
+  - [x] Take `TopologyProfile_v1` and a list of SLP events for `gid`.
+  - [x] Apply operations in a deterministic order.
+- [x] On each event application:
+  - [x] Validate resulting topology (no orphan edges, etc.).
+  - [x] If invalid, fail with a clear error and/or mark run as aborted.
+- [x] Integration with MultiGraphRunContext:
+  - [x] Maintain per-graph SLP event queues keyed by tick.
+  - [x] On each tick boundary, apply relevant SLP events before the next `step_all()`.
+- [x] Add tests:
+  - [x] Simple scenarios of edge/node add/remove during a run.
+  - [x] Event ordering tests, including conflicting events.
 
 ## Acceptance Criteria
 
-- [ ] SLP events can be applied deterministically between ticks.
-- [ ] Topology remains valid after each batch of SLP events.
+- [x] SLP events can be applied deterministically between ticks.
+- [x] Topology remains valid after each batch of SLP events.
 ```
 
 ---
@@ -279,22 +279,22 @@ Extend Loom, NAP and Press so they remain consistent in the face of:
 
 ## Tasks
 
-- [ ] Loom:
-  - [ ] Ensure I-block snapshots include topology at blocks that cross SLP boundaries.
-  - [ ] Include `gid` and any dynamic topology metadata in blocks where appropriate.
-- [ ] NAP:
-  - [ ] Include `gid` in envelopes for multi-graph runs.
-  - [ ] Optionally include SLP-related metadata (e.g. SLP event IDs) in CTRL envelopes.
-- [ ] Press:
-  - [ ] Ensure streams are tagged by `gid` and respect topology changes (e.g. new edges impact flux streams).
-- [ ] Add tests:
-  - [ ] Scenario: graph where a new edge is added mid-run; verify Loom snapshots, NAP envelopes and Press outputs remain consistent.
-  - [ ] Multi-graph scenario where only one graph receives SLP events.
+- [x] Loom:
+  - [x] Ensure I-block snapshots include topology at blocks that cross SLP boundaries.
+  - [x] Include `gid` and any dynamic topology metadata in blocks where appropriate.
+- [x] NAP:
+  - [x] Include `gid` in envelopes for multi-graph runs.
+  - [x] Optionally include SLP-related metadata (e.g. SLP event IDs) in CTRL envelopes.
+- [x] Press:
+  - [x] Ensure streams are tagged by `gid` and respect topology changes (e.g. new edges impact flux streams).
+- [x] Add tests:
+  - [x] Scenario: graph where a new edge is added mid-run; verify Loom snapshots, NAP envelopes and Press outputs remain consistent.
+  - [x] Multi-graph scenario where only one graph receives SLP events.
 
 ## Acceptance Criteria
 
-- [ ] Loom, NAP and Press correctly reflect graph identity and topology changes.
-- [ ] No ambiguity about which graph or topology version an artefact belongs to.
+- [x] Loom, NAP and Press correctly reflect graph identity and topology changes.
+- [x] No ambiguity about which graph or topology version an artefact belongs to.
 ```
 
 ---
@@ -331,21 +331,21 @@ while remaining strictly observer-only (no actioning yet).
 
 ## Tasks
 
-- [ ] Extend Codex ingest to accept:
-  - [ ] SLPEvent_v1 sequences per `gid`.
-  - [ ] Topology snapshots (from Loom I-blocks or direct dumps).
-- [ ] Define at least one SLP/multi-graph motif type (e.g. repeated growth pattern, common structural subgraph).
-- [ ] Implement motif extraction:
-  - [ ] Find repeated SLP event sequences or structural configurations.
-  - [ ] Produce `CodexLibraryEntry_v1` with MDL/usage stats.
-- [ ] Add tests:
-  - [ ] Multi-graph scenario with repeated SLP patterns yields deterministic motifs.
-  - [ ] Re-running scenario yields identical Codex entries.
+- [x] Extend Codex ingest to accept:
+  - [x] SLPEvent_v1 sequences per `gid`.
+  - [x] Topology snapshots (from Loom I-blocks or direct dumps).
+- [x] Define at least one SLP/multi-graph motif type (e.g. repeated growth pattern, common structural subgraph).
+- [x] Implement motif extraction:
+  - [x] Find repeated SLP event sequences or structural configurations.
+  - [x] Produce `CodexLibraryEntry_v1` with MDL/usage stats.
+- [x] Add tests:
+  - [x] Multi-graph scenario with repeated SLP patterns yields deterministic motifs.
+  - [x] Re-running scenario yields identical Codex entries.
 
 ## Acceptance Criteria
 
-- [ ] Codex can learn motifs involving dynamic topology and multi-graph structure.
-- [ ] Codex outputs are stable and do not influence engine behaviour in Phase 4.
+- [x] Codex can learn motifs involving dynamic topology and multi-graph structure.
+- [x] Codex outputs are stable and do not influence engine behaviour in Phase 4.
 ```
 
 ---
@@ -380,24 +380,24 @@ Extend U-ledger so that:
 
 ## Tasks
 
-- [ ] Extend ULedgerEntry_v1 to include:
-  - [ ] `gid` / graph identifiers where not already present.
-  - [ ] Optional references/hashes to SLP events applied at or before a tick.
-- [ ] Design a multi-graph + SLP demo scenario:
-  - [ ] Two or more graphs with simple dynamics.
-  - [ ] A small set of SLP events (e.g. adding/removing edges) during the run.
-- [ ] Implement test harness:
-  - [ ] Run scenario and collect U-ledger chain + pillar outputs.
-  - [ ] Persist canonical JSON snapshot under `tests/fixtures/snapshots/multigraph_slp_demo/`.
-- [ ] Add regression tests:
-  - [ ] New runs must match the ledger snapshot (and any associated snapshots).
-- [ ] Verify replay:
-  - [ ] From snapshot, replay topology + state using pillar replay APIs and check consistency.
+- [x] Extend ULedgerEntry_v1 to include:
+  - [x] `gid` / graph identifiers where not already present.
+  - [x] Optional references/hashes to SLP events applied at or before a tick.
+- [x] Design a multi-graph + SLP demo scenario:
+  - [x] Two or more graphs with simple dynamics.
+  - [x] A small set of SLP events (e.g. adding/removing edges) during the run.
+- [x] Implement test harness:
+  - [x] Run scenario and collect U-ledger chain + pillar outputs.
+  - [x] Persist canonical JSON snapshot under `tests/fixtures/snapshots/multigraph_slp_demo/`.
+- [x] Add regression tests:
+  - [x] New runs must match the ledger snapshot (and any associated snapshots).
+- [x] Verify replay:
+  - [x] From snapshot, replay topology + state using pillar replay APIs and check consistency.
 
 ## Acceptance Criteria
 
-- [ ] Multi-graph + SLP demo scenario is documented and deterministic.
-- [ ] U-ledger entries form a coherent chain including SLP and multi-graph context.
+- [x] Multi-graph + SLP demo scenario is documented and deterministic.
+- [x] U-ledger entries form a coherent chain including SLP and multi-graph context.
 - [ ] Snapshot-based tests catch behavioural drift in Phase 4 features.
 ```
 

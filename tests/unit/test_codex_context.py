@@ -30,7 +30,15 @@ def _make_dummy_ledger(tick: int) -> UMXTickLedgerV1:
 
 
 def _make_dummy_p_block(tick: int) -> LoomPBlockV1:
-    return LoomPBlockV1(tick=tick, seq=tick, s_t=1, C_t=tick, edge_flux_summary=[])
+    return LoomPBlockV1(
+        gid="G_SYNTH",
+        tick=tick,
+        seq=tick,
+        s_t=1,
+        C_t=tick,
+        topology_version="test", 
+        edge_flux_summary=[],
+    )
 
 
 def _make_custom_ledger(tick: int, du1: int, du2: int) -> UMXTickLedgerV1:

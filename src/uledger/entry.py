@@ -39,6 +39,8 @@ class ULedgerEntryV1:
     codex_library_hash: Optional[str] = None
     timestamp_utc: Optional[str] = None
     meta: Dict[str, object] = field(default_factory=dict)
+    slp_event_refs: tuple[str, ...] = field(default_factory=tuple)
+    topology_version: str = ""
 
     def __post_init__(self) -> None:
         if not self.gid:
@@ -51,6 +53,11 @@ class ULedgerEntryV1:
             raise ValueError("window_id must be provided")
         if not isinstance(self.meta, dict):
             raise ValueError("meta must be a dictionary")
+        for event_id in self.slp_event_refs:
+            if not isinstance(event_id, str) or not event_id:
+                raise ValueError("slp_event_refs must be non-empty strings when provided")
+        if not isinstance(self.topology_version, str):
+            raise ValueError("topology_version must be a string")
 
 
 def _validate_alignment(
@@ -76,6 +83,7 @@ def build_uledger_entries(
     envelopes: Sequence[NAPEnvelopeV1],
     manifest: APXManifestV1,
     start_prev_hash: Optional[str] = None,
+    slp_events_by_tick: Optional[Mapping[int, Sequence[str]]] = None,
 ) -> List[ULedgerEntryV1]:
     """Construct a ULedgerEntry chain for a run segment.
 
@@ -97,6 +105,7 @@ def build_uledger_entries(
         if ledger.tick <= last_tick:
             raise ValueError("ledgers must be in strictly increasing tick order")
         last_tick = ledger.tick
+        slp_refs = tuple(sorted(slp_events_by_tick.get(ledger.tick, ()))) if slp_events_by_tick else tuple()
         entry = ULedgerEntryV1(
             gid=gid,
             run_id=run_id,
@@ -109,6 +118,8 @@ def build_uledger_entries(
             loom_block_hash=hash_record(p_block),
             apx_manifest_hash=manifest_hash,
             prev_entry_hash=prev_hash,
+            slp_event_refs=slp_refs,
+            topology_version=p_block.topology_version,
         )
 
         prev_hash = hash_record(entry)

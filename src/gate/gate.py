@@ -333,6 +333,7 @@ class NAPEnvelopeV1:
     seq: int
     prev_chain: int
     sig: str
+    slp_event_ids: tuple[str, ...] = field(default_factory=tuple)
 
     def __post_init__(self) -> None:
         if self.tick < 1:
@@ -351,6 +352,9 @@ class NAPEnvelopeV1:
             raise ValueError("payload_ref must be non-negative")
         if self.prev_chain < 0:
             raise ValueError("prev_chain must be non-negative")
+        for event_id in self.slp_event_ids:
+            if not isinstance(event_id, str) or not event_id:
+                raise ValueError("slp_event_ids must be non-empty strings when provided")
 
 
 def build_scene_frame(
@@ -405,6 +409,7 @@ def emit_nap_envelope(
     layer: Optional[str] = None,
     mode: Optional[str] = None,
     sig: str = "",
+    slp_event_ids: Optional[Sequence[str]] = None,
 ) -> NAPEnvelopeV1:
     """Emit a NAPEnvelope_v1 from a SceneFrame_v1 and profile defaults."""
 
@@ -428,6 +433,7 @@ def emit_nap_envelope(
         seq=seq or scene.tick,
         prev_chain=scene.C_prev,
         sig=sig,
+        slp_event_ids=tuple(slp_event_ids or ()),
     )
 
 
@@ -469,6 +475,7 @@ def build_scene_and_envelope(
     pfna_refs: Optional[Iterable[str]] = None,
     nap_layer: Optional[str] = None,
     nap_mode: Optional[str] = None,
+    slp_event_ids: Optional[Sequence[str]] = None,
 ) -> Tuple[SceneFrameV1, NAPEnvelopeV1]:
     """Convenience wrapper that returns both SceneFrame and NAP envelope."""
 
@@ -492,6 +499,7 @@ def build_scene_and_envelope(
         payload_ref=manifest_check,
         layer=nap_layer,
         mode=nap_mode,
+        slp_event_ids=slp_event_ids,
     )
     return scene, envelope
 
