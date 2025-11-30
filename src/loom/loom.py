@@ -21,17 +21,23 @@ class FluxSummaryV1:
 class LoomPBlockV1:
     """Per-tick Loom block carrying the chain value."""
 
+    gid: str
     tick: int
     seq: int
     s_t: int
     C_t: int
+    topology_version: str = ""
     edge_flux_summary: List[FluxSummaryV1] = field(default_factory=list)
 
     def __post_init__(self) -> None:
+        if not self.gid:
+            raise ValueError("gid must be provided for LoomPBlockV1")
         if self.tick < 1:
             raise ValueError("tick must be >= 1")
         if self.seq < 1:
             raise ValueError("seq must be >= 1")
+        if not isinstance(self.topology_version, str):
+            raise ValueError("topology_version must be a string")
 
 
 @dataclass(frozen=True)
@@ -51,14 +57,18 @@ class TopologyEdgeSnapshotV1:
 class LoomIBlockV1:
     """Checkpoint block emitted every W ticks."""
 
+    gid: str
     tick: int
     W: int
     C_t: int
     profile_version: str
+    topology_version: str
     post_u: List[int]
     topology_snapshot: List[TopologyEdgeSnapshotV1]
 
     def __post_init__(self) -> None:
+        if not self.gid:
+            raise ValueError("gid must be provided for LoomIBlockV1")
         if self.tick < 1:
             raise ValueError("tick must be >= 1")
         if self.W < 1:
@@ -67,6 +77,8 @@ class LoomIBlockV1:
             raise ValueError("post_u must be populated")
         if not self.topology_snapshot:
             raise ValueError("topology_snapshot must be populated")
+        if not isinstance(self.topology_version, str):
+            raise ValueError("topology_version must be a string")
 
 
 def compute_s_t(ledger: UMXTickLedgerV1, profile: ProfileCMP0V1) -> int:
@@ -141,6 +153,8 @@ def step(
     profile: ProfileCMP0V1,
     W: Optional[int] = None,
     s_t: Optional[int] = None,
+    gid: Optional[str] = None,
+    topology_version: Optional[str] = None,
 ) -> Tuple[LoomPBlockV1, int, Optional[LoomIBlockV1]]:
     """Process one tick through the Loom chain.
 
@@ -152,20 +166,24 @@ def step(
     s_t = compute_s_t(ledger, profile) if s_t is None else s_t
     C_t = compute_chain_value(C_prev, s_t, seq, profile)
     p_block = LoomPBlockV1(
+        gid=gid or topo.gid,
         tick=ledger.tick,
         seq=seq,
         s_t=s_t,
         C_t=C_t,
+        topology_version=topology_version or str(topo.meta.get("version", "v1")),
         edge_flux_summary=_summarize_fluxes(ledger.edges),
     )
 
     i_block: Optional[LoomIBlockV1] = None
     if ledger.tick % W == 0:
         i_block = LoomIBlockV1(
+            gid=gid or topo.gid,
             tick=ledger.tick,
             W=W,
             C_t=C_t,
             profile_version=profile.name,
+            topology_version=topology_version or str(topo.meta.get("version", "v1")),
             post_u=list(ledger.post_u),
             topology_snapshot=_snapshot_topology(topo),
         )

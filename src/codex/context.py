@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from typing import Dict, Iterable, Mapping, Optional, Sequence, Tuple
 
 from gate import NAPEnvelopeV1
+from core.slp import SLPEventV1
 from loom.loom import LoomIBlockV1, LoomPBlockV1
 from press import APXManifestV1, APXiViewV1
 from press.aeon import AEONWindowGrammarV1, AEONWindowRegistry
@@ -127,6 +128,10 @@ class CodexRuntimeStats:
     ledger_pattern_edge_ids: Dict[Tuple[Tuple[int, ...], Tuple[int, ...]], Tuple[int, ...]] = (
         field(default_factory=dict)
     )
+    slp_sequences: Dict[Tuple[str, Tuple[str, ...]], int] = field(default_factory=dict)
+    slp_sequence_ticks: Dict[Tuple[str, Tuple[str, ...]], list[int]] = field(
+        default_factory=dict
+    )
 
     def note_run(self, run_id: str) -> None:
         if run_id not in self.ingested_runs:
@@ -150,6 +155,13 @@ class CodexRuntimeStats:
         self.total_ticks += 1
         self._record_edge_patterns(edges)
         self._record_ledger_signature(edges, tick)
+
+    def record_slp_sequence(
+        self, *, gid: str, op_types: Sequence[str], ticks: Sequence[int]
+    ) -> None:
+        key = (gid, tuple(op_types))
+        self.slp_sequences[key] = self.slp_sequences.get(key, 0) + 1
+        self.slp_sequence_ticks.setdefault(key, []).extend(ticks)
 
 
 class CodexContext:
@@ -191,6 +203,7 @@ class CodexContext:
         aeon_windows: Optional[AEONWindowGrammarV1 | AEONWindowRegistry] = None,
         apxi_views: Optional[Mapping[str, APXiViewV1] | Sequence[APXiViewV1]] = None,
         window_id: Optional[str] = None,
+        slp_events: Optional[Sequence[SLPEventV1]] = None,
     ) -> None:
         """Consume run artefacts and tally lightweight patterns.
 
@@ -227,6 +240,11 @@ class CodexContext:
 
         if envelopes:
             self.runtime_stats.total_envelopes += len(envelopes)
+
+        if slp_events:
+            op_types = [evt.op_type.value if hasattr(evt.op_type, "value") else str(evt.op_type) for evt in slp_events]
+            ticks = [evt.tick_effective for evt in slp_events]
+            self.runtime_stats.record_slp_sequence(gid=gid, op_types=op_types, ticks=ticks)
 
         if aeon_windows is not None:
             grammar = (
@@ -323,6 +341,57 @@ class CodexContext:
                 accepted_entries.append(entry)
 
         return accepted_entries
+
+    def learn_slp_event_motifs(self, *, threshold: int = 1) -> list[CodexLibraryEntryV1]:
+        """Emit observer-only motifs from ingested SLP event sequences."""
+
+        if self._last_ingest_gid is None or self._last_ingest_window is None:
+            raise ValueError("ingest must be called before learning motifs")
+
+        accepted: list[CodexLibraryEntryV1] = []
+        motif_index = len(self.library) + 1
+        existing_keys = {
+            tuple(entry.pattern_descriptor.get("op_types", []))
+            for entry in self.library
+            if entry.pattern_descriptor.get("type") == "slp_event_pattern_v1"
+        }
+
+        for key, count in sorted(self.runtime_stats.slp_sequences.items()):
+            gid, op_types = key
+            if count < threshold:
+                continue
+
+            ticks = self.runtime_stats.slp_sequence_ticks.get(key, [])
+            created_at = min(ticks) if ticks else 0
+            last_updated = max(ticks) if ticks else 0
+            if tuple(op_types) in existing_keys:
+                continue
+
+            entry = CodexLibraryEntryV1(
+                library_id=self.library_id,
+                motif_id=f"MOTIF_{motif_index:04d}",
+                profile=self.profile,
+                source_gid=gid,
+                source_window_id=self._last_ingest_window,
+                pattern_descriptor={"type": "slp_event_pattern_v1", "op_types": list(op_types)},
+                mdl_stats={
+                    "L_self": len(op_types),
+                    "L_usage": count,
+                    "L_total": len(op_types) + count,
+                    "delta_vs_baseline": -count,
+                },
+                usage_stats={"usage_count": count},
+                created_at_tick=created_at,
+                last_updated_tick=last_updated,
+                meta={"runs": list(self.runtime_stats.ingested_runs)},
+            )
+
+            self.library.append(entry)
+            accepted.append(entry)
+            existing_keys.add(tuple(op_types))
+            motif_index += 1
+
+        return accepted
 
     def learn_apxi_descriptor_motifs(self) -> list[CodexLibraryEntryV1]:
         """Surface APXi descriptor motifs from the last ingest."""

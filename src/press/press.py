@@ -35,6 +35,8 @@ class APXManifestV1:
     apx_name: str
     profile: str
     manifest_check: int
+    gid: str = ""
+    window_id: str = ""
     streams: List[APXStreamV1] = field(default_factory=list)
     apxi_view_ref: str | None = None
 
@@ -308,6 +310,8 @@ class PressWindowContextV1:
             apx_name=apx_name,
             profile=self.profile.name,
             manifest_check=manifest_check,
+            gid=self.gid,
+            window_id=self.window_id,
             streams=apx_streams,
             apxi_view_ref=apxi_view.view_id if apxi_view else None,
         )

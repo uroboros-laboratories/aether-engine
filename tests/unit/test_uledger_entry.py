@@ -11,14 +11,14 @@ def test_uledger_hash_chain_is_stable():
 
     entry_hashes = [hash_record(entry) for entry in result.u_ledger_entries]
     expected_hashes = [
-        "3e915909cc818dda52b1759902dcbc349074b48482e7a96dd3152bd9d8c13f08",
-        "f423a5d9c2e04d718af9f91d15166fc6de24302b7ea4378c2f5b83ea22944124",
-        "8a94d7e5f501264a85a0d54ee52828496d7ae328a9a620200c64b62b4d11db8c",
-        "db860c7b5320adc0f18d05db0aadfac49d55baf1faeab8a0a683347f8f325d51",
-        "94056e59637c5a50c528d3b64accd91ed66ea25ae7a20571970a958d62386705",
-        "ac982a0e3c4d079679312bf028fcf855e7b0af907e4d4de235ca037e3260ddda",
-        "99a02e4f8dee9a839be8f2bd1bfebefcfb12a20bb82d149111ec9ad5be5a0b24",
-        "fa9ac51c0cb0880f63e3577382353323f28a29eb40321d8e0ae00225f6a885c4",
+        "784b534cef972b1ce7363e767269c5598bf421120becc2480f4ff3ba72bce822",
+        "ab66b5cb30a1708f8767ed08469aed21576cb0f05b15699e741acdacc0c410ba",
+        "61462ea526d81d547b945eceede374b987cce7b98e33e66e585cabb15b54778f",
+        "c9fbbe12b8e1b68a5378d05db36c537decf899be5fd1fb868a9ef30167d4cb7a",
+        "f33f02af19a89e3fa1f674c843fc9c87affa080c81449bbc5bfa888dfa7b79bb",
+        "be77e1ecd85b81cd9855f03f7e1ed85a681f6c6f02102d438edd344f65c25d4d",
+        "a79d756811233fb10df9f4a9d7e6692eaf49a0a6910c7da0baa9654c8ec9bcb1",
+        "243be9d8484c7223bd275e62f377d7d122ee7bbf41689743c9b0581d10a53306",
     ]
 
     assert entry_hashes == expected_hashes

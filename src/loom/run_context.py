@@ -72,6 +72,8 @@ class LoomRunContext:
             profile=self.profile,
             W=self.W,
             s_t=s_t,
+            gid=self.topo.gid,
+            topology_version=str(self.topo.meta.get("version", "v1")),
         )
 
         self.C_t = C_t
