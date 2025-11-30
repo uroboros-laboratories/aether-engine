@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, Iterable, List, Mapping, Optional, Sequence
+from typing import Dict, Iterable, List, Mapping, Optional, Sequence, TYPE_CHECKING
 
 from gate import (
     NAPEnvelopeV1,
@@ -13,6 +13,7 @@ from gate import (
     _pfna_payload_ref,
     build_scene_and_envelope,
 )
+from governance import BudgetUsage, GovernedActionQueue, GovernanceConfigV1, governed_decision_loop
 from ops import StructuredLogger
 from loom.loom import LoomIBlockV1, LoomPBlockV1
 from loom.run_context import LoomRunContext
@@ -22,6 +23,9 @@ from umx.profile_cmp0 import ProfileCMP0V1, gf01_profile_cmp0
 from umx.run_context import UMXRunContext
 from umx.tick_ledger import UMXTickLedgerV1
 from umx.topology_profile import TopologyProfileV1, gf01_topology_profile
+
+if TYPE_CHECKING:  # pragma: no cover - import guard for typing only
+    from codex.context import CodexContext, CodexLibraryEntryV1, CodexProposalV1
 
 
 @dataclass(frozen=True)
@@ -41,6 +45,14 @@ class GF01RunResult:
     ingress_envelopes: List[NAPEnvelopeV1]
     egress_envelopes: List[NAPEnvelopeV1]
     u_ledger_entries: List[ULedgerEntryV1]
+    governance: GovernanceConfigV1 | None = None
+    governance_budget_usage: BudgetUsage | None = None
+    governance_envelopes: List[NAPEnvelopeV1] = field(default_factory=list)
+    codex_motifs: tuple["CodexLibraryEntryV1", ...] = ()
+    codex_proposals: tuple["CodexProposalV1", ...] = ()
+    codex_actions: tuple["CodexProposalV1", ...] = ()
+    codex_hypothetical_actions: tuple["CodexProposalV1", ...] = ()
+    codex_hypothetical_actions: tuple["CodexProposalV1", ...] = ()
 
 
 @dataclass(frozen=True)
@@ -158,6 +170,9 @@ def run_cmp0_tick_loop(
     pfna_inputs: Optional[Iterable[PFNAInputV0]] = None,
     press_default_streams: Optional[Iterable[PressStreamSpecV1]] = None,
     logger: Optional[StructuredLogger] = None,
+    governance: GovernanceConfigV1 | None = None,
+    codex_ctx: "CodexContext" | None = None,
+    codex_proposals: Sequence["CodexProposalV1"] | None = None,
 ) -> GF01RunResult:
     """Execute a CMP-0 tick loop and assemble SceneFrame-driven artefacts."""
 
@@ -330,6 +345,132 @@ def run_cmp0_tick_loop(
         scenes.append(scene)
         envelopes.append(envelope)
 
+    codex_motifs: tuple["CodexLibraryEntryV1", ...] = ()
+    codex_proposals_out: tuple["CodexProposalV1", ...] = ()
+    codex_actions: tuple["CodexProposalV1", ...] = ()
+    codex_hypothetical_actions: tuple["CodexProposalV1", ...] = ()
+    budget_usage_meta: dict[str, object] | None = None
+    governance_envelopes: list[NAPEnvelopeV1] = []
+
+    proposals_source: Sequence["CodexProposalV1"] | None = codex_proposals
+    if codex_ctx:
+        codex_ctx.ingest(
+            gid=topo.gid,
+            run_id=run_id,
+            ledgers=ledgers,
+            p_blocks=p_blocks,
+            i_blocks=i_blocks,
+            manifests=manifests,
+            envelopes=envelopes,
+            window_id=primary_spec.window_id,
+        )
+        codex_motifs = tuple(codex_ctx.learn_edge_flux_motifs(threshold=1))
+        if proposals_source is None:
+            proposals_source = codex_ctx.emit_proposals(usage_threshold=1)
+
+    governance_active = governance is not None and governance.codex_action_mode != "OFF"
+    if governance_active:
+        policy_ids = sorted(
+            {
+                *[p.policy_id for p in governance.topology_policies],
+                *[p.policy_id for p in governance.budget_policies],
+                *[p.policy_id for p in governance.safety_policies],
+            }
+        )
+        governance_envelopes.append(
+            NAPEnvelopeV1(
+                v=int(profile.nap_defaults.get("v", 1)),
+                tick=1,
+                gid=topo.gid,
+                nid=nid,
+                layer="GOV",
+                mode="G",
+                payload_ref=0,
+                seq=1,
+                prev_chain=profile.C0,
+                sig="",
+                meta={
+                    "event": "POLICY_SET_LOADED",
+                    "policy_set_hash": governance.policy_set_hash,
+                    "policy_ids": policy_ids,
+                    "governance_mode": governance.governance_mode,
+                    "codex_action_mode": governance.codex_action_mode,
+                },
+            )
+        )
+
+    if proposals_source:
+        codex_proposals_out = tuple(proposals_source)
+        if governance is None:
+            governance = GovernanceConfigV1()
+        decision: GovernedActionQueue = governed_decision_loop(
+            proposals=codex_proposals_out,
+            config=governance,
+            window_id=primary_spec.window_id,
+            evaluated_at_tick=total_ticks,
+        )
+        codex_proposals_out = decision.evaluated
+        if decision.dry_run:
+            codex_hypothetical_actions = decision.approved
+        else:
+            codex_actions = decision.approved
+        budget_usage_meta = {
+            "governance_budget": decision.budget_usage.to_dict()
+        }
+        governance_budget_usage: BudgetUsage | None = decision.budget_usage
+        if governance_active:
+            caps = [cap.to_dict() for cap in decision.budget_usage.caps]
+            exhausted = [cap for cap in caps if cap.get("exhausted")]
+            summary_meta = {
+                "event": "GOVERNANCE_DECISION_SUMMARY",
+                "policy_set_hash": governance.policy_set_hash,
+                "window_id": primary_spec.window_id,
+                "governance_mode": governance.governance_mode,
+                "proposals_seen": decision.budget_usage.proposals_seen,
+                "actions_accepted": decision.budget_usage.actions_accepted,
+                "topology_changes_applied": decision.budget_usage.topology_changes_applied,
+                "caps": caps,
+            }
+            governance_envelopes.append(
+                NAPEnvelopeV1(
+                    v=int(profile.nap_defaults.get("v", 1)),
+                    tick=total_ticks,
+                    gid=topo.gid,
+                    nid=nid,
+                    layer="GOV",
+                    mode="G",
+                    payload_ref=0,
+                    seq=total_ticks,
+                    prev_chain=p_blocks[-1].C_t if p_blocks else profile.C0,
+                    sig="",
+                meta=summary_meta,
+            )
+        )
+            if exhausted:
+                governance_envelopes.append(
+                    NAPEnvelopeV1(
+                        v=int(profile.nap_defaults.get("v", 1)),
+                        tick=total_ticks,
+                        gid=topo.gid,
+                        nid=nid,
+                        layer="GOV",
+                        mode="G",
+                        payload_ref=0,
+                        seq=total_ticks + 1,
+                        prev_chain=p_blocks[-1].C_t if p_blocks else profile.C0,
+                        sig="",
+                        meta={
+                            "event": "BUDGET_EXHAUSTION",
+                            "policy_set_hash": governance.policy_set_hash,
+                            "window_id": primary_spec.window_id,
+                            "governance_mode": governance.governance_mode,
+                            "exhausted_caps": exhausted,
+                        },
+                    )
+                )
+    else:
+        governance_budget_usage = None
+
     u_ledger_entries = build_uledger_entries(
         gid=topo.gid,
         run_id=run_id,
@@ -338,6 +479,8 @@ def run_cmp0_tick_loop(
         p_blocks=p_blocks,
         envelopes=envelopes,
         manifest=primary_manifest,
+        policy_set_hash=governance.policy_set_hash if governance else None,
+        governance_meta=budget_usage_meta,
     )
 
     final_chain = p_blocks[-1].C_t if p_blocks else profile.C0
@@ -381,8 +524,15 @@ def run_cmp0_tick_loop(
         envelopes=envelopes,
         ingress_envelopes=ingress_envelopes,
         egress_envelopes=egress_envelopes,
+        governance_envelopes=governance_envelopes,
         u_ledger_entries=u_ledger_entries,
         apxi_views=apxi_views,
+        governance=governance,
+        governance_budget_usage=governance_budget_usage,
+        codex_motifs=codex_motifs,
+        codex_proposals=codex_proposals_out,
+        codex_actions=codex_actions,
+        codex_hypothetical_actions=codex_hypothetical_actions,
     )
 
 
@@ -415,5 +565,6 @@ def run_gf01(run_id: str = "GF01", nid: str = "N/A") -> GF01RunResult:
         primary_window_id="GF01_W1_ticks_1_8",
         run_id=run_id,
         nid=nid,
+        governance=GovernanceConfigV1(gid=topo.gid, run_id=run_id),
     )
 

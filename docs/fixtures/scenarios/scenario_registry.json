@@ -21,6 +21,13 @@
       "pillars": ["gate", "press"],
       "runtime_hint": "small",
       "run_config_path": "../configs/ring_5_run_config.json"
+    },
+    {
+      "scenario_id": "gov-codex-demo",
+      "description": "Governed Codex actioning demo with a single approved proposal.",
+      "pillars": ["gate", "press", "governance", "codex"],
+      "runtime_hint": "small",
+      "run_config_path": "../configs/gov_codex_demo_run_config.json"
     }
   ]
 }

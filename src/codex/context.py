@@ -54,7 +54,7 @@ class CodexLibraryEntryV1:
 
 @dataclass(frozen=True)
 class CodexProposalV1:
-    """Observer-only proposal record constructed from learned motifs."""
+    """Proposal record constructed from learned motifs and governance evaluation."""
 
     proposal_id: str
     library_id: str
@@ -67,6 +67,11 @@ class CodexProposalV1:
     target_window_id: Optional[str] = None
     target_location: dict = field(default_factory=dict)
     budget_effect: dict = field(default_factory=dict)
+    governance_status: str = "UNEVALUATED"
+    violated_policies: tuple[str, ...] = field(default_factory=tuple)
+    governance_scores: dict = field(default_factory=dict)
+    governance_notes: dict = field(default_factory=dict)
+    evaluated_at_tick: Optional[int] = None
     meta: dict = field(default_factory=dict)
 
     def __post_init__(self) -> None:
@@ -104,6 +109,24 @@ class CodexProposalV1:
             not isinstance(self.target_window_id, str) or not self.target_window_id
         ):
             raise ValueError("target_window_id, when provided, must be a non-empty string")
+
+        if self.governance_status not in {"UNEVALUATED", "OK", "SOFT_FAIL", "HARD_FAIL"}:
+            raise ValueError(
+                "governance_status must be one of UNEVALUATED, OK, SOFT_FAIL, HARD_FAIL"
+            )
+        if not isinstance(self.violated_policies, tuple):
+            object.__setattr__(self, "violated_policies", tuple(self.violated_policies))
+        for policy_id in self.violated_policies:
+            if not isinstance(policy_id, str) or not policy_id:
+                raise ValueError("violated_policies entries must be non-empty strings")
+        if not isinstance(self.governance_scores, dict):
+            raise ValueError("governance_scores must be a dictionary")
+        if not isinstance(self.governance_notes, dict):
+            raise ValueError("governance_notes must be a dictionary")
+        if self.evaluated_at_tick is not None and (
+            not isinstance(self.evaluated_at_tick, int) or self.evaluated_at_tick < 0
+        ):
+            raise ValueError("evaluated_at_tick must be a non-negative integer when provided")
 
 
 @dataclass

@@ -6,7 +6,7 @@ so they can be serialised deterministically for regression testing.
 from __future__ import annotations
 
 import json
-from typing import Dict, List
+from typing import Any, Dict, List, TYPE_CHECKING
 
 from core.tick_loop import GF01RunResult
 from gate.gate import NAPEnvelopeV1, SceneFrameV1, SessionRunResult
@@ -20,6 +20,10 @@ from press.apxi import APXiViewV1
 from press.press import APXManifestV1, APXStreamV1
 from uledger.entry import ULedgerEntryV1
 from umx.tick_ledger import EdgeFluxV1, UMXTickLedgerV1
+
+if TYPE_CHECKING:  # pragma: no cover - import guard for typing only
+    from codex.context import CodexLibraryEntryV1, CodexProposalV1
+    from governance import BudgetUsage
 
 
 def _serialize_edge_flux(edge: EdgeFluxV1) -> Dict[str, int]:
@@ -168,6 +172,8 @@ def serialize_nap_envelope(envelope: NAPEnvelopeV1) -> Dict[str, object]:
         "seq": envelope.seq,
         "prev_chain": envelope.prev_chain,
         "sig": envelope.sig,
+        "slp_event_ids": list(envelope.slp_event_ids),
+        "meta": dict(envelope.meta),
     }
 
 
@@ -208,6 +214,53 @@ def _serialize_pfna_input(config_entry: object) -> Dict[str, object]:
     }
 
 
+def _serialize_codex_library_entry(entry: "CodexLibraryEntryV1") -> Dict[str, object]:
+    return {
+        "library_id": entry.library_id,
+        "motif_id": entry.motif_id,
+        "profile": entry.profile,
+        "source_gid": entry.source_gid,
+        "source_window_id": entry.source_window_id,
+        "pattern_descriptor": dict(entry.pattern_descriptor),
+        "mdl_stats": dict(entry.mdl_stats),
+        "usage_stats": dict(entry.usage_stats),
+        "created_at_tick": entry.created_at_tick,
+        "last_updated_tick": entry.last_updated_tick,
+        "meta": dict(entry.meta),
+    }
+
+
+def _serialize_codex_proposal(proposal: "CodexProposalV1") -> Dict[str, object]:
+    governance_notes = dict(proposal.governance_notes)
+    notes = governance_notes.get("notes")
+    if isinstance(notes, tuple):
+        governance_notes["notes"] = list(notes)
+
+    return {
+        "proposal_id": proposal.proposal_id,
+        "library_id": proposal.library_id,
+        "motif_id": proposal.motif_id,
+        "gid": proposal.gid,
+        "target_window_id": proposal.target_window_id,
+        "target_location": dict(proposal.target_location),
+        "action": proposal.action,
+        "expected_effect": dict(proposal.expected_effect),
+        "budget_effect": dict(proposal.budget_effect),
+        "created_at_tick": proposal.created_at_tick,
+        "status": proposal.status,
+        "governance_status": proposal.governance_status,
+        "violated_policies": list(proposal.violated_policies),
+        "governance_scores": dict(proposal.governance_scores),
+        "governance_notes": governance_notes,
+        "evaluated_at_tick": proposal.evaluated_at_tick,
+        "meta": dict(proposal.meta),
+    }
+
+
+def _serialize_budget_usage(usage: "BudgetUsage") -> Dict[str, Any]:
+    return usage.to_dict()
+
+
 def serialize_gf01_run(result: GF01RunResult) -> Dict[str, object]:
     payload: Dict[str, object] = {
         "run_id": result.run_id,
@@ -220,8 +273,36 @@ def serialize_gf01_run(result: GF01RunResult) -> Dict[str, object]:
         },
         "scenes": [serialize_scene_frame(scene) for scene in result.scenes],
         "envelopes": [serialize_nap_envelope(env) for env in result.envelopes],
+        "governance_envelopes": [
+            serialize_nap_envelope(env) for env in getattr(result, "governance_envelopes", ())
+        ],
         "u_ledger_entries": [serialize_uledger_entry(entry) for entry in result.u_ledger_entries],
     }
+
+    if result.codex_motifs:
+        payload["codex_motifs"] = [
+            _serialize_codex_library_entry(entry) for entry in result.codex_motifs
+        ]
+
+    if result.codex_proposals:
+        payload["codex_proposals"] = [
+            _serialize_codex_proposal(proposal) for proposal in result.codex_proposals
+        ]
+
+    if result.codex_actions:
+        payload["codex_actions"] = [
+            _serialize_codex_proposal(action) for action in result.codex_actions
+        ]
+
+    if getattr(result, "codex_hypothetical_actions", None):
+        payload["codex_hypothetical_actions"] = [
+            _serialize_codex_proposal(action) for action in result.codex_hypothetical_actions
+        ]
+
+    if getattr(result, "governance_budget_usage", None):
+        payload["governance_budget_usage"] = _serialize_budget_usage(
+            result.governance_budget_usage
+        )
 
     if result.apxi_views:
         payload["apxi_views"] = {

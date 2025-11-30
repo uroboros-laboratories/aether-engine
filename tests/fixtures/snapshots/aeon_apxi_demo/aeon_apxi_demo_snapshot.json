@@ -2,978 +2,43 @@
   "aeon_grammar": {
     "base_windows": {
       "AEON_LINE4_W1_ticks_1_3": {
+        "window_id": "AEON_LINE4_W1_ticks_1_3",
+        "tick_start": 1,
+        "tick_end": 3,
         "labels": [
           "demo",
           "first-half"
         ],
-        "parent_id": null,
         "press_window_id": null,
-        "tick_end": 3,
-        "tick_start": 1,
-        "window_id": "AEON_LINE4_W1_ticks_1_3"
+        "parent_id": null
       },
       "AEON_LINE4_W2_ticks_4_6": {
+        "window_id": "AEON_LINE4_W2_ticks_4_6",
+        "tick_start": 4,
+        "tick_end": 6,
         "labels": [
           "demo",
           "second-half"
         ],
-        "parent_id": null,
         "press_window_id": null,
-        "tick_end": 6,
-        "tick_start": 4,
-        "window_id": "AEON_LINE4_W2_ticks_4_6"
+        "parent_id": null
       }
     },
     "derived_windows": {
       "AEON_LINE4_W_all": {
+        "window_id": "AEON_LINE4_W_all",
+        "source_ids": [
+          "AEON_LINE4_W1_ticks_1_3",
+          "AEON_LINE4_W2_ticks_4_6"
+        ],
         "aggregation": "concat",
         "labels": [
           "demo",
           "aggregate"
         ],
-        "parent_id": null,
         "press_window_id": "LINE4_APX_W1_T1_6",
-        "source_ids": [
-          "AEON_LINE4_W1_ticks_1_3",
-          "AEON_LINE4_W2_ticks_4_6"
-        ],
-        "window_id": "AEON_LINE4_W_all"
+        "parent_id": null
       }
-    }
-  },
-  "session": {
-    "config": {
-      "gid": "LINE4",
-      "initial_state": [
-        1,
-        0,
-        0,
-        0
-      ],
-      "nid": "aeon-apxi-demo-node",
-      "pfna_inputs": [],
-      "press_default_streams": [
-        {
-          "description": "post_u delta per node",
-          "name": "S1_post_u_deltas",
-          "scheme_hint": null,
-          "source": "post_u_deltas"
-        },
-        {
-          "description": "edge flux per edge",
-          "name": "S2_fluxes",
-          "scheme_hint": null,
-          "source": "fluxes"
-        },
-        {
-          "description": "prev chain checksum per tick",
-          "name": "S3_prev_chain",
-          "scheme_hint": null,
-          "source": "prev_chain"
-        }
-      ],
-      "primary_window_id": "LINE4_W1_T1_6",
-      "run_id": "AEON_APXI_DEMO_RUN",
-      "total_ticks": 6,
-      "window_ids": [
-        "LINE4_W1_T1_6"
-      ]
-    },
-    "lifecycle_envelopes": [
-      {
-        "gid": "LINE4",
-        "layer": "CTRL",
-        "mode": "P",
-        "nid": "aeon-apxi-demo-node",
-        "payload_ref": 0,
-        "prev_chain": 1234567,
-        "seq": 1,
-        "sig": "",
-        "tick": 1,
-        "v": 1
-      },
-      {
-        "gid": "LINE4",
-        "layer": "CTRL",
-        "mode": "P",
-        "nid": "aeon-apxi-demo-node",
-        "payload_ref": 125200697,
-        "prev_chain": 759821701,
-        "seq": 7,
-        "sig": "",
-        "tick": 6,
-        "v": 1
-      }
-    ],
-    "tick_result": {
-      "apxi_views": {
-        "LINE4_APX_W1_T1_6": {
-          "aeon_window_id": "AEON_LINE4_W_all",
-          "apx_name": "LINE4_APX_W1_T1_6",
-          "descriptors_by_stream": {
-            "S1_post_u_deltas": [
-              {
-                "L_model": 6,
-                "L_residual": 5,
-                "L_total": 11,
-                "descriptor": {
-                  "descriptor_id": "apxi_delta_linear",
-                  "descriptor_type": "LINEAR_TREND",
-                  "labels": [],
-                  "params": {
-                    "intercept": 0,
-                    "slope": 1,
-                    "start_tick": 1
-                  },
-                  "stream_id": "S1_post_u_deltas",
-                  "window_id": "AEON_LINE4_W_all"
-                },
-                "residual_scheme": "R"
-              }
-            ],
-            "S2_fluxes": [
-              {
-                "L_model": 1,
-                "L_residual": 0,
-                "L_total": 1,
-                "descriptor": {
-                  "descriptor_id": "apxi_flux_const",
-                  "descriptor_type": "CONST_SEGMENT",
-                  "labels": [],
-                  "params": {
-                    "value": 0
-                  },
-                  "stream_id": "S2_fluxes",
-                  "window_id": "AEON_LINE4_W_all"
-                },
-                "residual_scheme": "R"
-              }
-            ],
-            "S3_prev_chain": [
-              {
-                "L_model": 1,
-                "L_residual": 5,
-                "L_total": 6,
-                "descriptor": {
-                  "descriptor_id": "apxi_chain_const",
-                  "descriptor_type": "CONST_SEGMENT",
-                  "labels": [],
-                  "params": {
-                    "value": 0
-                  },
-                  "stream_id": "S3_prev_chain",
-                  "window_id": "AEON_LINE4_W_all"
-                },
-                "residual_scheme": "R"
-              }
-            ]
-          },
-          "residual_scheme": "R",
-          "window_id": "LINE4_W1_T1_6"
-        }
-      },
-      "egress_envelopes": [
-        {
-          "gid": "LINE4",
-          "layer": "EGRESS",
-          "mode": "P",
-          "nid": "aeon-apxi-demo-node",
-          "payload_ref": 125200697,
-          "prev_chain": 759821701,
-          "seq": 8,
-          "sig": "",
-          "tick": 6,
-          "v": 1
-        }
-      ],
-      "envelopes": [
-        {
-          "gid": "LINE4",
-          "layer": "DATA",
-          "mode": "P",
-          "nid": "aeon-apxi-demo-node",
-          "payload_ref": 125200697,
-          "prev_chain": 1234567,
-          "seq": 1,
-          "sig": "",
-          "tick": 1,
-          "v": 1
-        },
-        {
-          "gid": "LINE4",
-          "layer": "DATA",
-          "mode": "P",
-          "nid": "aeon-apxi-demo-node",
-          "payload_ref": 125200697,
-          "prev_chain": 20987847,
-          "seq": 2,
-          "sig": "",
-          "tick": 2,
-          "v": 1
-        },
-        {
-          "gid": "LINE4",
-          "layer": "DATA",
-          "mode": "P",
-          "nid": "aeon-apxi-demo-node",
-          "payload_ref": 125200697,
-          "prev_chain": 356793608,
-          "seq": 3,
-          "sig": "",
-          "tick": 3,
-          "v": 1
-        },
-        {
-          "gid": "LINE4",
-          "layer": "DATA",
-          "mode": "P",
-          "nid": "aeon-apxi-demo-node",
-          "payload_ref": 125200697,
-          "prev_chain": 65491504,
-          "seq": 4,
-          "sig": "",
-          "tick": 4,
-          "v": 1
-        },
-        {
-          "gid": "LINE4",
-          "layer": "DATA",
-          "mode": "P",
-          "nid": "aeon-apxi-demo-node",
-          "payload_ref": 125200697,
-          "prev_chain": 113355772,
-          "seq": 5,
-          "sig": "",
-          "tick": 5,
-          "v": 1
-        },
-        {
-          "gid": "LINE4",
-          "layer": "DATA",
-          "mode": "P",
-          "nid": "aeon-apxi-demo-node",
-          "payload_ref": 125200697,
-          "prev_chain": 927048329,
-          "seq": 6,
-          "sig": "",
-          "tick": 6,
-          "v": 1
-        }
-      ],
-      "i_blocks": [],
-      "ingress_envelopes": [],
-      "ledgers": [
-        {
-          "edges": [
-            {
-              "cap": 64,
-              "du": 1,
-              "e_id": 1,
-              "f_e": 0,
-              "i": 1,
-              "j": 2,
-              "raw": 0
-            },
-            {
-              "cap": 64,
-              "du": 0,
-              "e_id": 2,
-              "f_e": 0,
-              "i": 2,
-              "j": 3,
-              "raw": 0
-            },
-            {
-              "cap": 64,
-              "du": 0,
-              "e_id": 3,
-              "f_e": 0,
-              "i": 3,
-              "j": 4,
-              "raw": 0
-            }
-          ],
-          "post_u": [
-            1,
-            0,
-            0,
-            0
-          ],
-          "pre_u": [
-            1,
-            0,
-            0,
-            0
-          ],
-          "sum_post_u": 1,
-          "sum_pre_u": 1,
-          "tick": 1,
-          "z_check": 1
-        },
-        {
-          "edges": [
-            {
-              "cap": 64,
-              "du": 1,
-              "e_id": 1,
-              "f_e": 0,
-              "i": 1,
-              "j": 2,
-              "raw": 0
-            },
-            {
-              "cap": 64,
-              "du": 0,
-              "e_id": 2,
-              "f_e": 0,
-              "i": 2,
-              "j": 3,
-              "raw": 0
-            },
-            {
-              "cap": 64,
-              "du": 0,
-              "e_id": 3,
-              "f_e": 0,
-              "i": 3,
-              "j": 4,
-              "raw": 0
-            }
-          ],
-          "post_u": [
-            1,
-            0,
-            0,
-            0
-          ],
-          "pre_u": [
-            1,
-            0,
-            0,
-            0
-          ],
-          "sum_post_u": 1,
-          "sum_pre_u": 1,
-          "tick": 2,
-          "z_check": 1
-        },
-        {
-          "edges": [
-            {
-              "cap": 64,
-              "du": 1,
-              "e_id": 1,
-              "f_e": 0,
-              "i": 1,
-              "j": 2,
-              "raw": 0
-            },
-            {
-              "cap": 64,
-              "du": 0,
-              "e_id": 2,
-              "f_e": 0,
-              "i": 2,
-              "j": 3,
-              "raw": 0
-            },
-            {
-              "cap": 64,
-              "du": 0,
-              "e_id": 3,
-              "f_e": 0,
-              "i": 3,
-              "j": 4,
-              "raw": 0
-            }
-          ],
-          "post_u": [
-            1,
-            0,
-            0,
-            0
-          ],
-          "pre_u": [
-            1,
-            0,
-            0,
-            0
-          ],
-          "sum_post_u": 1,
-          "sum_pre_u": 1,
-          "tick": 3,
-          "z_check": 1
-        },
-        {
-          "edges": [
-            {
-              "cap": 64,
-              "du": 1,
-              "e_id": 1,
-              "f_e": 0,
-              "i": 1,
-              "j": 2,
-              "raw": 0
-            },
-            {
-              "cap": 64,
-              "du": 0,
-              "e_id": 2,
-              "f_e": 0,
-              "i": 2,
-              "j": 3,
-              "raw": 0
-            },
-            {
-              "cap": 64,
-              "du": 0,
-              "e_id": 3,
-              "f_e": 0,
-              "i": 3,
-              "j": 4,
-              "raw": 0
-            }
-          ],
-          "post_u": [
-            1,
-            0,
-            0,
-            0
-          ],
-          "pre_u": [
-            1,
-            0,
-            0,
-            0
-          ],
-          "sum_post_u": 1,
-          "sum_pre_u": 1,
-          "tick": 4,
-          "z_check": 1
-        },
-        {
-          "edges": [
-            {
-              "cap": 64,
-              "du": 1,
-              "e_id": 1,
-              "f_e": 0,
-              "i": 1,
-              "j": 2,
-              "raw": 0
-            },
-            {
-              "cap": 64,
-              "du": 0,
-              "e_id": 2,
-              "f_e": 0,
-              "i": 2,
-              "j": 3,
-              "raw": 0
-            },
-            {
-              "cap": 64,
-              "du": 0,
-              "e_id": 3,
-              "f_e": 0,
-              "i": 3,
-              "j": 4,
-              "raw": 0
-            }
-          ],
-          "post_u": [
-            1,
-            0,
-            0,
-            0
-          ],
-          "pre_u": [
-            1,
-            0,
-            0,
-            0
-          ],
-          "sum_post_u": 1,
-          "sum_pre_u": 1,
-          "tick": 5,
-          "z_check": 1
-        },
-        {
-          "edges": [
-            {
-              "cap": 64,
-              "du": 1,
-              "e_id": 1,
-              "f_e": 0,
-              "i": 1,
-              "j": 2,
-              "raw": 0
-            },
-            {
-              "cap": 64,
-              "du": 0,
-              "e_id": 2,
-              "f_e": 0,
-              "i": 2,
-              "j": 3,
-              "raw": 0
-            },
-            {
-              "cap": 64,
-              "du": 0,
-              "e_id": 3,
-              "f_e": 0,
-              "i": 3,
-              "j": 4,
-              "raw": 0
-            }
-          ],
-          "post_u": [
-            1,
-            0,
-            0,
-            0
-          ],
-          "pre_u": [
-            1,
-            0,
-            0,
-            0
-          ],
-          "sum_post_u": 1,
-          "sum_pre_u": 1,
-          "tick": 6,
-          "z_check": 1
-        }
-      ],
-      "manifests": {
-        "LINE4_APX_W1_T1_6": {
-          "apx_name": "LINE4_APX_W1_T1_6",
-          "apxi_view_ref": "LINE4_APX_W1_T1_6::AEON_LINE4_W_all::APXiView_v1",
-          "manifest_check": 125200697,
-          "profile": "CMP-0",
-          "streams": [
-            {
-              "L_model": 0,
-              "L_residual": 5,
-              "L_total": 5,
-              "description": "post_u delta per node",
-              "params": 0,
-              "scheme": "R",
-              "stream_id": "S1_post_u_deltas"
-            },
-            {
-              "L_model": 0,
-              "L_residual": 5,
-              "L_total": 5,
-              "description": "edge flux per edge",
-              "params": 0,
-              "scheme": "R",
-              "stream_id": "S2_fluxes"
-            },
-            {
-              "L_model": 0,
-              "L_residual": 5,
-              "L_total": 5,
-              "description": "prev chain checksum per tick",
-              "params": 0,
-              "scheme": "R",
-              "stream_id": "S3_prev_chain"
-            }
-          ]
-        }
-      },
-      "p_blocks": [
-        {
-          "C_t": 20987847,
-          "edge_flux_summary": [
-            {
-              "e_id": 1,
-              "f_e": 0
-            },
-            {
-              "e_id": 2,
-              "f_e": 0
-            },
-            {
-              "e_id": 3,
-              "f_e": 0
-            }
-          ],
-          "s_t": 9,
-          "seq": 1,
-          "tick": 1
-        },
-        {
-          "C_t": 356793608,
-          "edge_flux_summary": [
-            {
-              "e_id": 1,
-              "f_e": 0
-            },
-            {
-              "e_id": 2,
-              "f_e": 0
-            },
-            {
-              "e_id": 3,
-              "f_e": 0
-            }
-          ],
-          "s_t": 9,
-          "seq": 2,
-          "tick": 2
-        },
-        {
-          "C_t": 65491504,
-          "edge_flux_summary": [
-            {
-              "e_id": 1,
-              "f_e": 0
-            },
-            {
-              "e_id": 2,
-              "f_e": 0
-            },
-            {
-              "e_id": 3,
-              "f_e": 0
-            }
-          ],
-          "s_t": 9,
-          "seq": 3,
-          "tick": 3
-        },
-        {
-          "C_t": 113355772,
-          "edge_flux_summary": [
-            {
-              "e_id": 1,
-              "f_e": 0
-            },
-            {
-              "e_id": 2,
-              "f_e": 0
-            },
-            {
-              "e_id": 3,
-              "f_e": 0
-            }
-          ],
-          "s_t": 9,
-          "seq": 4,
-          "tick": 4
-        },
-        {
-          "C_t": 927048329,
-          "edge_flux_summary": [
-            {
-              "e_id": 1,
-              "f_e": 0
-            },
-            {
-              "e_id": 2,
-              "f_e": 0
-            },
-            {
-              "e_id": 3,
-              "f_e": 0
-            }
-          ],
-          "s_t": 9,
-          "seq": 5,
-          "tick": 5
-        },
-        {
-          "C_t": 759821701,
-          "edge_flux_summary": [
-            {
-              "e_id": 1,
-              "f_e": 0
-            },
-            {
-              "e_id": 2,
-              "f_e": 0
-            },
-            {
-              "e_id": 3,
-              "f_e": 0
-            }
-          ],
-          "s_t": 9,
-          "seq": 6,
-          "tick": 6
-        }
-      ],
-      "run_id": "AEON_APXI_DEMO_RUN",
-      "scenes": [
-        {
-          "C_prev": 1234567,
-          "C_t": 20987847,
-          "gid": "LINE4",
-          "ledger_ref": "umx_ledger_1",
-          "manifest_check": 125200697,
-          "meta": {
-            "manifest_ref": "LINE4_APX_W1_T1_6",
-            "p_block_ref": "loom_p_block_1"
-          },
-          "nap_envelope_ref": null,
-          "nid": "aeon-apxi-demo-node",
-          "post_u": [
-            1,
-            0,
-            0,
-            0
-          ],
-          "pre_u": [
-            1,
-            0,
-            0,
-            0
-          ],
-          "run_id": "AEON_APXI_DEMO_RUN",
-          "tick": 1,
-          "window_id": "LINE4_W1_T1_6"
-        },
-        {
-          "C_prev": 20987847,
-          "C_t": 356793608,
-          "gid": "LINE4",
-          "ledger_ref": "umx_ledger_2",
-          "manifest_check": 125200697,
-          "meta": {
-            "manifest_ref": "LINE4_APX_W1_T1_6",
-            "p_block_ref": "loom_p_block_2"
-          },
-          "nap_envelope_ref": null,
-          "nid": "aeon-apxi-demo-node",
-          "post_u": [
-            1,
-            0,
-            0,
-            0
-          ],
-          "pre_u": [
-            1,
-            0,
-            0,
-            0
-          ],
-          "run_id": "AEON_APXI_DEMO_RUN",
-          "tick": 2,
-          "window_id": "LINE4_W1_T1_6"
-        },
-        {
-          "C_prev": 356793608,
-          "C_t": 65491504,
-          "gid": "LINE4",
-          "ledger_ref": "umx_ledger_3",
-          "manifest_check": 125200697,
-          "meta": {
-            "manifest_ref": "LINE4_APX_W1_T1_6",
-            "p_block_ref": "loom_p_block_3"
-          },
-          "nap_envelope_ref": null,
-          "nid": "aeon-apxi-demo-node",
-          "post_u": [
-            1,
-            0,
-            0,
-            0
-          ],
-          "pre_u": [
-            1,
-            0,
-            0,
-            0
-          ],
-          "run_id": "AEON_APXI_DEMO_RUN",
-          "tick": 3,
-          "window_id": "LINE4_W1_T1_6"
-        },
-        {
-          "C_prev": 65491504,
-          "C_t": 113355772,
-          "gid": "LINE4",
-          "ledger_ref": "umx_ledger_4",
-          "manifest_check": 125200697,
-          "meta": {
-            "manifest_ref": "LINE4_APX_W1_T1_6",
-            "p_block_ref": "loom_p_block_4"
-          },
-          "nap_envelope_ref": null,
-          "nid": "aeon-apxi-demo-node",
-          "post_u": [
-            1,
-            0,
-            0,
-            0
-          ],
-          "pre_u": [
-            1,
-            0,
-            0,
-            0
-          ],
-          "run_id": "AEON_APXI_DEMO_RUN",
-          "tick": 4,
-          "window_id": "LINE4_W1_T1_6"
-        },
-        {
-          "C_prev": 113355772,
-          "C_t": 927048329,
-          "gid": "LINE4",
-          "ledger_ref": "umx_ledger_5",
-          "manifest_check": 125200697,
-          "meta": {
-            "manifest_ref": "LINE4_APX_W1_T1_6",
-            "p_block_ref": "loom_p_block_5"
-          },
-          "nap_envelope_ref": null,
-          "nid": "aeon-apxi-demo-node",
-          "post_u": [
-            1,
-            0,
-            0,
-            0
-          ],
-          "pre_u": [
-            1,
-            0,
-            0,
-            0
-          ],
-          "run_id": "AEON_APXI_DEMO_RUN",
-          "tick": 5,
-          "window_id": "LINE4_W1_T1_6"
-        },
-        {
-          "C_prev": 927048329,
-          "C_t": 759821701,
-          "gid": "LINE4",
-          "ledger_ref": "umx_ledger_6",
-          "manifest_check": 125200697,
-          "meta": {
-            "manifest_ref": "LINE4_APX_W1_T1_6",
-            "p_block_ref": "loom_p_block_6"
-          },
-          "nap_envelope_ref": null,
-          "nid": "aeon-apxi-demo-node",
-          "post_u": [
-            1,
-            0,
-            0,
-            0
-          ],
-          "pre_u": [
-            1,
-            0,
-            0,
-            0
-          ],
-          "run_id": "AEON_APXI_DEMO_RUN",
-          "tick": 6,
-          "window_id": "LINE4_W1_T1_6"
-        }
-      ],
-      "u_ledger_entries": [
-        {
-          "C_t": 20987847,
-          "apx_manifest_hash": "0f532c7546d6540786d03d1cbcc8a8b3e63ba70ffdebf2f02ea3866b083d8a4b",
-          "codex_library_hash": null,
-          "gid": "LINE4",
-          "loom_block_hash": "04db047dc7e44b41a58a009679d0c9c69eb0e6a1e7507960cd0c7ca8292ff0f4",
-          "manifest_check": 125200697,
-          "meta": {},
-          "nap_envelope_hash": "fead4d2869042890595c7589c9ccfd5b7138ad218373cdb4edcbeed1e82109d1",
-          "prev_entry_hash": null,
-          "run_id": "AEON_APXI_DEMO_RUN",
-          "tick": 1,
-          "timestamp_utc": null,
-          "umx_ledger_hash": "ce68911242e6211ece6f95d6b17f20b81b48fd0ba6f119e13533e278ffddf088",
-          "window_id": "LINE4_W1_T1_6"
-        },
-        {
-          "C_t": 356793608,
-          "apx_manifest_hash": "0f532c7546d6540786d03d1cbcc8a8b3e63ba70ffdebf2f02ea3866b083d8a4b",
-          "codex_library_hash": null,
-          "gid": "LINE4",
-          "loom_block_hash": "e2488772382aec5b58e9222de95b17a72a1b80e0ababc0e430c0d28485cd02b8",
-          "manifest_check": 125200697,
-          "meta": {},
-          "nap_envelope_hash": "6c53b5eef265061e1e645f734c8e0b0bc5be46d97c28ae93fc362889d161c0c5",
-          "prev_entry_hash": "7decc21bfc8ebd3198e2e7f6adb3e2ab4c621eb9ca3ea9eba8e6d3cc20a1f060",
-          "run_id": "AEON_APXI_DEMO_RUN",
-          "tick": 2,
-          "timestamp_utc": null,
-          "umx_ledger_hash": "bb25f2c7d0128115aaecf38d8ddf6588de90e08bf45eef650c1a3c811a1d9b66",
-          "window_id": "LINE4_W1_T1_6"
-        },
-        {
-          "C_t": 65491504,
-          "apx_manifest_hash": "0f532c7546d6540786d03d1cbcc8a8b3e63ba70ffdebf2f02ea3866b083d8a4b",
-          "codex_library_hash": null,
-          "gid": "LINE4",
-          "loom_block_hash": "acc605886a319f7f92f7255e860f956fa8e5d8a2a94d478d5398abcd98b7a5db",
-          "manifest_check": 125200697,
-          "meta": {},
-          "nap_envelope_hash": "11a28e557913b75cf559ebb2589c2234865b195f4ac7d4e06a3c34fb3b2f4498",
-          "prev_entry_hash": "f74088184d0105a37765009b78959d96df3589a13f046b26343e94d1aace5d1c",
-          "run_id": "AEON_APXI_DEMO_RUN",
-          "tick": 3,
-          "timestamp_utc": null,
-          "umx_ledger_hash": "910ed4f6de4ceb5b01878447a91a5980c5e684f57864582aca53ad9411b03260",
-          "window_id": "LINE4_W1_T1_6"
-        },
-        {
-          "C_t": 113355772,
-          "apx_manifest_hash": "0f532c7546d6540786d03d1cbcc8a8b3e63ba70ffdebf2f02ea3866b083d8a4b",
-          "codex_library_hash": null,
-          "gid": "LINE4",
-          "loom_block_hash": "8e9bd822e61ffc971f7e5617ad35b6e151342512586f862ed2bc42fe5f706322",
-          "manifest_check": 125200697,
-          "meta": {},
-          "nap_envelope_hash": "a9de0e08cbe1ee5deaad9fca045662fd25fc88ce2460f7056e40a62a10e3e0ae",
-          "prev_entry_hash": "be6216d73a0e0d4cdf4a671163fa3cb8d25f87af7528b641ee6f38d259a6736d",
-          "run_id": "AEON_APXI_DEMO_RUN",
-          "tick": 4,
-          "timestamp_utc": null,
-          "umx_ledger_hash": "3d09eaf491c33b9191024ee934a5b258679129cb12b332e2ffead141f5d2c5ec",
-          "window_id": "LINE4_W1_T1_6"
-        },
-        {
-          "C_t": 927048329,
-          "apx_manifest_hash": "0f532c7546d6540786d03d1cbcc8a8b3e63ba70ffdebf2f02ea3866b083d8a4b",
-          "codex_library_hash": null,
-          "gid": "LINE4",
-          "loom_block_hash": "adddbe6d164b384ca2f89e7ff22dac4b1c5a1a77efd19c8b95efe5e6320c8724",
-          "manifest_check": 125200697,
-          "meta": {},
-          "nap_envelope_hash": "6139051c58c56394c299d1aee566c4b33eba3436e0fd4ebf27f17b1450258863",
-          "prev_entry_hash": "a03cfb1b34fbaf4f879d9a0b333f73571e26c7cee9f4bbf7f8b34c454093aa3a",
-          "run_id": "AEON_APXI_DEMO_RUN",
-          "tick": 5,
-          "timestamp_utc": null,
-          "umx_ledger_hash": "556578dc42ea78aa87eca7e1699ccf10940c805ee2a58a9e4a3d3973d0081ee7",
-          "window_id": "LINE4_W1_T1_6"
-        },
-        {
-          "C_t": 759821701,
-          "apx_manifest_hash": "0f532c7546d6540786d03d1cbcc8a8b3e63ba70ffdebf2f02ea3866b083d8a4b",
-          "codex_library_hash": null,
-          "gid": "LINE4",
-          "loom_block_hash": "716ec9917a6b63cbc05b75bf8f33959ef2c67736cdf0e39fab268bbe10604dfd",
-          "manifest_check": 125200697,
-          "meta": {},
-          "nap_envelope_hash": "5835e96a23421a96451c8bc660e2611f5f7b5245dda1b21e68e7d2500d9cdfa9",
-          "prev_entry_hash": "ea84682b2381f6774baf4498aa598c25c4dc9a9b7b91e60f4366d65ff7c5be14",
-          "run_id": "AEON_APXI_DEMO_RUN",
-          "tick": 6,
-          "timestamp_utc": null,
-          "umx_ledger_hash": "2017d3d79da4177a44cec2fca0751545de176153a2354684a8209855d77d0e69",
-          "window_id": "LINE4_W1_T1_6"
-        }
-      ]
     }
   },
   "windows_covering_tick_2": [
@@ -983,5 +48,959 @@
   "windows_covering_tick_5": [
     "AEON_LINE4_W2_ticks_4_6",
     "AEON_LINE4_W_all"
-  ]
+  ],
+  "session": {
+    "config": {
+      "run_id": "AEON_APXI_DEMO_RUN",
+      "gid": "LINE4",
+      "nid": "aeon-apxi-demo-node",
+      "total_ticks": 6,
+      "primary_window_id": "LINE4_W1_T1_6",
+      "window_ids": [
+        "LINE4_W1_T1_6"
+      ],
+      "press_default_streams": [
+        {
+          "name": "S1_post_u_deltas",
+          "source": "post_u_deltas",
+          "scheme_hint": null,
+          "description": "post_u delta per node"
+        },
+        {
+          "name": "S2_fluxes",
+          "source": "fluxes",
+          "scheme_hint": null,
+          "description": "edge flux per edge"
+        },
+        {
+          "name": "S3_prev_chain",
+          "source": "prev_chain",
+          "scheme_hint": null,
+          "description": "prev chain checksum per tick"
+        }
+      ],
+      "pfna_inputs": [],
+      "initial_state": [
+        1,
+        0,
+        0,
+        0
+      ]
+    },
+    "lifecycle_envelopes": [
+      {
+        "v": 1,
+        "tick": 1,
+        "gid": "LINE4",
+        "nid": "aeon-apxi-demo-node",
+        "layer": "CTRL",
+        "mode": "P",
+        "payload_ref": 0,
+        "seq": 1,
+        "prev_chain": 1234567,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {}
+      },
+      {
+        "v": 1,
+        "tick": 6,
+        "gid": "LINE4",
+        "nid": "aeon-apxi-demo-node",
+        "layer": "CTRL",
+        "mode": "P",
+        "payload_ref": 125200697,
+        "seq": 7,
+        "prev_chain": 759821701,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {}
+      }
+    ],
+    "tick_result": {
+      "run_id": "AEON_APXI_DEMO_RUN",
+      "ledgers": [
+        {
+          "tick": 1,
+          "sum_pre_u": 1,
+          "sum_post_u": 1,
+          "z_check": 1,
+          "pre_u": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "e_id": 1,
+              "i": 1,
+              "j": 2,
+              "du": 1,
+              "raw": 0,
+              "cap": 64,
+              "f_e": 0
+            },
+            {
+              "e_id": 2,
+              "i": 2,
+              "j": 3,
+              "du": 0,
+              "raw": 0,
+              "cap": 64,
+              "f_e": 0
+            },
+            {
+              "e_id": 3,
+              "i": 3,
+              "j": 4,
+              "du": 0,
+              "raw": 0,
+              "cap": 64,
+              "f_e": 0
+            }
+          ],
+          "post_u": [
+            1,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "tick": 2,
+          "sum_pre_u": 1,
+          "sum_post_u": 1,
+          "z_check": 1,
+          "pre_u": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "e_id": 1,
+              "i": 1,
+              "j": 2,
+              "du": 1,
+              "raw": 0,
+              "cap": 64,
+              "f_e": 0
+            },
+            {
+              "e_id": 2,
+              "i": 2,
+              "j": 3,
+              "du": 0,
+              "raw": 0,
+              "cap": 64,
+              "f_e": 0
+            },
+            {
+              "e_id": 3,
+              "i": 3,
+              "j": 4,
+              "du": 0,
+              "raw": 0,
+              "cap": 64,
+              "f_e": 0
+            }
+          ],
+          "post_u": [
+            1,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "tick": 3,
+          "sum_pre_u": 1,
+          "sum_post_u": 1,
+          "z_check": 1,
+          "pre_u": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "e_id": 1,
+              "i": 1,
+              "j": 2,
+              "du": 1,
+              "raw": 0,
+              "cap": 64,
+              "f_e": 0
+            },
+            {
+              "e_id": 2,
+              "i": 2,
+              "j": 3,
+              "du": 0,
+              "raw": 0,
+              "cap": 64,
+              "f_e": 0
+            },
+            {
+              "e_id": 3,
+              "i": 3,
+              "j": 4,
+              "du": 0,
+              "raw": 0,
+              "cap": 64,
+              "f_e": 0
+            }
+          ],
+          "post_u": [
+            1,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "tick": 4,
+          "sum_pre_u": 1,
+          "sum_post_u": 1,
+          "z_check": 1,
+          "pre_u": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "e_id": 1,
+              "i": 1,
+              "j": 2,
+              "du": 1,
+              "raw": 0,
+              "cap": 64,
+              "f_e": 0
+            },
+            {
+              "e_id": 2,
+              "i": 2,
+              "j": 3,
+              "du": 0,
+              "raw": 0,
+              "cap": 64,
+              "f_e": 0
+            },
+            {
+              "e_id": 3,
+              "i": 3,
+              "j": 4,
+              "du": 0,
+              "raw": 0,
+              "cap": 64,
+              "f_e": 0
+            }
+          ],
+          "post_u": [
+            1,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "tick": 5,
+          "sum_pre_u": 1,
+          "sum_post_u": 1,
+          "z_check": 1,
+          "pre_u": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "e_id": 1,
+              "i": 1,
+              "j": 2,
+              "du": 1,
+              "raw": 0,
+              "cap": 64,
+              "f_e": 0
+            },
+            {
+              "e_id": 2,
+              "i": 2,
+              "j": 3,
+              "du": 0,
+              "raw": 0,
+              "cap": 64,
+              "f_e": 0
+            },
+            {
+              "e_id": 3,
+              "i": 3,
+              "j": 4,
+              "du": 0,
+              "raw": 0,
+              "cap": 64,
+              "f_e": 0
+            }
+          ],
+          "post_u": [
+            1,
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "tick": 6,
+          "sum_pre_u": 1,
+          "sum_post_u": 1,
+          "z_check": 1,
+          "pre_u": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "edges": [
+            {
+              "e_id": 1,
+              "i": 1,
+              "j": 2,
+              "du": 1,
+              "raw": 0,
+              "cap": 64,
+              "f_e": 0
+            },
+            {
+              "e_id": 2,
+              "i": 2,
+              "j": 3,
+              "du": 0,
+              "raw": 0,
+              "cap": 64,
+              "f_e": 0
+            },
+            {
+              "e_id": 3,
+              "i": 3,
+              "j": 4,
+              "du": 0,
+              "raw": 0,
+              "cap": 64,
+              "f_e": 0
+            }
+          ],
+          "post_u": [
+            1,
+            0,
+            0,
+            0
+          ]
+        }
+      ],
+      "p_blocks": [
+        {
+          "tick": 1,
+          "seq": 1,
+          "s_t": 9,
+          "C_t": 20987847,
+          "edge_flux_summary": [
+            {
+              "e_id": 1,
+              "f_e": 0
+            },
+            {
+              "e_id": 2,
+              "f_e": 0
+            },
+            {
+              "e_id": 3,
+              "f_e": 0
+            }
+          ]
+        },
+        {
+          "tick": 2,
+          "seq": 2,
+          "s_t": 9,
+          "C_t": 356793608,
+          "edge_flux_summary": [
+            {
+              "e_id": 1,
+              "f_e": 0
+            },
+            {
+              "e_id": 2,
+              "f_e": 0
+            },
+            {
+              "e_id": 3,
+              "f_e": 0
+            }
+          ]
+        },
+        {
+          "tick": 3,
+          "seq": 3,
+          "s_t": 9,
+          "C_t": 65491504,
+          "edge_flux_summary": [
+            {
+              "e_id": 1,
+              "f_e": 0
+            },
+            {
+              "e_id": 2,
+              "f_e": 0
+            },
+            {
+              "e_id": 3,
+              "f_e": 0
+            }
+          ]
+        },
+        {
+          "tick": 4,
+          "seq": 4,
+          "s_t": 9,
+          "C_t": 113355772,
+          "edge_flux_summary": [
+            {
+              "e_id": 1,
+              "f_e": 0
+            },
+            {
+              "e_id": 2,
+              "f_e": 0
+            },
+            {
+              "e_id": 3,
+              "f_e": 0
+            }
+          ]
+        },
+        {
+          "tick": 5,
+          "seq": 5,
+          "s_t": 9,
+          "C_t": 927048329,
+          "edge_flux_summary": [
+            {
+              "e_id": 1,
+              "f_e": 0
+            },
+            {
+              "e_id": 2,
+              "f_e": 0
+            },
+            {
+              "e_id": 3,
+              "f_e": 0
+            }
+          ]
+        },
+        {
+          "tick": 6,
+          "seq": 6,
+          "s_t": 9,
+          "C_t": 759821701,
+          "edge_flux_summary": [
+            {
+              "e_id": 1,
+              "f_e": 0
+            },
+            {
+              "e_id": 2,
+              "f_e": 0
+            },
+            {
+              "e_id": 3,
+              "f_e": 0
+            }
+          ]
+        }
+      ],
+      "i_blocks": [],
+      "manifests": {
+        "LINE4_APX_W1_T1_6": {
+          "apx_name": "LINE4_APX_W1_T1_6",
+          "profile": "CMP-0",
+          "manifest_check": 125200697,
+          "streams": [
+            {
+              "stream_id": "S1_post_u_deltas",
+              "description": "post_u delta per node",
+              "scheme": "R",
+              "params": 0,
+              "L_model": 0,
+              "L_residual": 5,
+              "L_total": 5
+            },
+            {
+              "stream_id": "S2_fluxes",
+              "description": "edge flux per edge",
+              "scheme": "R",
+              "params": 0,
+              "L_model": 0,
+              "L_residual": 5,
+              "L_total": 5
+            },
+            {
+              "stream_id": "S3_prev_chain",
+              "description": "prev chain checksum per tick",
+              "scheme": "R",
+              "params": 0,
+              "L_model": 0,
+              "L_residual": 5,
+              "L_total": 5
+            }
+          ],
+          "apxi_view_ref": "LINE4_APX_W1_T1_6::AEON_LINE4_W_all::APXiView_v1"
+        }
+      },
+      "scenes": [
+        {
+          "gid": "LINE4",
+          "run_id": "AEON_APXI_DEMO_RUN",
+          "tick": 1,
+          "nid": "aeon-apxi-demo-node",
+          "pre_u": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "post_u": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "ledger_ref": "umx_ledger_1",
+          "C_prev": 1234567,
+          "C_t": 20987847,
+          "window_id": "LINE4_W1_T1_6",
+          "manifest_check": 125200697,
+          "nap_envelope_ref": null,
+          "meta": {
+            "p_block_ref": "loom_p_block_1",
+            "manifest_ref": "LINE4_APX_W1_T1_6"
+          }
+        },
+        {
+          "gid": "LINE4",
+          "run_id": "AEON_APXI_DEMO_RUN",
+          "tick": 2,
+          "nid": "aeon-apxi-demo-node",
+          "pre_u": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "post_u": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "ledger_ref": "umx_ledger_2",
+          "C_prev": 20987847,
+          "C_t": 356793608,
+          "window_id": "LINE4_W1_T1_6",
+          "manifest_check": 125200697,
+          "nap_envelope_ref": null,
+          "meta": {
+            "p_block_ref": "loom_p_block_2",
+            "manifest_ref": "LINE4_APX_W1_T1_6"
+          }
+        },
+        {
+          "gid": "LINE4",
+          "run_id": "AEON_APXI_DEMO_RUN",
+          "tick": 3,
+          "nid": "aeon-apxi-demo-node",
+          "pre_u": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "post_u": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "ledger_ref": "umx_ledger_3",
+          "C_prev": 356793608,
+          "C_t": 65491504,
+          "window_id": "LINE4_W1_T1_6",
+          "manifest_check": 125200697,
+          "nap_envelope_ref": null,
+          "meta": {
+            "p_block_ref": "loom_p_block_3",
+            "manifest_ref": "LINE4_APX_W1_T1_6"
+          }
+        },
+        {
+          "gid": "LINE4",
+          "run_id": "AEON_APXI_DEMO_RUN",
+          "tick": 4,
+          "nid": "aeon-apxi-demo-node",
+          "pre_u": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "post_u": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "ledger_ref": "umx_ledger_4",
+          "C_prev": 65491504,
+          "C_t": 113355772,
+          "window_id": "LINE4_W1_T1_6",
+          "manifest_check": 125200697,
+          "nap_envelope_ref": null,
+          "meta": {
+            "p_block_ref": "loom_p_block_4",
+            "manifest_ref": "LINE4_APX_W1_T1_6"
+          }
+        },
+        {
+          "gid": "LINE4",
+          "run_id": "AEON_APXI_DEMO_RUN",
+          "tick": 5,
+          "nid": "aeon-apxi-demo-node",
+          "pre_u": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "post_u": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "ledger_ref": "umx_ledger_5",
+          "C_prev": 113355772,
+          "C_t": 927048329,
+          "window_id": "LINE4_W1_T1_6",
+          "manifest_check": 125200697,
+          "nap_envelope_ref": null,
+          "meta": {
+            "p_block_ref": "loom_p_block_5",
+            "manifest_ref": "LINE4_APX_W1_T1_6"
+          }
+        },
+        {
+          "gid": "LINE4",
+          "run_id": "AEON_APXI_DEMO_RUN",
+          "tick": 6,
+          "nid": "aeon-apxi-demo-node",
+          "pre_u": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "post_u": [
+            1,
+            0,
+            0,
+            0
+          ],
+          "ledger_ref": "umx_ledger_6",
+          "C_prev": 927048329,
+          "C_t": 759821701,
+          "window_id": "LINE4_W1_T1_6",
+          "manifest_check": 125200697,
+          "nap_envelope_ref": null,
+          "meta": {
+            "p_block_ref": "loom_p_block_6",
+            "manifest_ref": "LINE4_APX_W1_T1_6"
+          }
+        }
+      ],
+      "envelopes": [
+        {
+          "v": 1,
+          "tick": 1,
+          "gid": "LINE4",
+          "nid": "aeon-apxi-demo-node",
+          "layer": "DATA",
+          "mode": "P",
+          "payload_ref": 125200697,
+          "seq": 1,
+          "prev_chain": 1234567,
+          "sig": "",
+          "slp_event_ids": [],
+          "meta": {}
+        },
+        {
+          "v": 1,
+          "tick": 2,
+          "gid": "LINE4",
+          "nid": "aeon-apxi-demo-node",
+          "layer": "DATA",
+          "mode": "P",
+          "payload_ref": 125200697,
+          "seq": 2,
+          "prev_chain": 20987847,
+          "sig": "",
+          "slp_event_ids": [],
+          "meta": {}
+        },
+        {
+          "v": 1,
+          "tick": 3,
+          "gid": "LINE4",
+          "nid": "aeon-apxi-demo-node",
+          "layer": "DATA",
+          "mode": "P",
+          "payload_ref": 125200697,
+          "seq": 3,
+          "prev_chain": 356793608,
+          "sig": "",
+          "slp_event_ids": [],
+          "meta": {}
+        },
+        {
+          "v": 1,
+          "tick": 4,
+          "gid": "LINE4",
+          "nid": "aeon-apxi-demo-node",
+          "layer": "DATA",
+          "mode": "P",
+          "payload_ref": 125200697,
+          "seq": 4,
+          "prev_chain": 65491504,
+          "sig": "",
+          "slp_event_ids": [],
+          "meta": {}
+        },
+        {
+          "v": 1,
+          "tick": 5,
+          "gid": "LINE4",
+          "nid": "aeon-apxi-demo-node",
+          "layer": "DATA",
+          "mode": "P",
+          "payload_ref": 125200697,
+          "seq": 5,
+          "prev_chain": 113355772,
+          "sig": "",
+          "slp_event_ids": [],
+          "meta": {}
+        },
+        {
+          "v": 1,
+          "tick": 6,
+          "gid": "LINE4",
+          "nid": "aeon-apxi-demo-node",
+          "layer": "DATA",
+          "mode": "P",
+          "payload_ref": 125200697,
+          "seq": 6,
+          "prev_chain": 927048329,
+          "sig": "",
+          "slp_event_ids": [],
+          "meta": {}
+        }
+      ],
+      "governance_envelopes": [],
+      "u_ledger_entries": [
+        {
+          "gid": "LINE4",
+          "run_id": "AEON_APXI_DEMO_RUN",
+          "tick": 1,
+          "window_id": "LINE4_W1_T1_6",
+          "C_t": 20987847,
+          "manifest_check": 125200697,
+          "nap_envelope_hash": "7696a07c0eb64886dd5cb3c469de8fb405d513afd84550217da49b3962e2d5fe",
+          "umx_ledger_hash": "ce68911242e6211ece6f95d6b17f20b81b48fd0ba6f119e13533e278ffddf088",
+          "loom_block_hash": "04db047dc7e44b41a58a009679d0c9c69eb0e6a1e7507960cd0c7ca8292ff0f4",
+          "apx_manifest_hash": "0f532c7546d6540786d03d1cbcc8a8b3e63ba70ffdebf2f02ea3866b083d8a4b",
+          "prev_entry_hash": null,
+          "codex_library_hash": null,
+          "timestamp_utc": null,
+          "meta": {}
+        },
+        {
+          "gid": "LINE4",
+          "run_id": "AEON_APXI_DEMO_RUN",
+          "tick": 2,
+          "window_id": "LINE4_W1_T1_6",
+          "C_t": 356793608,
+          "manifest_check": 125200697,
+          "nap_envelope_hash": "e9fd3a8c3208e299a6aca191b8908dc55736bd8dee30f6048e3ebb86b43cb1fb",
+          "umx_ledger_hash": "bb25f2c7d0128115aaecf38d8ddf6588de90e08bf45eef650c1a3c811a1d9b66",
+          "loom_block_hash": "e2488772382aec5b58e9222de95b17a72a1b80e0ababc0e430c0d28485cd02b8",
+          "apx_manifest_hash": "0f532c7546d6540786d03d1cbcc8a8b3e63ba70ffdebf2f02ea3866b083d8a4b",
+          "prev_entry_hash": "17989c70f00a18059c28d5299a70f12e740be30f8bc9c4d599a251e7a9c1b775",
+          "codex_library_hash": null,
+          "timestamp_utc": null,
+          "meta": {}
+        },
+        {
+          "gid": "LINE4",
+          "run_id": "AEON_APXI_DEMO_RUN",
+          "tick": 3,
+          "window_id": "LINE4_W1_T1_6",
+          "C_t": 65491504,
+          "manifest_check": 125200697,
+          "nap_envelope_hash": "c1b1e1d1de372b6060d4f1f5769c75540462e6e3741f6d51aa7767b236832ef3",
+          "umx_ledger_hash": "910ed4f6de4ceb5b01878447a91a5980c5e684f57864582aca53ad9411b03260",
+          "loom_block_hash": "acc605886a319f7f92f7255e860f956fa8e5d8a2a94d478d5398abcd98b7a5db",
+          "apx_manifest_hash": "0f532c7546d6540786d03d1cbcc8a8b3e63ba70ffdebf2f02ea3866b083d8a4b",
+          "prev_entry_hash": "fc08e98adc0cfd8a461d8d3200895ccaee0e8dd2842328dd0ab032744f8ba7ed",
+          "codex_library_hash": null,
+          "timestamp_utc": null,
+          "meta": {}
+        },
+        {
+          "gid": "LINE4",
+          "run_id": "AEON_APXI_DEMO_RUN",
+          "tick": 4,
+          "window_id": "LINE4_W1_T1_6",
+          "C_t": 113355772,
+          "manifest_check": 125200697,
+          "nap_envelope_hash": "e6ec4f81a4b3cbd0e709825980fb72e36e43e8d3c301699883ac1d5da0dd9f87",
+          "umx_ledger_hash": "3d09eaf491c33b9191024ee934a5b258679129cb12b332e2ffead141f5d2c5ec",
+          "loom_block_hash": "8e9bd822e61ffc971f7e5617ad35b6e151342512586f862ed2bc42fe5f706322",
+          "apx_manifest_hash": "0f532c7546d6540786d03d1cbcc8a8b3e63ba70ffdebf2f02ea3866b083d8a4b",
+          "prev_entry_hash": "be2aabc28c6b9b51adefc9f7fca387598c981178a9fd9266769f4bb60fc7672f",
+          "codex_library_hash": null,
+          "timestamp_utc": null,
+          "meta": {}
+        },
+        {
+          "gid": "LINE4",
+          "run_id": "AEON_APXI_DEMO_RUN",
+          "tick": 5,
+          "window_id": "LINE4_W1_T1_6",
+          "C_t": 927048329,
+          "manifest_check": 125200697,
+          "nap_envelope_hash": "a7c63bab2e48158667495b01fb0442f3676b61ea0af5260016ea776b97f7a587",
+          "umx_ledger_hash": "556578dc42ea78aa87eca7e1699ccf10940c805ee2a58a9e4a3d3973d0081ee7",
+          "loom_block_hash": "adddbe6d164b384ca2f89e7ff22dac4b1c5a1a77efd19c8b95efe5e6320c8724",
+          "apx_manifest_hash": "0f532c7546d6540786d03d1cbcc8a8b3e63ba70ffdebf2f02ea3866b083d8a4b",
+          "prev_entry_hash": "87e295aaa5eb435a4ef6c219b52ca849183408855bb976e2f6627cb04c83c1c8",
+          "codex_library_hash": null,
+          "timestamp_utc": null,
+          "meta": {}
+        },
+        {
+          "gid": "LINE4",
+          "run_id": "AEON_APXI_DEMO_RUN",
+          "tick": 6,
+          "window_id": "LINE4_W1_T1_6",
+          "C_t": 759821701,
+          "manifest_check": 125200697,
+          "nap_envelope_hash": "8d428e2a03a0ffa9303415aa665d03c4ff834495c0b70bf496521b649d3421e8",
+          "umx_ledger_hash": "2017d3d79da4177a44cec2fca0751545de176153a2354684a8209855d77d0e69",
+          "loom_block_hash": "716ec9917a6b63cbc05b75bf8f33959ef2c67736cdf0e39fab268bbe10604dfd",
+          "apx_manifest_hash": "0f532c7546d6540786d03d1cbcc8a8b3e63ba70ffdebf2f02ea3866b083d8a4b",
+          "prev_entry_hash": "8766a4868f226257ece8ee3deb75e07e2c433c6a13204b19ec624d40e056f355",
+          "codex_library_hash": null,
+          "timestamp_utc": null,
+          "meta": {}
+        }
+      ],
+      "apxi_views": {
+        "LINE4_APX_W1_T1_6": {
+          "apx_name": "LINE4_APX_W1_T1_6",
+          "window_id": "LINE4_W1_T1_6",
+          "aeon_window_id": "AEON_LINE4_W_all",
+          "residual_scheme": "R",
+          "descriptors_by_stream": {
+            "S1_post_u_deltas": [
+              {
+                "descriptor": {
+                  "descriptor_id": "apxi_delta_linear",
+                  "descriptor_type": "LINEAR_TREND",
+                  "window_id": "AEON_LINE4_W_all",
+                  "stream_id": "S1_post_u_deltas",
+                  "params": {
+                    "intercept": 0,
+                    "slope": 1,
+                    "start_tick": 1
+                  },
+                  "labels": []
+                },
+                "residual_scheme": "R",
+                "L_model": 6,
+                "L_residual": 5,
+                "L_total": 11
+              }
+            ],
+            "S2_fluxes": [
+              {
+                "descriptor": {
+                  "descriptor_id": "apxi_flux_const",
+                  "descriptor_type": "CONST_SEGMENT",
+                  "window_id": "AEON_LINE4_W_all",
+                  "stream_id": "S2_fluxes",
+                  "params": {
+                    "value": 0
+                  },
+                  "labels": []
+                },
+                "residual_scheme": "R",
+                "L_model": 1,
+                "L_residual": 0,
+                "L_total": 1
+              }
+            ],
+            "S3_prev_chain": [
+              {
+                "descriptor": {
+                  "descriptor_id": "apxi_chain_const",
+                  "descriptor_type": "CONST_SEGMENT",
+                  "window_id": "AEON_LINE4_W_all",
+                  "stream_id": "S3_prev_chain",
+                  "params": {
+                    "value": 0
+                  },
+                  "labels": []
+                },
+                "residual_scheme": "R",
+                "L_model": 1,
+                "L_residual": 5,
+                "L_total": 6
+              }
+            ]
+          }
+        }
+      },
+      "ingress_envelopes": [],
+      "egress_envelopes": [
+        {
+          "v": 1,
+          "tick": 6,
+          "gid": "LINE4",
+          "nid": "aeon-apxi-demo-node",
+          "layer": "EGRESS",
+          "mode": "P",
+          "payload_ref": 125200697,
+          "seq": 8,
+          "prev_chain": 759821701,
+          "sig": "",
+          "slp_event_ids": [],
+          "meta": {}
+        }
+      ]
+    }
+  }
 }

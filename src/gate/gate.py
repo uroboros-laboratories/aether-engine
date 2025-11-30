@@ -16,6 +16,7 @@ from typing import (
     Union,
 )
 
+from governance import GovernanceConfigV1
 from loom.loom import LoomPBlockV1
 from umx.profile_cmp0 import ProfileCMP0V1
 from umx.tick_ledger import UMXTickLedgerV1
@@ -34,8 +35,8 @@ if TYPE_CHECKING:  # pragma: no cover - used for type hints only
 
 
 # Allowed NAP layer/mode values for CMP-0 NAP envelopes.
-ALLOWED_NAP_LAYERS = ("INGRESS", "DATA", "CTRL", "EGRESS")
-ALLOWED_NAP_MODES = ("P", "I", "S")
+ALLOWED_NAP_LAYERS = ("INGRESS", "DATA", "CTRL", "EGRESS", "GOV")
+ALLOWED_NAP_MODES = ("P", "I", "S", "G")
 
 
 @dataclass(frozen=True)
@@ -80,6 +81,12 @@ def _default_press_stream_specs() -> Tuple[PressStreamSpecV1, ...]:
     )
 
 
+def _default_governance_config() -> GovernanceConfigV1:
+    """Default governance config keeps Codex suggestions off."""
+
+    return GovernanceConfigV1()
+
+
 @dataclass(frozen=True)
 class SessionConfigV1:
     """Top-level Gate/TBP session configuration for TickLoop_v1 runs."""
@@ -93,7 +100,7 @@ class SessionConfigV1:
     run_id: str = "SESSION"
     nid: str = "N/A"
     pfna_inputs: Tuple[PFNAInputV0, ...] = field(default_factory=tuple)
-    governance: Dict[str, object] = field(default_factory=dict)
+    governance: GovernanceConfigV1 = field(default_factory=_default_governance_config)
     press_default_streams: Tuple[PressStreamSpecV1, ...] = field(
         default_factory=_default_press_stream_specs
     )
@@ -116,6 +123,8 @@ class SessionConfigV1:
             object.__setattr__(self, "pfna_inputs", tuple(self.pfna_inputs))
         if not isinstance(self.press_default_streams, tuple):
             object.__setattr__(self, "press_default_streams", tuple(self.press_default_streams))
+        if not isinstance(self.governance, GovernanceConfigV1):
+            raise ValueError("governance must be a GovernanceConfigV1 instance")
         if not isinstance(self.logging_config, LoggingConfigV1):
             raise ValueError("logging_config must be a LoggingConfigV1 instance")
         if not isinstance(self.metrics_config, MetricsConfigV1):
@@ -334,6 +343,7 @@ class NAPEnvelopeV1:
     prev_chain: int
     sig: str
     slp_event_ids: tuple[str, ...] = field(default_factory=tuple)
+    meta: Mapping[str, object] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         if self.tick < 1:
@@ -355,6 +365,9 @@ class NAPEnvelopeV1:
         for event_id in self.slp_event_ids:
             if not isinstance(event_id, str) or not event_id:
                 raise ValueError("slp_event_ids must be non-empty strings when provided")
+        if not isinstance(self.meta, Mapping):
+            raise ValueError("meta must be a mapping")
+        object.__setattr__(self, "meta", dict(self.meta))
 
 
 def build_scene_frame(
@@ -410,6 +423,7 @@ def emit_nap_envelope(
     mode: Optional[str] = None,
     sig: str = "",
     slp_event_ids: Optional[Sequence[str]] = None,
+    meta: Optional[Mapping[str, object]] = None,
 ) -> NAPEnvelopeV1:
     """Emit a NAPEnvelope_v1 from a SceneFrame_v1 and profile defaults."""
 
@@ -434,6 +448,7 @@ def emit_nap_envelope(
         prev_chain=scene.C_prev,
         sig=sig,
         slp_event_ids=tuple(slp_event_ids or ()),
+        meta=dict(meta or {}),
     )
 
 
@@ -476,6 +491,7 @@ def build_scene_and_envelope(
     nap_layer: Optional[str] = None,
     nap_mode: Optional[str] = None,
     slp_event_ids: Optional[Sequence[str]] = None,
+    meta: Optional[Mapping[str, object]] = None,
 ) -> Tuple[SceneFrameV1, NAPEnvelopeV1]:
     """Convenience wrapper that returns both SceneFrame and NAP envelope."""
 
@@ -500,6 +516,7 @@ def build_scene_and_envelope(
         layer=nap_layer,
         mode=nap_mode,
         slp_event_ids=slp_event_ids,
+        meta=meta,
     )
     return scene, envelope
 
@@ -556,6 +573,9 @@ class SessionRunResult:
         ingress_by_tick: Dict[int, List[NAPEnvelopeV1]] = {}
         for env in self.tick_result.ingress_envelopes:
             ingress_by_tick.setdefault(env.tick, []).append(env)
+        governance_by_tick: Dict[int, List[NAPEnvelopeV1]] = {}
+        for env in getattr(self.tick_result, "governance_envelopes", ()):  # pragma: no cover - guarded below
+            governance_by_tick.setdefault(env.tick, []).append(env)
 
         ordered: List[NAPEnvelopeV1] = []
         if lifecycle:
@@ -564,6 +584,7 @@ class SessionRunResult:
         data_envelopes = list(self.tick_result.envelopes)
         for idx in range(self.config.total_ticks):
             tick = idx + 1
+            ordered.extend(sorted(governance_by_tick.get(tick, ()), key=lambda env: env.seq))
             ordered.extend(ingress_by_tick.get(tick, []))
             if idx < len(data_envelopes):
                 ordered.append(data_envelopes[idx])
@@ -571,6 +592,13 @@ class SessionRunResult:
         if len(lifecycle) > 1:
             ordered.append(lifecycle[1])
 
+        trailing_governance = [
+            env
+            for tick, envs in governance_by_tick.items()
+            if tick > self.config.total_ticks
+            for env in envs
+        ]
+        ordered.extend(sorted(trailing_governance, key=lambda env: env.seq))
         ordered.extend(self.tick_result.egress_envelopes)
 
         return ordered
@@ -593,6 +621,14 @@ def run_session(config: SessionConfigV1) -> SessionRunResult:
         },
     )
 
+    codex_ctx = None
+    if config.governance.codex_action_mode != "OFF":
+        from codex.context import CodexContext
+
+        codex_ctx = CodexContext(
+            library_id=f"{config.run_id}_LIB", profile=config.profile.name
+        )
+
     tick_result = run_cmp0_tick_loop(
         topo=config.topo,
         profile=config.profile,
@@ -605,6 +641,8 @@ def run_session(config: SessionConfigV1) -> SessionRunResult:
         pfna_inputs=config.pfna_inputs,
         press_default_streams=config.press_default_streams,
         logger=logger,
+        governance=config.governance,
+        codex_ctx=codex_ctx,
     )
 
     lifecycle: List[NAPEnvelopeV1] = []
@@ -682,7 +720,8 @@ def _build_metrics_snapshot(
     nap_ingress = len(tick_result.ingress_envelopes)
     nap_data = len(tick_result.envelopes)
     nap_egress = len(tick_result.egress_envelopes)
-    nap_total = nap_ingress + nap_data + nap_egress + len(lifecycle_envelopes)
+    nap_governance = len(getattr(tick_result, "governance_envelopes", ()))
+    nap_total = nap_ingress + nap_data + nap_egress + nap_governance + len(lifecycle_envelopes)
 
     return MetricsSnapshotV1(
         gid=config.topo.gid,

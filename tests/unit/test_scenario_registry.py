@@ -14,7 +14,7 @@ REGISTRY_PATH = Path("docs/fixtures/scenarios/scenario_registry.json")
 
 def test_scenario_registry_enumeration():
     registry = load_scenario_registry(REGISTRY_PATH)
-    assert registry.list_ids() == ("gf01", "line-4", "ring-5")
+    assert registry.list_ids() == ("gf01", "line-4", "ring-5", "gov-codex-demo")
     gf01 = registry.get("gf01")
     assert gf01.runtime_hint == "very-small"
     assert "CMP-0" in gf01.description

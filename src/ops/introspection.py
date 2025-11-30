@@ -15,6 +15,30 @@ if TYPE_CHECKING:  # pragma: no cover - import guard for typing only
     from umx.tick_ledger import UMXTickLedgerV1
 
 
+@dataclass(frozen=True)
+class GovernanceSummaryView:
+    """Aggregated governance insight for introspection/dry-run use."""
+
+    governance_mode: str
+    policy_set_hash: Optional[str]
+    proposals_seen: int
+    evaluated_status_counts: Mapping[str, int]
+    actions_applied: int
+    actions_hypothetical: int
+    budget_usage: Mapping[str, object]
+
+    def to_dict(self) -> Dict[str, object]:  # pragma: no cover - passthrough
+        return {
+            "governance_mode": self.governance_mode,
+            "policy_set_hash": self.policy_set_hash,
+            "proposals_seen": self.proposals_seen,
+            "evaluated_status_counts": dict(self.evaluated_status_counts),
+            "actions_applied": self.actions_applied,
+            "actions_hypothetical": self.actions_hypothetical,
+            "budget_usage": dict(self.budget_usage),
+        }
+
+
 def _map_by_tick(items: Iterable[object]) -> Dict[int, object]:
     grouped: Dict[int, object] = {}
     for item in items:
@@ -30,12 +54,23 @@ def _all_envelopes_from_run(
     ingress_by_tick: Dict[int, list["NAPEnvelopeV1"]] = {}
     for env in run.ingress_envelopes:
         ingress_by_tick.setdefault(env.tick, []).append(env)
+    governance_by_tick: Dict[int, list["NAPEnvelopeV1"]] = {}
+    for env in getattr(run, "governance_envelopes", ()):  # pragma: no cover - defensive
+        governance_by_tick.setdefault(env.tick, []).append(env)
 
     for idx in range(len(run.envelopes)):
         tick = idx + 1
+        ordered.extend(sorted(governance_by_tick.get(tick, ()), key=lambda env: env.seq))
         ordered.extend(ingress_by_tick.get(tick, []))
         ordered.append(run.envelopes[idx])
 
+    trailing_governance = [
+        env
+        for tick, envs in governance_by_tick.items()
+        if tick > getattr(run, "total_ticks", len(run.envelopes))
+        for env in envs
+    ]
+    ordered.extend(sorted(trailing_governance, key=lambda env: env.seq))
     ordered.extend(run.egress_envelopes)
     return tuple(ordered)
 
@@ -191,8 +226,16 @@ def build_introspection_view(
     uledger_by_tick = {entry.tick: entry for entry in tick_result.u_ledger_entries}
     window_ids = tuple(sorted(manifests_by_window.keys()))
 
-    motifs = tuple(codex_motifs) if codex_motifs is not None else ()
-    proposals = tuple(codex_proposals) if codex_proposals is not None else ()
+    motifs = (
+        tuple(codex_motifs)
+        if codex_motifs is not None
+        else tuple(getattr(tick_result, "codex_motifs", ()))
+    )
+    proposals = (
+        tuple(codex_proposals)
+        if codex_proposals is not None
+        else tuple(getattr(tick_result, "codex_proposals", ()))
+    )
 
     return IntrospectionViewV1(
         gid=gid,
@@ -208,4 +251,35 @@ def build_introspection_view(
         uledger_by_tick=uledger_by_tick,
         codex_motifs=motifs,
         codex_proposals=proposals,
+    )
+
+
+def build_governance_summary(run: Union[SessionRunResult, "GF01RunResult"]) -> GovernanceSummaryView:
+    """Summarise governance outcomes for introspection/dry-run comparisons."""
+
+    tick_result = run.tick_result if hasattr(run, "tick_result") else run
+    governance = getattr(tick_result, "governance", None)
+    mode = getattr(governance, "governance_mode", "OFF") if governance else "OFF"
+    policy_hash = getattr(governance, "policy_set_hash", None)
+
+    proposals = tuple(getattr(tick_result, "codex_proposals", ()))
+    statuses: Dict[str, int] = {}
+    for proposal in proposals:
+        status = str(getattr(proposal, "status", "UNKNOWN"))
+        statuses[status] = statuses.get(status, 0) + 1
+
+    actions_applied = tuple(getattr(tick_result, "codex_actions", ()))
+    actions_hypothetical = tuple(
+        getattr(tick_result, "codex_hypothetical_actions", ())
+    )
+    usage = getattr(tick_result, "governance_budget_usage", None)
+
+    return GovernanceSummaryView(
+        governance_mode=mode,
+        policy_set_hash=policy_hash,
+        proposals_seen=len(proposals),
+        evaluated_status_counts=statuses,
+        actions_applied=len(actions_applied),
+        actions_hypothetical=len(actions_hypothetical),
+        budget_usage=usage.to_dict() if usage else {},
     )
