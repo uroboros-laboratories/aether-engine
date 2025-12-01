@@ -9,6 +9,11 @@
 
 This is a **first-pass coverage map** grouped by theme. Once the repo and tests exist we can tighten this to section/line-level references against `Codex Eterna — Master spec.txt` and Codex contract docs.
 
+## Phase 6 Coverage Crosswalk
+
+- **Proposal gate + ledger delivered.** `tests/unit/test_codex_proposal_gate.py` covers proposal evaluation, acceptance/rejection, and hash-chained structural ledger entries.
+- **Governance linkage validated.** Governance snapshots and `tests/integration/test_full_system_demo.py` show Codex decisions entering U-Ledger alongside PFNA and Loom artifacts.
+
 ---
 
 ## 1. Legend

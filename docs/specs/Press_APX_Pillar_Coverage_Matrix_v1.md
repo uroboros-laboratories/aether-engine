@@ -9,6 +9,11 @@
 
 This is a **first-pass coverage map**: we group master-spec requirements into themes. Later, we can refine this to line/section-level coverage once the repo and tests exist.
 
+## Phase 6 Coverage Crosswalk
+
+- **SimA/SimB and manifests complete.** `tests/unit/test_press.py` and `tests/unit/test_press_apx_capsule.py` validate ID/R/GR encoders, residual tables, MDL tie-breaking, manifest checksums, and APX capsule replay.
+- **Window packaging deterministic.** `tests/gf01/test_run_gf01.py` plus integration snapshots in `tests/snapshots/` confirm manifest stability when fed by UMX/Loom runs.
+
 ---
 
 ## 1. Legend

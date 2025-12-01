@@ -87,7 +87,7 @@
       "nid": "pfna-demo-node",
       "layer": "CTRL",
       "mode": "P",
-      "payload_ref": 735397692,
+      "payload_ref": 612431347,
       "seq": 5,
       "prev_chain": 113355772,
       "sig": "",
@@ -374,34 +374,34 @@
       "LINE_APX_demo_ticks_1_4": {
         "apx_name": "LINE_APX_demo_ticks_1_4",
         "profile": "CMP-0",
-        "manifest_check": 735397692,
+        "manifest_check": 612431347,
         "streams": [
           {
             "stream_id": "S1_post_u_deltas",
             "description": "post_u delta per node",
             "scheme": "R",
             "params": 0,
-            "L_model": 0,
-            "L_residual": 3,
-            "L_total": 3
+            "L_model": 48,
+            "L_residual": 96,
+            "L_total": 144
           },
           {
             "stream_id": "S2_fluxes",
             "description": "edge flux per edge",
             "scheme": "R",
             "params": 0,
-            "L_model": 0,
-            "L_residual": 3,
-            "L_total": 3
+            "L_model": 40,
+            "L_residual": 72,
+            "L_total": 112
           },
           {
             "stream_id": "S3_prev_chain",
             "description": "prev chain checksum per tick",
             "scheme": "R",
             "params": 0,
-            "L_model": 0,
-            "L_residual": 3,
-            "L_total": 3
+            "L_model": 48,
+            "L_residual": 112,
+            "L_total": 160
           }
         ]
       }
@@ -428,7 +428,7 @@
         "C_prev": 1234567,
         "C_t": 20987847,
         "window_id": "LINE_DEMO_W1_ticks_1_4",
-        "manifest_check": 735397692,
+        "manifest_check": 612431347,
         "nap_envelope_ref": null,
         "meta": {
           "p_block_ref": "loom_p_block_1",
@@ -456,13 +456,20 @@
         "C_prev": 20987847,
         "C_t": 356793608,
         "window_id": "LINE_DEMO_W1_ticks_1_4",
-        "manifest_check": 735397692,
+        "manifest_check": 612431347,
         "nap_envelope_ref": null,
         "meta": {
           "p_block_ref": "loom_p_block_2",
           "manifest_ref": "LINE_APX_demo_ticks_1_4",
           "pfna_refs": [
             "tick2_adjust"
+          ],
+          "pfna_integerization": [
+            {
+              "pfna_id": "tick2_adjust",
+              "values": [],
+              "audit": []
+            }
           ]
         }
       },
@@ -487,7 +494,7 @@
         "C_prev": 356793608,
         "C_t": 65491504,
         "window_id": "LINE_DEMO_W1_ticks_1_4",
-        "manifest_check": 735397692,
+        "manifest_check": 612431347,
         "nap_envelope_ref": null,
         "meta": {
           "p_block_ref": "loom_p_block_3",
@@ -515,7 +522,7 @@
         "C_prev": 65491504,
         "C_t": 113355772,
         "window_id": "LINE_DEMO_W1_ticks_1_4",
-        "manifest_check": 735397692,
+        "manifest_check": 612431347,
         "nap_envelope_ref": null,
         "meta": {
           "p_block_ref": "loom_p_block_4",
@@ -531,12 +538,14 @@
         "nid": "pfna-demo-node",
         "layer": "DATA",
         "mode": "P",
-        "payload_ref": 735397692,
+        "payload_ref": 612431347,
         "seq": 1,
         "prev_chain": 1234567,
         "sig": "",
         "slp_event_ids": [],
-        "meta": {}
+        "meta": {
+          "pfna_integerization": []
+        }
       },
       {
         "v": 1,
@@ -545,12 +554,58 @@
         "nid": "pfna-demo-node",
         "layer": "DATA",
         "mode": "P",
-        "payload_ref": 735397692,
+        "payload_ref": 612431347,
         "seq": 2,
         "prev_chain": 20987847,
         "sig": "",
         "slp_event_ids": [],
-        "meta": {}
+        "meta": {
+          "pfna_integerization": [
+            {
+              "pfna_id": "tick2_adjust",
+              "audit": [
+                {
+                  "index": 0,
+                  "raw": "0",
+                  "shifted": "0.000000",
+                  "scaled": "0.000000",
+                  "rounded": 0,
+                  "clamped": 0
+                },
+                {
+                  "index": 1,
+                  "raw": "2",
+                  "shifted": "2.000000",
+                  "scaled": "2.000000",
+                  "rounded": 2,
+                  "clamped": 2
+                },
+                {
+                  "index": 2,
+                  "raw": "0",
+                  "shifted": "0.000000",
+                  "scaled": "0.000000",
+                  "rounded": 0,
+                  "clamped": 0
+                },
+                {
+                  "index": 3,
+                  "raw": "-1",
+                  "shifted": "-1.000000",
+                  "scaled": "-1.000000",
+                  "rounded": -1,
+                  "clamped": -1
+                }
+              ],
+              "values": [
+                0,
+                2,
+                0,
+                -1
+              ]
+            }
+          ]
+        }
       },
       {
         "v": 1,
@@ -559,12 +614,14 @@
         "nid": "pfna-demo-node",
         "layer": "DATA",
         "mode": "P",
-        "payload_ref": 735397692,
+        "payload_ref": 612431347,
         "seq": 3,
         "prev_chain": 356793608,
         "sig": "",
         "slp_event_ids": [],
-        "meta": {}
+        "meta": {
+          "pfna_integerization": []
+        }
       },
       {
         "v": 1,
@@ -573,12 +630,14 @@
         "nid": "pfna-demo-node",
         "layer": "DATA",
         "mode": "P",
-        "payload_ref": 735397692,
+        "payload_ref": 612431347,
         "seq": 4,
         "prev_chain": 65491504,
         "sig": "",
         "slp_event_ids": [],
-        "meta": {}
+        "meta": {
+          "pfna_integerization": []
+        }
       }
     ],
     "governance_envelopes": [],
@@ -589,11 +648,11 @@
         "tick": 1,
         "window_id": "LINE_DEMO_W1_ticks_1_4",
         "C_t": 20987847,
-        "manifest_check": 735397692,
-        "nap_envelope_hash": "bc224b3e306b8d1ef0d86f94d6d7ab579114326dc3474e182ab9ad340feae7df",
-        "umx_ledger_hash": "4ec45bd7dcaab2674a35f7eb1b61f592e7b395208ad3d9568511128fb3f631d0",
+        "manifest_check": 612431347,
+        "nap_envelope_hash": "d88a71b92abf4348db427bc5b7321a040d965191bdacf826618efe0625a257b2",
+        "umx_ledger_hash": "1cc371b7c0b9cd08438fa91a26b9650def2cabfb285ac815342f3ff843545b85",
         "loom_block_hash": "04db047dc7e44b41a58a009679d0c9c69eb0e6a1e7507960cd0c7ca8292ff0f4",
-        "apx_manifest_hash": "70e2836aecdfb751b8ea72ef5392aade94b1bb63ae22dbb0eb40c70313012dc6",
+        "apx_manifest_hash": "90ab0853a91e525b9ea6476fe059cd3654c06a60c511df612ef218cc369671e0",
         "prev_entry_hash": null,
         "codex_library_hash": null,
         "timestamp_utc": null,
@@ -605,12 +664,12 @@
         "tick": 2,
         "window_id": "LINE_DEMO_W1_ticks_1_4",
         "C_t": 356793608,
-        "manifest_check": 735397692,
-        "nap_envelope_hash": "a780abba11d2fd77078564e5978c88ccd65383e19ec1668a4f47368b96f6ccb5",
-        "umx_ledger_hash": "64d976ee3b817e2ae20b43c877fb804c18985f8e927507ae9f3d687d4a7f436a",
+        "manifest_check": 612431347,
+        "nap_envelope_hash": "9d0cd7156ffb680cbdf4aadbe2683e9c3267440a652482254c15afa4deae6a0c",
+        "umx_ledger_hash": "4b38002edfca4f3318351d739883bfb1f800670aeef8d9edf5ef2b9226027a05",
         "loom_block_hash": "e2488772382aec5b58e9222de95b17a72a1b80e0ababc0e430c0d28485cd02b8",
-        "apx_manifest_hash": "70e2836aecdfb751b8ea72ef5392aade94b1bb63ae22dbb0eb40c70313012dc6",
-        "prev_entry_hash": "d501f1c1c1b78ceb6b95f93aa3f92a636595d014c5def1f549d6f764dde8e902",
+        "apx_manifest_hash": "90ab0853a91e525b9ea6476fe059cd3654c06a60c511df612ef218cc369671e0",
+        "prev_entry_hash": "02e66de63ff7061972fb1d67a0801b776ba4d8f7b860544fed18ffe064bce35a",
         "codex_library_hash": null,
         "timestamp_utc": null,
         "meta": {}
@@ -621,12 +680,12 @@
         "tick": 3,
         "window_id": "LINE_DEMO_W1_ticks_1_4",
         "C_t": 65491504,
-        "manifest_check": 735397692,
-        "nap_envelope_hash": "57399b37e5f765f5d0831c8acd912a9074a9b99a0bd5ebc2963b850032199008",
-        "umx_ledger_hash": "cb771f2a8e8b2ee514393fb0c7c92123239d153e66e0f3740d855a3b9877634c",
+        "manifest_check": 612431347,
+        "nap_envelope_hash": "15d41afd2028f5d7f3552a6f641d576c57a5725d0d865e021180aeb6444cff38",
+        "umx_ledger_hash": "2c9f6761e78279e4aa8a4a4edb352111095a73952bf05432d1e4349e88083134",
         "loom_block_hash": "acc605886a319f7f92f7255e860f956fa8e5d8a2a94d478d5398abcd98b7a5db",
-        "apx_manifest_hash": "70e2836aecdfb751b8ea72ef5392aade94b1bb63ae22dbb0eb40c70313012dc6",
-        "prev_entry_hash": "9be13d353513647228aafe1ef2867c5cbbd3075552298f132d44130b299f97ac",
+        "apx_manifest_hash": "90ab0853a91e525b9ea6476fe059cd3654c06a60c511df612ef218cc369671e0",
+        "prev_entry_hash": "d5d2c74f136ac4499d8d8d809973cd7448cba1499387da2bfa3aaa0c4e6d0ff1",
         "codex_library_hash": null,
         "timestamp_utc": null,
         "meta": {}
@@ -637,12 +696,12 @@
         "tick": 4,
         "window_id": "LINE_DEMO_W1_ticks_1_4",
         "C_t": 113355772,
-        "manifest_check": 735397692,
-        "nap_envelope_hash": "922ff0b830da834a6421792838a878e731d47b0664c3ad2bc746a47b3dfc02de",
-        "umx_ledger_hash": "1b0ad3790194153a8554b7656f031c5fa3f23dc3ffe22ae93120008bcac0d110",
+        "manifest_check": 612431347,
+        "nap_envelope_hash": "b8f93a7f6fd198fd779719dc59c8085aae463525c3974f3fd88b06ed6efa35df",
+        "umx_ledger_hash": "894de498552163756628dccc2c183905a103a2d3643727c5eef50db2654a8cd5",
         "loom_block_hash": "8e9bd822e61ffc971f7e5617ad35b6e151342512586f862ed2bc42fe5f706322",
-        "apx_manifest_hash": "70e2836aecdfb751b8ea72ef5392aade94b1bb63ae22dbb0eb40c70313012dc6",
-        "prev_entry_hash": "a175269984f4c10b5a0ae5411d7d0890ac7bde62c43f868dfc532bcc23b832d2",
+        "apx_manifest_hash": "90ab0853a91e525b9ea6476fe059cd3654c06a60c511df612ef218cc369671e0",
+        "prev_entry_hash": "83a59c1276c9267edc079602d80e3a3703885b9eaa891fcd4f7f0b8120cd77f7",
         "codex_library_hash": null,
         "timestamp_utc": null,
         "meta": {}
@@ -672,7 +731,7 @@
         "nid": "pfna-demo-node",
         "layer": "EGRESS",
         "mode": "P",
-        "payload_ref": 735397692,
+        "payload_ref": 612431347,
         "seq": 6,
         "prev_chain": 113355772,
         "sig": "",

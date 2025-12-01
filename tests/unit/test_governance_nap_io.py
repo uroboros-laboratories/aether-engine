@@ -55,12 +55,15 @@ def test_governance_events_emit_gov_layer_and_meta() -> None:
     )
 
     gov_layers = [env.layer for env in result.governance_envelopes]
-    assert gov_layers == ["GOV", "GOV", "GOV"]
+    assert all(layer == "GOV" for layer in gov_layers)
 
     events = [env.meta.get("event") for env in result.governance_envelopes]
-    assert events[0] == "POLICY_SET_LOADED"
-    assert "GOVERNANCE_DECISION_SUMMARY" in events
-    assert "BUDGET_EXHAUSTION" in events
+    assert events.count("GATE_GOVERNANCE_DECISION") == 8
+    assert events[-3:] == [
+        "POLICY_SET_LOADED",
+        "GOVERNANCE_DECISION_SUMMARY",
+        "BUDGET_EXHAUSTION",
+    ]
 
     summary = next(env for env in result.governance_envelopes if env.meta.get("event") == "GOVERNANCE_DECISION_SUMMARY")
     assert summary.meta["policy_set_hash"] == governance.policy_set_hash
@@ -70,7 +73,7 @@ def test_governance_events_emit_gov_layer_and_meta() -> None:
 
     view = build_introspection_view(result)
     gov_from_view = view.get_nap_envelopes(layer="GOV")
-    assert len(gov_from_view) == 3
+    assert len(gov_from_view) == len(result.governance_envelopes)
     assert gov_from_view[0].meta["event"] == "POLICY_SET_LOADED"
 
 

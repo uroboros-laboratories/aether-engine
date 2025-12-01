@@ -13,6 +13,7 @@ class ProfileCMP0V1:
     modulus_M: int = 1_000_000_007
     C0: int = 1_234_567
     SC: int = 32
+    epsilon_cap: int | None = None
     I_block_spacing_W: int = 8
     flux_rule: Dict[str, object] = field(default_factory=lambda: {
         "type": "CMP0_flux_v1",
@@ -31,6 +32,12 @@ class ProfileCMP0V1:
         "description": "GF-01 uses a constant s_t = 9 for all ticks.",
         "gf01_constant": 9,
     })
+    epsilon_policy: Dict[str, object] = field(
+        default_factory=lambda: {
+            "description": "Optional epsilon clamp for raw flux magnitude.",
+            "cap_field": "epsilon_cap",
+        }
+    )
     nap_defaults: Dict[str, object] = field(default_factory=lambda: {
         "v": 1,
         "layer": "DATA",
@@ -51,6 +58,10 @@ class ProfileCMP0V1:
             for v in (self.modulus_M, self.C0, self.SC, self.I_block_spacing_W)
         ):
             raise ValueError("CMP numeric constants must be positive integers")
+        if self.epsilon_cap is not None and (
+            not isinstance(self.epsilon_cap, int) or self.epsilon_cap <= 0
+        ):
+            raise ValueError("epsilon_cap, when set, must be a positive integer")
 
 
 def gf01_profile_cmp0() -> ProfileCMP0V1:

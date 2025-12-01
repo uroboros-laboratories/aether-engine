@@ -136,3 +136,147 @@ def build_uledger_entries(
 
     return entries
 
+
+@dataclass(frozen=True)
+class ULedgerCheckpointV1:
+    """Summary checkpoint for a ULedgerEntry chain segment."""
+
+    gid: str
+    run_id: str
+    window_id: str
+    start_tick: int
+    end_tick: int
+    entry_count: int
+    head_hash: str
+    manifest_hash: str
+    policy_set_hash: Optional[str] = None
+
+    def __post_init__(self) -> None:
+        if self.start_tick < 1 or self.end_tick < self.start_tick:
+            raise ValueError("start_tick must be >= 1 and <= end_tick")
+        if self.entry_count < 1:
+            raise ValueError("entry_count must be >= 1")
+        if not self.head_hash or not isinstance(self.head_hash, str):
+            raise ValueError("head_hash must be a non-empty string")
+        if not self.manifest_hash or not isinstance(self.manifest_hash, str):
+            raise ValueError("manifest_hash must be a non-empty string")
+        if not self.gid or not self.run_id or not self.window_id:
+            raise ValueError("gid, run_id, and window_id must be provided")
+        if self.policy_set_hash is not None and (
+            not isinstance(self.policy_set_hash, str) or not self.policy_set_hash
+        ):
+            raise ValueError("policy_set_hash must be a non-empty string when provided")
+
+
+def validate_uledger_chain(
+    entries: Sequence[ULedgerEntryV1],
+    *,
+    expected_gid: Optional[str] = None,
+    expected_run_id: Optional[str] = None,
+    expected_window_id: Optional[str] = None,
+    manifest: Optional[APXManifestV1] = None,
+    start_prev_hash: Optional[str] = None,
+    require_contiguous_ticks: bool = True,
+) -> ULedgerCheckpointV1:
+    """Validate a sequence of ULedgerEntryV1 records and return a checkpoint."""
+
+    if not entries:
+        raise ValueError("entries must not be empty")
+
+    ticks_seen: List[int] = []
+    manifest_hash = None
+    last_hash = start_prev_hash
+    last_tick = 0
+
+    for idx, entry in enumerate(entries):
+        if expected_gid and entry.gid != expected_gid:
+            raise ValueError("gid mismatch in ledger entries")
+        if expected_run_id and entry.run_id != expected_run_id:
+            raise ValueError("run_id mismatch in ledger entries")
+        if expected_window_id and entry.window_id != expected_window_id:
+            raise ValueError("window_id mismatch in ledger entries")
+
+        if manifest:
+            manifest_hash = manifest_hash or hash_record(_manifest_hash_payload(manifest))
+            if entry.apx_manifest_hash != manifest_hash:
+                raise ValueError("APX manifest hash mismatch in ledger entries")
+            if entry.manifest_check != manifest.manifest_check:
+                raise ValueError("manifest_check mismatch in ledger entries")
+
+        if require_contiguous_ticks and entry.tick != last_tick + 1:
+            raise ValueError("ledger ticks must be contiguous and increasing")
+        if entry.tick <= last_tick:
+            raise ValueError("ledger ticks must strictly increase")
+        last_tick = entry.tick
+        ticks_seen.append(entry.tick)
+
+        expected_prev = last_hash
+        if expected_prev != entry.prev_entry_hash:
+            raise ValueError("prev_entry_hash does not match chain state")
+
+        last_hash = hash_record(entry)
+
+        if idx == 0:
+            manifest_hash = manifest_hash or entry.apx_manifest_hash
+        else:
+            if entry.apx_manifest_hash != manifest_hash:
+                raise ValueError("apx_manifest_hash must remain constant across the window")
+        if entries[0].policy_set_hash != entry.policy_set_hash:
+            raise ValueError("policy_set_hash must be consistent across entries")
+
+    return ULedgerCheckpointV1(
+        gid=entries[0].gid,
+        run_id=entries[0].run_id,
+        window_id=entries[0].window_id,
+        start_tick=min(ticks_seen),
+        end_tick=max(ticks_seen),
+        entry_count=len(entries),
+        head_hash=last_hash or hash_record(entries[-1]),
+        manifest_hash=manifest_hash or entries[-1].apx_manifest_hash,
+        policy_set_hash=entries[0].policy_set_hash,
+    )
+
+
+def build_and_validate_uledger(
+    *,
+    gid: str,
+    run_id: str,
+    window_id: str,
+    ledgers: Sequence[UMXTickLedgerV1],
+    p_blocks: Sequence[LoomPBlockV1],
+    envelopes: Sequence[NAPEnvelopeV1],
+    manifest: APXManifestV1,
+    start_prev_hash: Optional[str] = None,
+    slp_events_by_tick: Optional[Mapping[int, Sequence[str]]] = None,
+    policy_set_hash: Optional[str] = None,
+    governance_meta: Optional[Mapping[str, object]] = None,
+    require_contiguous_ticks: bool = True,
+) -> tuple[List[ULedgerEntryV1], ULedgerCheckpointV1]:
+    """Build ULedger entries then validate them, returning entries + checkpoint."""
+
+    entries = build_uledger_entries(
+        gid=gid,
+        run_id=run_id,
+        window_id=window_id,
+        ledgers=ledgers,
+        p_blocks=p_blocks,
+        envelopes=envelopes,
+        manifest=manifest,
+        start_prev_hash=start_prev_hash,
+        slp_events_by_tick=slp_events_by_tick,
+        policy_set_hash=policy_set_hash,
+        governance_meta=governance_meta,
+    )
+
+    checkpoint = validate_uledger_chain(
+        entries,
+        expected_gid=gid,
+        expected_run_id=run_id,
+        expected_window_id=window_id,
+        manifest=manifest,
+        start_prev_hash=start_prev_hash,
+        require_contiguous_ticks=require_contiguous_ticks,
+    )
+
+    return entries, checkpoint
+

@@ -9,6 +9,11 @@
 
 This is a **first-pass coverage map**. Requirements are grouped into themes rather than every line individually; we can tighten it later to section/line-level once everything is in the repo.
 
+## Phase 6 Coverage Crosswalk
+
+- **Hash/Merkle chain implemented.** `tests/unit/test_loom_chain_integrity.py` and `tests/unit/test_loom_block_schema.py` cover deterministic canonicalization, SHA-256 chaining, Merkle roots, rollback pruning, and binary envelopes.
+- **Persistence/replay validated.** `tests/integration/test_full_system_demo.py` rehydrates stored P-/I-blocks and aligns chain state with Press manifests and U-Ledger checkpoints.
+
 ---
 
 ## 1. Legend

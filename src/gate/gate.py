@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from dataclasses import dataclass, field
+from functools import cached_property
 from typing import (
     Dict,
     Iterable,
@@ -15,6 +16,8 @@ from typing import (
     TYPE_CHECKING,
     Union,
 )
+
+from collections import defaultdict
 
 from governance import GovernanceConfigV1
 from loom.loom import LoomPBlockV1
@@ -158,6 +161,107 @@ class PFNAInputV0:
             raise ValueError("values must be a non-empty sequence")
         if not all(isinstance(v, int) for v in self.values):
             raise ValueError("values must be integers")
+
+
+@dataclass(frozen=True)
+class PFNATransformV1:
+    """Integerization parameters for PFNA ingress with audit trail."""
+
+    scale: float = 1.0
+    origin: float = 0.0
+    clamp_min: Optional[int] = None
+    clamp_max: Optional[int] = None
+    description: str = ""
+
+    def __post_init__(self) -> None:
+        if self.clamp_min is not None and self.clamp_max is not None:
+            if self.clamp_min > self.clamp_max:
+                raise ValueError("clamp_min cannot exceed clamp_max")
+
+    def integerize(self, values: Sequence[Union[int, float]]) -> Tuple[Tuple[int, ...], Tuple[Dict[str, object], ...]]:
+        """Apply scale/origin/clamp deterministically and emit per-value audits."""
+
+        audited: List[Dict[str, object]] = []
+        out: List[int] = []
+        for idx, raw in enumerate(values):
+            shifted = float(raw) + self.origin
+            scaled = shifted * self.scale
+            rounded = int(round(scaled))
+            clamped = rounded
+            if self.clamp_min is not None:
+                clamped = max(clamped, int(self.clamp_min))
+            if self.clamp_max is not None:
+                clamped = min(clamped, int(self.clamp_max))
+            out.append(clamped)
+            audited.append(
+                {
+                    "index": idx,
+                    "raw": str(raw),
+                    "shifted": f"{shifted:.6f}",
+                    "scaled": f"{scaled:.6f}",
+                    "rounded": rounded,
+                    "clamped": clamped,
+                }
+            )
+        return tuple(out), tuple(audited)
+
+
+@dataclass(frozen=True)
+class PFNAIngressEventV1:
+    """Integerized PFNA payload with deterministic audit trail."""
+
+    pfna: PFNAInputV0
+    integerized: Tuple[int, ...]
+    audit: Tuple[Mapping[str, object], ...]
+
+    @cached_property
+    def as_pfna_input(self) -> PFNAInputV0:
+        """Return a PFNAInputV0 copy with integerized values."""
+
+        return PFNAInputV0(
+            pfna_id=self.pfna.pfna_id,
+            gid=self.pfna.gid,
+            run_id=self.pfna.run_id,
+            tick=self.pfna.tick,
+            nid=self.pfna.nid,
+            values=self.integerized,
+            description=self.pfna.description,
+        )
+
+
+class PFNAIngressQueue:
+    """Idempotent PFNA ingress buffer that integerizes on enqueue."""
+
+    def __init__(self, *, transform: Optional[PFNATransformV1] = None) -> None:
+        self.transform = transform or PFNATransformV1()
+        self._seen: set[Tuple[int, str]] = set()
+        self._events: List[PFNAIngressEventV1] = []
+
+    def enqueue(self, pfna: PFNAInputV0) -> None:
+        key = (pfna.tick, pfna.pfna_id)
+        if key in self._seen:
+            return
+
+        integerized, audit = self.transform.integerize(pfna.values)
+        event = PFNAIngressEventV1(pfna=pfna, integerized=integerized, audit=audit)
+        self._events.append(event)
+        self._seen.add(key)
+        self._events.sort(key=lambda item: (item.pfna.tick, item.pfna.pfna_id))
+
+    def extend(self, pfna_inputs: Iterable[PFNAInputV0]) -> None:
+        for pfna in pfna_inputs:
+            self.enqueue(pfna)
+
+    def pop_ready(self, tick: int) -> Tuple[PFNAIngressEventV1, ...]:
+        ready: List[PFNAIngressEventV1] = []
+        remaining: List[PFNAIngressEventV1] = []
+        for event in self._events:
+            if event.pfna.tick == tick:
+                ready.append(event)
+            else:
+                remaining.append(event)
+        self._events = remaining
+        return tuple(ready)
 
 
 def _load_pfna_source(source: Union[str, Path, Mapping[str, object]]) -> Mapping[str, object]:
@@ -370,6 +474,31 @@ class NAPEnvelopeV1:
         object.__setattr__(self, "meta", dict(self.meta))
 
 
+@dataclass(frozen=True)
+class GovernanceDecisionV1:
+    """Decision outcome for an envelope under Gate/TBP governance."""
+
+    envelope_ref: str
+    tick: int
+    seq: int
+    status: str
+    reasons: Tuple[str, ...] = field(default_factory=tuple)
+    policy_set_hash: Optional[str] = None
+    window_id: Optional[str] = None
+
+    def to_meta(self) -> Dict[str, object]:
+        return {
+            "event": "GATE_GOVERNANCE_DECISION",
+            "envelope_ref": self.envelope_ref,
+            "tick": self.tick,
+            "seq": self.seq,
+            "status": self.status,
+            "reasons": list(self.reasons),
+            "policy_set_hash": self.policy_set_hash,
+            "window_id": self.window_id,
+        }
+
+
 def build_scene_frame(
     gid: str,
     run_id: str,
@@ -395,6 +524,10 @@ def build_scene_frame(
         merged_meta.setdefault("manifest_ref", manifest_ref)
     if pfna_refs:
         merged_meta.setdefault("pfna_refs", list(pfna_refs))
+        merged_meta.setdefault(
+            "pfna_integerization",
+            [{"pfna_id": ref, "values": tuple(), "audit": ()} for ref in pfna_refs],
+        )
 
     return SceneFrameV1(
         gid=gid,
@@ -412,6 +545,26 @@ def build_scene_frame(
         pfna_refs=tuple(pfna_refs or ()),
         meta=merged_meta,
     )
+
+
+def validate_scene_frame(
+    scene: SceneFrameV1,
+    *,
+    manifest_ref: str,
+    manifest_check: int,
+    expected_tick: Optional[int] = None,
+) -> None:
+    """Validate key invariants for a SceneFrame_v1 instance."""
+
+    if expected_tick is not None and scene.tick != expected_tick:
+        raise ValueError("scene tick does not match expected_tick")
+    if scene.manifest_check != manifest_check:
+        raise ValueError("scene manifest_check does not match manifest")
+    meta_ref = scene.meta.get("manifest_ref") if isinstance(scene.meta, Mapping) else None
+    if meta_ref != manifest_ref:
+        raise ValueError("scene manifest_ref meta must reference the manifest")
+    if scene.pfna_refs and not isinstance(scene.meta.get("pfna_refs"), list):
+        raise ValueError("scene.meta must expose pfna_refs when pfna_refs are set")
 
 
 def emit_nap_envelope(
@@ -450,6 +603,100 @@ def emit_nap_envelope(
         slp_event_ids=tuple(slp_event_ids or ()),
         meta=dict(meta or {}),
     )
+
+
+def apply_governance_to_envelopes(
+    envelopes: Sequence[NAPEnvelopeV1],
+    *,
+    governance: Optional[GovernanceConfigV1],
+    window_id: str,
+    profile: ProfileCMP0V1,
+    logger: Optional[StructuredLogger] = None,
+) -> Tuple[Tuple[NAPEnvelopeV1, ...], Tuple[NAPEnvelopeV1, ...], Tuple[GovernanceDecisionV1, ...]]:
+    """Apply Gate governance rules to outbound envelopes and emit GOV events.
+
+    The rules are intentionally minimal/deterministic for CMP-0:
+    - If governance is OFF/None, envelopes are returned unchanged and no GOV
+      envelopes are emitted.
+    - Allowed layers are drawn from governance.meta["allowed_layers"] when
+      provided; otherwise all CMP-0 layers are accepted.
+    - Optional governance.meta["max_envelopes_per_tick"] caps data envelopes
+      per tick. In ENFORCE mode, envelopes that exceed the cap are dropped;
+      in OBSERVE/DRY_RUN they are retained but logged as rejected.
+    - GOV decision envelopes are emitted with `layer="GOV"` / `mode="G"`
+      carrying structured decision metadata.
+    """
+
+    if governance is None or (
+        governance.codex_action_mode == "OFF" and governance.governance_mode == "OFF"
+    ):
+        return tuple(envelopes), tuple(), tuple()
+
+    allowed_layers = governance.meta.get("allowed_layers", ALLOWED_NAP_LAYERS)
+    max_per_tick = governance.meta.get("max_envelopes_per_tick")
+    enforce = governance.governance_mode == "ENFORCE"
+
+    per_tick_counts: dict[int, int] = defaultdict(int)
+    filtered: list[NAPEnvelopeV1] = []
+    governance_envelopes: list[NAPEnvelopeV1] = []
+    decisions: list[GovernanceDecisionV1] = []
+    seq_offset = (max((env.seq for env in envelopes), default=0)) + 1
+
+    for envelope in envelopes:
+        per_tick_counts[envelope.tick] += 1
+        reasons: list[str] = []
+        if envelope.layer not in allowed_layers:
+            reasons.append(f"layer {envelope.layer} not allowed")
+        if max_per_tick is not None and per_tick_counts[envelope.tick] > int(max_per_tick):
+            reasons.append(
+                f"tick {envelope.tick} exceeds cap {int(max_per_tick)}"
+            )
+
+        status = "ACCEPTED" if not reasons else "REJECTED"
+        decision = GovernanceDecisionV1(
+            envelope_ref=f"nap_{envelope.tick}_{envelope.seq}",
+            tick=envelope.tick,
+            seq=envelope.seq,
+            status=status if enforce else f"{status}_OBSERVED",
+            reasons=tuple(reasons),
+            policy_set_hash=governance.policy_set_hash,
+            window_id=window_id,
+        )
+        decisions.append(decision)
+
+        if reasons and enforce:
+            # Drop envelope in ENFORCE mode.
+            pass
+        else:
+            filtered.append(envelope)
+
+        governance_envelopes.append(
+            NAPEnvelopeV1(
+                v=int(profile.nap_defaults.get("v", 1)),
+                tick=envelope.tick,
+                gid=envelope.gid,
+                nid=envelope.nid,
+                layer="GOV",
+                mode="G",
+                payload_ref=envelope.payload_ref,
+                seq=seq_offset,
+                prev_chain=envelope.prev_chain,
+                sig="",
+                meta=decision.to_meta(),
+            )
+        )
+        seq_offset += 1
+
+    if logger and logger.enabled:
+        for decision in decisions:
+            logger.log(
+                "gate_governance_decision",
+                gid=governance.gid or "",
+                run_id=governance.run_id or "N/A",
+                payload=decision.to_meta(),
+            )
+
+    return tuple(filtered), tuple(governance_envelopes), tuple(decisions)
 
 
 def build_pfna_placeholder(

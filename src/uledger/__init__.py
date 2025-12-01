@@ -13,14 +13,33 @@ __all__ = [
     "hash_record",
     "ULedgerEntryV1",
     "build_uledger_entries",
+    "build_and_validate_uledger",
+    "validate_uledger_chain",
+    "ULedgerCheckpointV1",
 ]
 
 
 def __getattr__(name):  # pragma: no cover - thin lazy import helper
-    if name in {"ULedgerEntryV1", "build_uledger_entries"}:
-        from .entry import ULedgerEntryV1, build_uledger_entries
+    if name in {
+        "ULedgerEntryV1",
+        "build_uledger_entries",
+        "build_and_validate_uledger",
+        "validate_uledger_chain",
+        "ULedgerCheckpointV1",
+    }:
+        from .entry import (
+            ULedgerCheckpointV1,
+            ULedgerEntryV1,
+            build_and_validate_uledger,
+            build_uledger_entries,
+            validate_uledger_chain,
+        )
 
-        return {"ULedgerEntryV1": ULedgerEntryV1, "build_uledger_entries": build_uledger_entries}[
-            name
-        ]
+        return {
+            "ULedgerEntryV1": ULedgerEntryV1,
+            "build_uledger_entries": build_uledger_entries,
+            "build_and_validate_uledger": build_and_validate_uledger,
+            "validate_uledger_chain": validate_uledger_chain,
+            "ULedgerCheckpointV1": ULedgerCheckpointV1,
+        }[name]
     raise AttributeError(f"module 'uledger' has no attribute {name!r}")

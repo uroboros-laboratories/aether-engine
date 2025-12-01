@@ -39,7 +39,7 @@ def test_run_session_emits_ctrl_envelopes_and_wraps_tick_loop():
     tick_result = session.tick_result
 
     manifest = tick_result.manifests["GF01_APX_v0_full_window"]
-    assert manifest.manifest_check == 487809945
+    assert manifest.manifest_check == 824666593
 
     # Lifecycle envelopes wrap the per-tick DATA envelopes
     assert [env.layer for env in session.lifecycle_envelopes] == ["CTRL", "CTRL"]

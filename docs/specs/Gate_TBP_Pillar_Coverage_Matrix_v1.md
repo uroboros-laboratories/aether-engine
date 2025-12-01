@@ -9,6 +9,11 @@
 
 This is a **first-pass coverage map**. Requirements are grouped into themes (types, lifecycle, NAP, PFNA, governance). Later, once the repo and tests exist, we can refine this to section/line-level coverage against `trinity gate full spec.txt` and related contracts.
 
+## Phase 6 Coverage Crosswalk
+
+- **PFNA ingress + scenes covered.** `tests/unit/test_gate_pfna_ingress.py` and `tests/unit/test_gate.py` exercise integerization, audit trails, and SceneFrame validation.
+- **Governance enforcement complete.** `tests/unit/test_gate_governance.py` and `tests/integration/test_full_system_demo.py` confirm decision envelopes, per-tick caps, and deterministic filtering.
+
 ---
 
 ## 1. Legend

@@ -18,6 +18,11 @@ U-ledger is treated here as a **cross-cutting substrate** that stitches the five
 
 This matrix just makes sure all the ledger behaviours those pillars rely on are covered by SPEC-00X and tests.
 
+## Phase 6 Coverage Crosswalk
+
+- **Checkpoint + policy validation implemented.** `tests/unit/test_uledger_chain.py` and `tests/unit/test_uledger_entry.py` verify manifest hash alignment, contiguous ticks, and policy checks.
+- **Cross-pillar chain exercised.** `tests/gf01/test_run_gf01.py` and `tests/integration/test_full_system_demo.py` confirm ledger linkage across Gate, Loom, Press, and UMX with deterministic snapshots.
+
 ---
 
 ## 1. Legend

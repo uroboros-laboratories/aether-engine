@@ -6,7 +6,7 @@ so they can be serialised deterministically for regression testing.
 from __future__ import annotations
 
 import json
-from typing import Any, Dict, List, TYPE_CHECKING
+from typing import Any, Dict, List, Mapping, TYPE_CHECKING
 
 from core.tick_loop import GF01RunResult
 from gate.gate import NAPEnvelopeV1, SceneFrameV1, SessionRunResult
@@ -142,6 +142,19 @@ def serialize_apxi_view(view: APXiViewV1) -> Dict[str, object]:
     return payload
 
 
+def _normalize_meta(meta: Mapping[str, object]) -> Dict[str, object]:
+    def _normalize(value: object) -> object:
+        if isinstance(value, dict):
+            return {k: _normalize(v) for k, v in value.items()}
+        if isinstance(value, tuple):
+            return [_normalize(v) for v in value]
+        if isinstance(value, list):
+            return [_normalize(v) for v in value]
+        return value
+
+    return {k: _normalize(v) for k, v in meta.items()}
+
+
 def serialize_scene_frame(scene: SceneFrameV1) -> Dict[str, object]:
     return {
         "gid": scene.gid,
@@ -156,7 +169,7 @@ def serialize_scene_frame(scene: SceneFrameV1) -> Dict[str, object]:
         "window_id": scene.window_id,
         "manifest_check": scene.manifest_check,
         "nap_envelope_ref": scene.nap_envelope_ref,
-        "meta": dict(scene.meta),
+        "meta": _normalize_meta(scene.meta),
     }
 
 
@@ -173,7 +186,7 @@ def serialize_nap_envelope(envelope: NAPEnvelopeV1) -> Dict[str, object]:
         "prev_chain": envelope.prev_chain,
         "sig": envelope.sig,
         "slp_event_ids": list(envelope.slp_event_ids),
-        "meta": dict(envelope.meta),
+        "meta": _normalize_meta(envelope.meta),
     }
 
 

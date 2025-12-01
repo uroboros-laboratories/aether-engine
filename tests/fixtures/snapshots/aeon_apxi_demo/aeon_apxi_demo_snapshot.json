@@ -109,7 +109,7 @@
         "nid": "aeon-apxi-demo-node",
         "layer": "CTRL",
         "mode": "P",
-        "payload_ref": 125200697,
+        "payload_ref": 367424737,
         "seq": 7,
         "prev_chain": 759821701,
         "sig": "",
@@ -530,34 +530,34 @@
         "LINE4_APX_W1_T1_6": {
           "apx_name": "LINE4_APX_W1_T1_6",
           "profile": "CMP-0",
-          "manifest_check": 125200697,
+          "manifest_check": 367424737,
           "streams": [
             {
               "stream_id": "S1_post_u_deltas",
               "description": "post_u delta per node",
               "scheme": "R",
               "params": 0,
-              "L_model": 0,
-              "L_residual": 5,
-              "L_total": 5
+              "L_model": 48,
+              "L_residual": 160,
+              "L_total": 208
             },
             {
               "stream_id": "S2_fluxes",
               "description": "edge flux per edge",
               "scheme": "R",
               "params": 0,
-              "L_model": 0,
-              "L_residual": 5,
-              "L_total": 5
+              "L_model": 40,
+              "L_residual": 120,
+              "L_total": 160
             },
             {
               "stream_id": "S3_prev_chain",
               "description": "prev chain checksum per tick",
               "scheme": "R",
               "params": 0,
-              "L_model": 0,
-              "L_residual": 5,
-              "L_total": 5
+              "L_model": 48,
+              "L_residual": 184,
+              "L_total": 232
             }
           ],
           "apxi_view_ref": "LINE4_APX_W1_T1_6::AEON_LINE4_W_all::APXiView_v1"
@@ -585,7 +585,7 @@
           "C_prev": 1234567,
           "C_t": 20987847,
           "window_id": "LINE4_W1_T1_6",
-          "manifest_check": 125200697,
+          "manifest_check": 367424737,
           "nap_envelope_ref": null,
           "meta": {
             "p_block_ref": "loom_p_block_1",
@@ -613,7 +613,7 @@
           "C_prev": 20987847,
           "C_t": 356793608,
           "window_id": "LINE4_W1_T1_6",
-          "manifest_check": 125200697,
+          "manifest_check": 367424737,
           "nap_envelope_ref": null,
           "meta": {
             "p_block_ref": "loom_p_block_2",
@@ -641,7 +641,7 @@
           "C_prev": 356793608,
           "C_t": 65491504,
           "window_id": "LINE4_W1_T1_6",
-          "manifest_check": 125200697,
+          "manifest_check": 367424737,
           "nap_envelope_ref": null,
           "meta": {
             "p_block_ref": "loom_p_block_3",
@@ -669,7 +669,7 @@
           "C_prev": 65491504,
           "C_t": 113355772,
           "window_id": "LINE4_W1_T1_6",
-          "manifest_check": 125200697,
+          "manifest_check": 367424737,
           "nap_envelope_ref": null,
           "meta": {
             "p_block_ref": "loom_p_block_4",
@@ -697,7 +697,7 @@
           "C_prev": 113355772,
           "C_t": 927048329,
           "window_id": "LINE4_W1_T1_6",
-          "manifest_check": 125200697,
+          "manifest_check": 367424737,
           "nap_envelope_ref": null,
           "meta": {
             "p_block_ref": "loom_p_block_5",
@@ -725,7 +725,7 @@
           "C_prev": 927048329,
           "C_t": 759821701,
           "window_id": "LINE4_W1_T1_6",
-          "manifest_check": 125200697,
+          "manifest_check": 367424737,
           "nap_envelope_ref": null,
           "meta": {
             "p_block_ref": "loom_p_block_6",
@@ -741,12 +741,14 @@
           "nid": "aeon-apxi-demo-node",
           "layer": "DATA",
           "mode": "P",
-          "payload_ref": 125200697,
+          "payload_ref": 367424737,
           "seq": 1,
           "prev_chain": 1234567,
           "sig": "",
           "slp_event_ids": [],
-          "meta": {}
+          "meta": {
+            "pfna_integerization": []
+          }
         },
         {
           "v": 1,
@@ -755,12 +757,14 @@
           "nid": "aeon-apxi-demo-node",
           "layer": "DATA",
           "mode": "P",
-          "payload_ref": 125200697,
+          "payload_ref": 367424737,
           "seq": 2,
           "prev_chain": 20987847,
           "sig": "",
           "slp_event_ids": [],
-          "meta": {}
+          "meta": {
+            "pfna_integerization": []
+          }
         },
         {
           "v": 1,
@@ -769,12 +773,14 @@
           "nid": "aeon-apxi-demo-node",
           "layer": "DATA",
           "mode": "P",
-          "payload_ref": 125200697,
+          "payload_ref": 367424737,
           "seq": 3,
           "prev_chain": 356793608,
           "sig": "",
           "slp_event_ids": [],
-          "meta": {}
+          "meta": {
+            "pfna_integerization": []
+          }
         },
         {
           "v": 1,
@@ -783,12 +789,14 @@
           "nid": "aeon-apxi-demo-node",
           "layer": "DATA",
           "mode": "P",
-          "payload_ref": 125200697,
+          "payload_ref": 367424737,
           "seq": 4,
           "prev_chain": 65491504,
           "sig": "",
           "slp_event_ids": [],
-          "meta": {}
+          "meta": {
+            "pfna_integerization": []
+          }
         },
         {
           "v": 1,
@@ -797,12 +805,14 @@
           "nid": "aeon-apxi-demo-node",
           "layer": "DATA",
           "mode": "P",
-          "payload_ref": 125200697,
+          "payload_ref": 367424737,
           "seq": 5,
           "prev_chain": 113355772,
           "sig": "",
           "slp_event_ids": [],
-          "meta": {}
+          "meta": {
+            "pfna_integerization": []
+          }
         },
         {
           "v": 1,
@@ -811,12 +821,14 @@
           "nid": "aeon-apxi-demo-node",
           "layer": "DATA",
           "mode": "P",
-          "payload_ref": 125200697,
+          "payload_ref": 367424737,
           "seq": 6,
           "prev_chain": 927048329,
           "sig": "",
           "slp_event_ids": [],
-          "meta": {}
+          "meta": {
+            "pfna_integerization": []
+          }
         }
       ],
       "governance_envelopes": [],
@@ -827,11 +839,11 @@
           "tick": 1,
           "window_id": "LINE4_W1_T1_6",
           "C_t": 20987847,
-          "manifest_check": 125200697,
-          "nap_envelope_hash": "7696a07c0eb64886dd5cb3c469de8fb405d513afd84550217da49b3962e2d5fe",
-          "umx_ledger_hash": "ce68911242e6211ece6f95d6b17f20b81b48fd0ba6f119e13533e278ffddf088",
+          "manifest_check": 367424737,
+          "nap_envelope_hash": "2759fc6b4ec1a83eb4b10c44ed380987e4c9a755a1b50a16d7ac628af690ee38",
+          "umx_ledger_hash": "56954a9731580e64e7513a294b457547df77411820cccc32fd6ab8d3b7e7e702",
           "loom_block_hash": "04db047dc7e44b41a58a009679d0c9c69eb0e6a1e7507960cd0c7ca8292ff0f4",
-          "apx_manifest_hash": "0f532c7546d6540786d03d1cbcc8a8b3e63ba70ffdebf2f02ea3866b083d8a4b",
+          "apx_manifest_hash": "e9acc7187535a69a3a919408f5a5cf96c017692c97131f499d7bdd013ec07c0f",
           "prev_entry_hash": null,
           "codex_library_hash": null,
           "timestamp_utc": null,
@@ -843,12 +855,12 @@
           "tick": 2,
           "window_id": "LINE4_W1_T1_6",
           "C_t": 356793608,
-          "manifest_check": 125200697,
-          "nap_envelope_hash": "e9fd3a8c3208e299a6aca191b8908dc55736bd8dee30f6048e3ebb86b43cb1fb",
-          "umx_ledger_hash": "bb25f2c7d0128115aaecf38d8ddf6588de90e08bf45eef650c1a3c811a1d9b66",
+          "manifest_check": 367424737,
+          "nap_envelope_hash": "94a15cab692c59466e07742f89137a81f06cb2fd0ccf5269a5ef1140aa4ea36e",
+          "umx_ledger_hash": "5a43b872e4254b7a5ff7cfecd0151f8cf50dded1ce62f2fb6d3a4c5a93720265",
           "loom_block_hash": "e2488772382aec5b58e9222de95b17a72a1b80e0ababc0e430c0d28485cd02b8",
-          "apx_manifest_hash": "0f532c7546d6540786d03d1cbcc8a8b3e63ba70ffdebf2f02ea3866b083d8a4b",
-          "prev_entry_hash": "17989c70f00a18059c28d5299a70f12e740be30f8bc9c4d599a251e7a9c1b775",
+          "apx_manifest_hash": "e9acc7187535a69a3a919408f5a5cf96c017692c97131f499d7bdd013ec07c0f",
+          "prev_entry_hash": "2a83406bef89b4a7fdc91b6a233dba9a7092e50b1b0e999163583040c7879e8c",
           "codex_library_hash": null,
           "timestamp_utc": null,
           "meta": {}
@@ -859,12 +871,12 @@
           "tick": 3,
           "window_id": "LINE4_W1_T1_6",
           "C_t": 65491504,
-          "manifest_check": 125200697,
-          "nap_envelope_hash": "c1b1e1d1de372b6060d4f1f5769c75540462e6e3741f6d51aa7767b236832ef3",
-          "umx_ledger_hash": "910ed4f6de4ceb5b01878447a91a5980c5e684f57864582aca53ad9411b03260",
+          "manifest_check": 367424737,
+          "nap_envelope_hash": "be3728d7ed14e4a78a04217bada183f139b580c24d9bb41185c0b4fd8ebf07cd",
+          "umx_ledger_hash": "0f4701ceb21cc7a52261651f78ea748d3a8ce981917329602821a4880983932b",
           "loom_block_hash": "acc605886a319f7f92f7255e860f956fa8e5d8a2a94d478d5398abcd98b7a5db",
-          "apx_manifest_hash": "0f532c7546d6540786d03d1cbcc8a8b3e63ba70ffdebf2f02ea3866b083d8a4b",
-          "prev_entry_hash": "fc08e98adc0cfd8a461d8d3200895ccaee0e8dd2842328dd0ab032744f8ba7ed",
+          "apx_manifest_hash": "e9acc7187535a69a3a919408f5a5cf96c017692c97131f499d7bdd013ec07c0f",
+          "prev_entry_hash": "50eb58cd7c3d36bd5d7b73b3ffaf876f771aa95512d42cfeac2910ff1c961461",
           "codex_library_hash": null,
           "timestamp_utc": null,
           "meta": {}
@@ -875,12 +887,12 @@
           "tick": 4,
           "window_id": "LINE4_W1_T1_6",
           "C_t": 113355772,
-          "manifest_check": 125200697,
-          "nap_envelope_hash": "e6ec4f81a4b3cbd0e709825980fb72e36e43e8d3c301699883ac1d5da0dd9f87",
-          "umx_ledger_hash": "3d09eaf491c33b9191024ee934a5b258679129cb12b332e2ffead141f5d2c5ec",
+          "manifest_check": 367424737,
+          "nap_envelope_hash": "0ece25aafadb0012ea9967fe49e91a4e9273f62f54781214196dacd929f9e1b6",
+          "umx_ledger_hash": "d9a4290f1c6dc971794404be6a0b1a0b4f412fe40e74f7e14966e0d1ae7434ea",
           "loom_block_hash": "8e9bd822e61ffc971f7e5617ad35b6e151342512586f862ed2bc42fe5f706322",
-          "apx_manifest_hash": "0f532c7546d6540786d03d1cbcc8a8b3e63ba70ffdebf2f02ea3866b083d8a4b",
-          "prev_entry_hash": "be2aabc28c6b9b51adefc9f7fca387598c981178a9fd9266769f4bb60fc7672f",
+          "apx_manifest_hash": "e9acc7187535a69a3a919408f5a5cf96c017692c97131f499d7bdd013ec07c0f",
+          "prev_entry_hash": "bc1ce5350b48a47e935a163392d2e54e167b280dd3cbb2302e8c64c04c5a93ba",
           "codex_library_hash": null,
           "timestamp_utc": null,
           "meta": {}
@@ -891,12 +903,12 @@
           "tick": 5,
           "window_id": "LINE4_W1_T1_6",
           "C_t": 927048329,
-          "manifest_check": 125200697,
-          "nap_envelope_hash": "a7c63bab2e48158667495b01fb0442f3676b61ea0af5260016ea776b97f7a587",
-          "umx_ledger_hash": "556578dc42ea78aa87eca7e1699ccf10940c805ee2a58a9e4a3d3973d0081ee7",
+          "manifest_check": 367424737,
+          "nap_envelope_hash": "72a5f5789ea9ce4b78fb32db1a13c78614cd4b0b089a717063d4fce411c0cf45",
+          "umx_ledger_hash": "d60edbde1557960612f25cd70cf08cfcd291e672ccc3ab39bcf02b4740b09c4a",
           "loom_block_hash": "adddbe6d164b384ca2f89e7ff22dac4b1c5a1a77efd19c8b95efe5e6320c8724",
-          "apx_manifest_hash": "0f532c7546d6540786d03d1cbcc8a8b3e63ba70ffdebf2f02ea3866b083d8a4b",
-          "prev_entry_hash": "87e295aaa5eb435a4ef6c219b52ca849183408855bb976e2f6627cb04c83c1c8",
+          "apx_manifest_hash": "e9acc7187535a69a3a919408f5a5cf96c017692c97131f499d7bdd013ec07c0f",
+          "prev_entry_hash": "24c7647223a11c84cca520386cfcf3c986d8564ed2de04ff53d179d99425bbfb",
           "codex_library_hash": null,
           "timestamp_utc": null,
           "meta": {}
@@ -907,12 +919,12 @@
           "tick": 6,
           "window_id": "LINE4_W1_T1_6",
           "C_t": 759821701,
-          "manifest_check": 125200697,
-          "nap_envelope_hash": "8d428e2a03a0ffa9303415aa665d03c4ff834495c0b70bf496521b649d3421e8",
-          "umx_ledger_hash": "2017d3d79da4177a44cec2fca0751545de176153a2354684a8209855d77d0e69",
+          "manifest_check": 367424737,
+          "nap_envelope_hash": "e629eba410192688c2af9f2e5947312cdf2b5a1ac3f14962d50488e0f78027d0",
+          "umx_ledger_hash": "59eed67d4f62cd830386ec2995b0902d35b2a1630c3834bc364ecf3b13bc9dc7",
           "loom_block_hash": "716ec9917a6b63cbc05b75bf8f33959ef2c67736cdf0e39fab268bbe10604dfd",
-          "apx_manifest_hash": "0f532c7546d6540786d03d1cbcc8a8b3e63ba70ffdebf2f02ea3866b083d8a4b",
-          "prev_entry_hash": "8766a4868f226257ece8ee3deb75e07e2c433c6a13204b19ec624d40e056f355",
+          "apx_manifest_hash": "e9acc7187535a69a3a919408f5a5cf96c017692c97131f499d7bdd013ec07c0f",
+          "prev_entry_hash": "b71953be879aeffa1e3373fae55497f23b1f4056604a7a2d56fa1252c3c0ea0e",
           "codex_library_hash": null,
           "timestamp_utc": null,
           "meta": {}
@@ -941,8 +953,8 @@
                 },
                 "residual_scheme": "R",
                 "L_model": 6,
-                "L_residual": 5,
-                "L_total": 11
+                "L_residual": 160,
+                "L_total": 166
               }
             ],
             "S2_fluxes": [
@@ -977,8 +989,8 @@
                 },
                 "residual_scheme": "R",
                 "L_model": 1,
-                "L_residual": 5,
-                "L_total": 6
+                "L_residual": 184,
+                "L_total": 185
               }
             ]
           }
@@ -993,7 +1005,7 @@
           "nid": "aeon-apxi-demo-node",
           "layer": "EGRESS",
           "mode": "P",
-          "payload_ref": 125200697,
+          "payload_ref": 367424737,
           "seq": 8,
           "prev_chain": 759821701,
           "sig": "",

@@ -1,85 +1,1243 @@
 {
   "config": {
+    "run_id": "RING5_demo",
     "gid": "RING5",
+    "nid": "RING5",
+    "total_ticks": 5,
+    "primary_window_id": "RING5_ticks_1_5",
+    "window_ids": [
+      "RING5_ticks_1_5"
+    ],
+    "press_default_streams": [
+      {
+        "name": "S1_post_u_deltas",
+        "source": "post_u_deltas",
+        "scheme_hint": null,
+        "description": "post_u delta per node"
+      },
+      {
+        "name": "S2_fluxes",
+        "source": "fluxes",
+        "scheme_hint": null,
+        "description": "edge flux per edge"
+      }
+    ],
+    "pfna_inputs": [],
     "initial_state": [
       10,
       0,
       0,
       0,
       0
-    ],
-    "nid": "RING5",
-    "pfna_inputs": [],
-    "press_default_streams": [
-      {
-        "description": "post_u delta per node",
-        "name": "S1_post_u_deltas",
-        "scheme_hint": null,
-        "source": "post_u_deltas"
-      },
-      {
-        "description": "edge flux per edge",
-        "name": "S2_fluxes",
-        "scheme_hint": null,
-        "source": "fluxes"
-      }
-    ],
-    "primary_window_id": "RING5_ticks_1_5",
-    "run_id": "RING5_demo",
-    "total_ticks": 5,
-    "window_ids": [
-      "RING5_ticks_1_5"
     ]
   },
   "lifecycle_envelopes": [
     {
+      "v": 1,
+      "tick": 1,
       "gid": "RING5",
-      "layer": "CTRL",
-      "meta": {},
-      "mode": "P",
       "nid": "RING5",
+      "layer": "CTRL",
+      "mode": "P",
       "payload_ref": 0,
-      "prev_chain": 1234567,
       "seq": 1,
+      "prev_chain": 1234567,
       "sig": "",
       "slp_event_ids": [],
-      "tick": 1,
-      "v": 1
+      "meta": {}
     },
     {
+      "v": 1,
+      "tick": 5,
       "gid": "RING5",
-      "layer": "CTRL",
-      "meta": {},
-      "mode": "P",
       "nid": "RING5",
-      "payload_ref": 379271437,
-      "prev_chain": 927048329,
+      "layer": "CTRL",
+      "mode": "P",
+      "payload_ref": 96964647,
       "seq": 6,
+      "prev_chain": 927048329,
       "sig": "",
       "slp_event_ids": [],
-      "tick": 5,
-      "v": 1
+      "meta": {}
     }
   ],
   "tick_result": {
+    "run_id": "RING5_demo",
+    "ledgers": [
+      {
+        "tick": 1,
+        "sum_pre_u": 10,
+        "sum_post_u": 10,
+        "z_check": 10,
+        "pre_u": [
+          10,
+          0,
+          0,
+          0,
+          0
+        ],
+        "edges": [
+          {
+            "e_id": 1,
+            "i": 1,
+            "j": 2,
+            "du": 10,
+            "raw": 1,
+            "cap": 128,
+            "f_e": 1
+          },
+          {
+            "e_id": 2,
+            "i": 2,
+            "j": 3,
+            "du": 0,
+            "raw": 0,
+            "cap": 128,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "i": 3,
+            "j": 4,
+            "du": 0,
+            "raw": 0,
+            "cap": 128,
+            "f_e": 0
+          },
+          {
+            "e_id": 4,
+            "i": 4,
+            "j": 5,
+            "du": 0,
+            "raw": 0,
+            "cap": 128,
+            "f_e": 0
+          },
+          {
+            "e_id": 5,
+            "i": 1,
+            "j": 5,
+            "du": 10,
+            "raw": 1,
+            "cap": 128,
+            "f_e": 1
+          }
+        ],
+        "post_u": [
+          8,
+          1,
+          0,
+          0,
+          1
+        ]
+      },
+      {
+        "tick": 2,
+        "sum_pre_u": 10,
+        "sum_post_u": 10,
+        "z_check": 10,
+        "pre_u": [
+          8,
+          1,
+          0,
+          0,
+          1
+        ],
+        "edges": [
+          {
+            "e_id": 1,
+            "i": 1,
+            "j": 2,
+            "du": 7,
+            "raw": 0,
+            "cap": 128,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "i": 2,
+            "j": 3,
+            "du": 1,
+            "raw": 0,
+            "cap": 128,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "i": 3,
+            "j": 4,
+            "du": 0,
+            "raw": 0,
+            "cap": 128,
+            "f_e": 0
+          },
+          {
+            "e_id": 4,
+            "i": 4,
+            "j": 5,
+            "du": -1,
+            "raw": 0,
+            "cap": 128,
+            "f_e": 0
+          },
+          {
+            "e_id": 5,
+            "i": 1,
+            "j": 5,
+            "du": 7,
+            "raw": 0,
+            "cap": 128,
+            "f_e": 0
+          }
+        ],
+        "post_u": [
+          8,
+          1,
+          0,
+          0,
+          1
+        ]
+      },
+      {
+        "tick": 3,
+        "sum_pre_u": 10,
+        "sum_post_u": 10,
+        "z_check": 10,
+        "pre_u": [
+          8,
+          1,
+          0,
+          0,
+          1
+        ],
+        "edges": [
+          {
+            "e_id": 1,
+            "i": 1,
+            "j": 2,
+            "du": 7,
+            "raw": 0,
+            "cap": 128,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "i": 2,
+            "j": 3,
+            "du": 1,
+            "raw": 0,
+            "cap": 128,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "i": 3,
+            "j": 4,
+            "du": 0,
+            "raw": 0,
+            "cap": 128,
+            "f_e": 0
+          },
+          {
+            "e_id": 4,
+            "i": 4,
+            "j": 5,
+            "du": -1,
+            "raw": 0,
+            "cap": 128,
+            "f_e": 0
+          },
+          {
+            "e_id": 5,
+            "i": 1,
+            "j": 5,
+            "du": 7,
+            "raw": 0,
+            "cap": 128,
+            "f_e": 0
+          }
+        ],
+        "post_u": [
+          8,
+          1,
+          0,
+          0,
+          1
+        ]
+      },
+      {
+        "tick": 4,
+        "sum_pre_u": 10,
+        "sum_post_u": 10,
+        "z_check": 10,
+        "pre_u": [
+          8,
+          1,
+          0,
+          0,
+          1
+        ],
+        "edges": [
+          {
+            "e_id": 1,
+            "i": 1,
+            "j": 2,
+            "du": 7,
+            "raw": 0,
+            "cap": 128,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "i": 2,
+            "j": 3,
+            "du": 1,
+            "raw": 0,
+            "cap": 128,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "i": 3,
+            "j": 4,
+            "du": 0,
+            "raw": 0,
+            "cap": 128,
+            "f_e": 0
+          },
+          {
+            "e_id": 4,
+            "i": 4,
+            "j": 5,
+            "du": -1,
+            "raw": 0,
+            "cap": 128,
+            "f_e": 0
+          },
+          {
+            "e_id": 5,
+            "i": 1,
+            "j": 5,
+            "du": 7,
+            "raw": 0,
+            "cap": 128,
+            "f_e": 0
+          }
+        ],
+        "post_u": [
+          8,
+          1,
+          0,
+          0,
+          1
+        ]
+      },
+      {
+        "tick": 5,
+        "sum_pre_u": 10,
+        "sum_post_u": 10,
+        "z_check": 10,
+        "pre_u": [
+          8,
+          1,
+          0,
+          0,
+          1
+        ],
+        "edges": [
+          {
+            "e_id": 1,
+            "i": 1,
+            "j": 2,
+            "du": 7,
+            "raw": 0,
+            "cap": 128,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "i": 2,
+            "j": 3,
+            "du": 1,
+            "raw": 0,
+            "cap": 128,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "i": 3,
+            "j": 4,
+            "du": 0,
+            "raw": 0,
+            "cap": 128,
+            "f_e": 0
+          },
+          {
+            "e_id": 4,
+            "i": 4,
+            "j": 5,
+            "du": -1,
+            "raw": 0,
+            "cap": 128,
+            "f_e": 0
+          },
+          {
+            "e_id": 5,
+            "i": 1,
+            "j": 5,
+            "du": 7,
+            "raw": 0,
+            "cap": 128,
+            "f_e": 0
+          }
+        ],
+        "post_u": [
+          8,
+          1,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "p_blocks": [
+      {
+        "tick": 1,
+        "seq": 1,
+        "s_t": 9,
+        "C_t": 20987847,
+        "edge_flux_summary": [
+          {
+            "e_id": 1,
+            "f_e": 1
+          },
+          {
+            "e_id": 2,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "f_e": 0
+          },
+          {
+            "e_id": 4,
+            "f_e": 0
+          },
+          {
+            "e_id": 5,
+            "f_e": 1
+          }
+        ]
+      },
+      {
+        "tick": 2,
+        "seq": 2,
+        "s_t": 9,
+        "C_t": 356793608,
+        "edge_flux_summary": [
+          {
+            "e_id": 1,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "f_e": 0
+          },
+          {
+            "e_id": 4,
+            "f_e": 0
+          },
+          {
+            "e_id": 5,
+            "f_e": 0
+          }
+        ]
+      },
+      {
+        "tick": 3,
+        "seq": 3,
+        "s_t": 9,
+        "C_t": 65491504,
+        "edge_flux_summary": [
+          {
+            "e_id": 1,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "f_e": 0
+          },
+          {
+            "e_id": 4,
+            "f_e": 0
+          },
+          {
+            "e_id": 5,
+            "f_e": 0
+          }
+        ]
+      },
+      {
+        "tick": 4,
+        "seq": 4,
+        "s_t": 9,
+        "C_t": 113355772,
+        "edge_flux_summary": [
+          {
+            "e_id": 1,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "f_e": 0
+          },
+          {
+            "e_id": 4,
+            "f_e": 0
+          },
+          {
+            "e_id": 5,
+            "f_e": 0
+          }
+        ]
+      },
+      {
+        "tick": 5,
+        "seq": 5,
+        "s_t": 9,
+        "C_t": 927048329,
+        "edge_flux_summary": [
+          {
+            "e_id": 1,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "f_e": 0
+          },
+          {
+            "e_id": 4,
+            "f_e": 0
+          },
+          {
+            "e_id": 5,
+            "f_e": 0
+          }
+        ]
+      }
+    ],
+    "i_blocks": [],
+    "manifests": {
+      "RING5_APX_full_window": {
+        "apx_name": "RING5_APX_full_window",
+        "profile": "CMP-2",
+        "manifest_check": 96964647,
+        "streams": [
+          {
+            "stream_id": "S1_post_u_deltas",
+            "description": "S1_post_u_deltas",
+            "scheme": "R",
+            "params": 0,
+            "L_model": 56,
+            "L_residual": 160,
+            "L_total": 216
+          },
+          {
+            "stream_id": "S2_fluxes",
+            "description": "S2_fluxes",
+            "scheme": "R",
+            "params": 0,
+            "L_model": 56,
+            "L_residual": 160,
+            "L_total": 216
+          },
+          {
+            "stream_id": "S3_post_u",
+            "description": "S3_post_u",
+            "scheme": "R",
+            "params": 0,
+            "L_model": 56,
+            "L_residual": 160,
+            "L_total": 216
+          }
+        ]
+      }
+    },
+    "scenes": [
+      {
+        "gid": "RING5",
+        "run_id": "RING5_demo",
+        "tick": 1,
+        "nid": "RING5",
+        "pre_u": [
+          10,
+          0,
+          0,
+          0,
+          0
+        ],
+        "post_u": [
+          8,
+          1,
+          0,
+          0,
+          1
+        ],
+        "ledger_ref": "umx_ledger_1",
+        "C_prev": 1234567,
+        "C_t": 20987847,
+        "window_id": "RING5_ticks_1_5",
+        "manifest_check": 96964647,
+        "nap_envelope_ref": null,
+        "meta": {
+          "p_block_ref": "loom_p_block_1",
+          "manifest_ref": "RING5_APX_full_window"
+        }
+      },
+      {
+        "gid": "RING5",
+        "run_id": "RING5_demo",
+        "tick": 2,
+        "nid": "RING5",
+        "pre_u": [
+          8,
+          1,
+          0,
+          0,
+          1
+        ],
+        "post_u": [
+          8,
+          1,
+          0,
+          0,
+          1
+        ],
+        "ledger_ref": "umx_ledger_2",
+        "C_prev": 20987847,
+        "C_t": 356793608,
+        "window_id": "RING5_ticks_1_5",
+        "manifest_check": 96964647,
+        "nap_envelope_ref": null,
+        "meta": {
+          "p_block_ref": "loom_p_block_2",
+          "manifest_ref": "RING5_APX_full_window"
+        }
+      },
+      {
+        "gid": "RING5",
+        "run_id": "RING5_demo",
+        "tick": 3,
+        "nid": "RING5",
+        "pre_u": [
+          8,
+          1,
+          0,
+          0,
+          1
+        ],
+        "post_u": [
+          8,
+          1,
+          0,
+          0,
+          1
+        ],
+        "ledger_ref": "umx_ledger_3",
+        "C_prev": 356793608,
+        "C_t": 65491504,
+        "window_id": "RING5_ticks_1_5",
+        "manifest_check": 96964647,
+        "nap_envelope_ref": null,
+        "meta": {
+          "p_block_ref": "loom_p_block_3",
+          "manifest_ref": "RING5_APX_full_window"
+        }
+      },
+      {
+        "gid": "RING5",
+        "run_id": "RING5_demo",
+        "tick": 4,
+        "nid": "RING5",
+        "pre_u": [
+          8,
+          1,
+          0,
+          0,
+          1
+        ],
+        "post_u": [
+          8,
+          1,
+          0,
+          0,
+          1
+        ],
+        "ledger_ref": "umx_ledger_4",
+        "C_prev": 65491504,
+        "C_t": 113355772,
+        "window_id": "RING5_ticks_1_5",
+        "manifest_check": 96964647,
+        "nap_envelope_ref": null,
+        "meta": {
+          "p_block_ref": "loom_p_block_4",
+          "manifest_ref": "RING5_APX_full_window"
+        }
+      },
+      {
+        "gid": "RING5",
+        "run_id": "RING5_demo",
+        "tick": 5,
+        "nid": "RING5",
+        "pre_u": [
+          8,
+          1,
+          0,
+          0,
+          1
+        ],
+        "post_u": [
+          8,
+          1,
+          0,
+          0,
+          1
+        ],
+        "ledger_ref": "umx_ledger_5",
+        "C_prev": 113355772,
+        "C_t": 927048329,
+        "window_id": "RING5_ticks_1_5",
+        "manifest_check": 96964647,
+        "nap_envelope_ref": null,
+        "meta": {
+          "p_block_ref": "loom_p_block_5",
+          "manifest_ref": "RING5_APX_full_window"
+        }
+      }
+    ],
+    "envelopes": [
+      {
+        "v": 1,
+        "tick": 1,
+        "gid": "RING5",
+        "nid": "RING5",
+        "layer": "DATA",
+        "mode": "P",
+        "payload_ref": 96964647,
+        "seq": 1,
+        "prev_chain": 1234567,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {
+          "pfna_integerization": []
+        }
+      },
+      {
+        "v": 1,
+        "tick": 2,
+        "gid": "RING5",
+        "nid": "RING5",
+        "layer": "DATA",
+        "mode": "P",
+        "payload_ref": 96964647,
+        "seq": 2,
+        "prev_chain": 20987847,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {
+          "pfna_integerization": []
+        }
+      },
+      {
+        "v": 1,
+        "tick": 3,
+        "gid": "RING5",
+        "nid": "RING5",
+        "layer": "DATA",
+        "mode": "P",
+        "payload_ref": 96964647,
+        "seq": 3,
+        "prev_chain": 356793608,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {
+          "pfna_integerization": []
+        }
+      },
+      {
+        "v": 1,
+        "tick": 4,
+        "gid": "RING5",
+        "nid": "RING5",
+        "layer": "DATA",
+        "mode": "P",
+        "payload_ref": 96964647,
+        "seq": 4,
+        "prev_chain": 65491504,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {
+          "pfna_integerization": []
+        }
+      },
+      {
+        "v": 1,
+        "tick": 5,
+        "gid": "RING5",
+        "nid": "RING5",
+        "layer": "DATA",
+        "mode": "P",
+        "payload_ref": 96964647,
+        "seq": 5,
+        "prev_chain": 113355772,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {
+          "pfna_integerization": []
+        }
+      }
+    ],
+    "governance_envelopes": [
+      {
+        "v": 1,
+        "tick": 1,
+        "gid": "RING5",
+        "nid": "RING5",
+        "layer": "GOV",
+        "mode": "G",
+        "payload_ref": 96964647,
+        "seq": 6,
+        "prev_chain": 1234567,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {
+          "event": "GATE_GOVERNANCE_DECISION",
+          "envelope_ref": "nap_1_1",
+          "tick": 1,
+          "seq": 1,
+          "status": "ACCEPTED_OBSERVED",
+          "reasons": [],
+          "policy_set_hash": "0a7621b8c6ef02a795db54b23571e77962c3917a388ad9d11f4f6f411ea2e0c9",
+          "window_id": "RING5_ticks_1_5"
+        }
+      },
+      {
+        "v": 1,
+        "tick": 2,
+        "gid": "RING5",
+        "nid": "RING5",
+        "layer": "GOV",
+        "mode": "G",
+        "payload_ref": 96964647,
+        "seq": 7,
+        "prev_chain": 20987847,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {
+          "event": "GATE_GOVERNANCE_DECISION",
+          "envelope_ref": "nap_2_2",
+          "tick": 2,
+          "seq": 2,
+          "status": "ACCEPTED_OBSERVED",
+          "reasons": [],
+          "policy_set_hash": "0a7621b8c6ef02a795db54b23571e77962c3917a388ad9d11f4f6f411ea2e0c9",
+          "window_id": "RING5_ticks_1_5"
+        }
+      },
+      {
+        "v": 1,
+        "tick": 3,
+        "gid": "RING5",
+        "nid": "RING5",
+        "layer": "GOV",
+        "mode": "G",
+        "payload_ref": 96964647,
+        "seq": 8,
+        "prev_chain": 356793608,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {
+          "event": "GATE_GOVERNANCE_DECISION",
+          "envelope_ref": "nap_3_3",
+          "tick": 3,
+          "seq": 3,
+          "status": "ACCEPTED_OBSERVED",
+          "reasons": [],
+          "policy_set_hash": "0a7621b8c6ef02a795db54b23571e77962c3917a388ad9d11f4f6f411ea2e0c9",
+          "window_id": "RING5_ticks_1_5"
+        }
+      },
+      {
+        "v": 1,
+        "tick": 4,
+        "gid": "RING5",
+        "nid": "RING5",
+        "layer": "GOV",
+        "mode": "G",
+        "payload_ref": 96964647,
+        "seq": 9,
+        "prev_chain": 65491504,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {
+          "event": "GATE_GOVERNANCE_DECISION",
+          "envelope_ref": "nap_4_4",
+          "tick": 4,
+          "seq": 4,
+          "status": "ACCEPTED_OBSERVED",
+          "reasons": [],
+          "policy_set_hash": "0a7621b8c6ef02a795db54b23571e77962c3917a388ad9d11f4f6f411ea2e0c9",
+          "window_id": "RING5_ticks_1_5"
+        }
+      },
+      {
+        "v": 1,
+        "tick": 5,
+        "gid": "RING5",
+        "nid": "RING5",
+        "layer": "GOV",
+        "mode": "G",
+        "payload_ref": 96964647,
+        "seq": 10,
+        "prev_chain": 113355772,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {
+          "event": "GATE_GOVERNANCE_DECISION",
+          "envelope_ref": "nap_5_5",
+          "tick": 5,
+          "seq": 5,
+          "status": "ACCEPTED_OBSERVED",
+          "reasons": [],
+          "policy_set_hash": "0a7621b8c6ef02a795db54b23571e77962c3917a388ad9d11f4f6f411ea2e0c9",
+          "window_id": "RING5_ticks_1_5"
+        }
+      },
+      {
+        "v": 1,
+        "tick": 1,
+        "gid": "RING5",
+        "nid": "RING5",
+        "layer": "GOV",
+        "mode": "G",
+        "payload_ref": 0,
+        "seq": 1,
+        "prev_chain": 1234567,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {
+          "event": "POLICY_SET_LOADED",
+          "policy_set_hash": "0a7621b8c6ef02a795db54b23571e77962c3917a388ad9d11f4f6f411ea2e0c9",
+          "policy_ids": [],
+          "governance_mode": "OBSERVE",
+          "codex_action_mode": "OBSERVE"
+        }
+      },
+      {
+        "v": 1,
+        "tick": 5,
+        "gid": "RING5",
+        "nid": "RING5",
+        "layer": "GOV",
+        "mode": "G",
+        "payload_ref": 0,
+        "seq": 5,
+        "prev_chain": 927048329,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {
+          "event": "GOVERNANCE_DECISION_SUMMARY",
+          "policy_set_hash": "0a7621b8c6ef02a795db54b23571e77962c3917a388ad9d11f4f6f411ea2e0c9",
+          "window_id": "RING5_ticks_1_5",
+          "governance_mode": "OBSERVE",
+          "proposals_seen": 2,
+          "actions_accepted": 0,
+          "topology_changes_applied": 0,
+          "caps": [
+            {
+              "attr": "max_proposals_per_window",
+              "limit": null,
+              "used": 2,
+              "exhausted": false,
+              "policy_id": null
+            },
+            {
+              "attr": "max_actions_per_window",
+              "limit": null,
+              "used": 0,
+              "exhausted": false,
+              "policy_id": null
+            },
+            {
+              "attr": "max_topology_changes",
+              "limit": null,
+              "used": 0,
+              "exhausted": false,
+              "policy_id": null
+            }
+          ]
+        }
+      }
+    ],
+    "u_ledger_entries": [
+      {
+        "gid": "RING5",
+        "run_id": "RING5_demo",
+        "tick": 1,
+        "window_id": "RING5_ticks_1_5",
+        "C_t": 20987847,
+        "manifest_check": 96964647,
+        "nap_envelope_hash": "a1c1aa9d7d0f228a774236d70fb47fae976b7219512857f00d5e3690c9f769b0",
+        "umx_ledger_hash": "b71a0ad99364695c54eccf2190681e160e49e860c518a028aabdfd10b4f0ee7e",
+        "loom_block_hash": "a22d170488672a61f7d3d95dfb5943ba904abb293819f2ca7f8d9d6efb982e56",
+        "apx_manifest_hash": "58bc40840b41645054727b5519e7839ca110baede5851149845a1ad12ceb68c2",
+        "prev_entry_hash": null,
+        "codex_library_hash": null,
+        "timestamp_utc": null,
+        "meta": {
+          "governance_budget": {
+            "proposals_seen": 2,
+            "actions_accepted": 0,
+            "topology_changes_applied": 0,
+            "caps": [
+              {
+                "attr": "max_proposals_per_window",
+                "limit": null,
+                "used": 2,
+                "exhausted": false,
+                "policy_id": null
+              },
+              {
+                "attr": "max_actions_per_window",
+                "limit": null,
+                "used": 0,
+                "exhausted": false,
+                "policy_id": null
+              },
+              {
+                "attr": "max_topology_changes",
+                "limit": null,
+                "used": 0,
+                "exhausted": false,
+                "policy_id": null
+              }
+            ]
+          }
+        }
+      },
+      {
+        "gid": "RING5",
+        "run_id": "RING5_demo",
+        "tick": 2,
+        "window_id": "RING5_ticks_1_5",
+        "C_t": 356793608,
+        "manifest_check": 96964647,
+        "nap_envelope_hash": "48c397e3ce11f2140caeda2ad84c2df589d69124125c28a12586c2b9735ad9fc",
+        "umx_ledger_hash": "8d1a1c80fca0788d6f2af85edf2e31452bc23514d06f819f4bc08d988d1b475c",
+        "loom_block_hash": "d82ad90f93695692b9ad3945db800b33cfb2b97b08b95bce3b58169420e0694e",
+        "apx_manifest_hash": "58bc40840b41645054727b5519e7839ca110baede5851149845a1ad12ceb68c2",
+        "prev_entry_hash": "b8d806ffad3416ba16808002ed4c958c27149fab4317a679b83071569e3b1683",
+        "codex_library_hash": null,
+        "timestamp_utc": null,
+        "meta": {
+          "governance_budget": {
+            "proposals_seen": 2,
+            "actions_accepted": 0,
+            "topology_changes_applied": 0,
+            "caps": [
+              {
+                "attr": "max_proposals_per_window",
+                "limit": null,
+                "used": 2,
+                "exhausted": false,
+                "policy_id": null
+              },
+              {
+                "attr": "max_actions_per_window",
+                "limit": null,
+                "used": 0,
+                "exhausted": false,
+                "policy_id": null
+              },
+              {
+                "attr": "max_topology_changes",
+                "limit": null,
+                "used": 0,
+                "exhausted": false,
+                "policy_id": null
+              }
+            ]
+          }
+        }
+      },
+      {
+        "gid": "RING5",
+        "run_id": "RING5_demo",
+        "tick": 3,
+        "window_id": "RING5_ticks_1_5",
+        "C_t": 65491504,
+        "manifest_check": 96964647,
+        "nap_envelope_hash": "fee641f27a36fa083c096908864b7ce0ad16feefe2a278f6b24b9a20f7959052",
+        "umx_ledger_hash": "27c2908e1c376b99c97dacf6719b2cc2d70fb92e8e6fb9a1e1ebdad0ba8f3b00",
+        "loom_block_hash": "e69239088ec67fff63ef594b2f49033b11a8c6c3d222cce3e077a89a4fa0b939",
+        "apx_manifest_hash": "58bc40840b41645054727b5519e7839ca110baede5851149845a1ad12ceb68c2",
+        "prev_entry_hash": "4204e90591ccb0b18f1f83fd96aef4b955ff70963bf25098edb6ffd3e6504525",
+        "codex_library_hash": null,
+        "timestamp_utc": null,
+        "meta": {
+          "governance_budget": {
+            "proposals_seen": 2,
+            "actions_accepted": 0,
+            "topology_changes_applied": 0,
+            "caps": [
+              {
+                "attr": "max_proposals_per_window",
+                "limit": null,
+                "used": 2,
+                "exhausted": false,
+                "policy_id": null
+              },
+              {
+                "attr": "max_actions_per_window",
+                "limit": null,
+                "used": 0,
+                "exhausted": false,
+                "policy_id": null
+              },
+              {
+                "attr": "max_topology_changes",
+                "limit": null,
+                "used": 0,
+                "exhausted": false,
+                "policy_id": null
+              }
+            ]
+          }
+        }
+      },
+      {
+        "gid": "RING5",
+        "run_id": "RING5_demo",
+        "tick": 4,
+        "window_id": "RING5_ticks_1_5",
+        "C_t": 113355772,
+        "manifest_check": 96964647,
+        "nap_envelope_hash": "1ccdfab09affdac7a0920469df221e1129ecbe23d216f273e9b8c88c0ddefa39",
+        "umx_ledger_hash": "a5e78f7fe92492040a840e3223510a772f574648281762976bd0397b0326db28",
+        "loom_block_hash": "11ff719ebdf71176e06ffff383ddedb24e3ee634a6b5f444e8e96fe1b1ee709e",
+        "apx_manifest_hash": "58bc40840b41645054727b5519e7839ca110baede5851149845a1ad12ceb68c2",
+        "prev_entry_hash": "930c52f76217f59ea7c611f0d90cb923a83cd9c0f50f3b3c80c0dd814870d67c",
+        "codex_library_hash": null,
+        "timestamp_utc": null,
+        "meta": {
+          "governance_budget": {
+            "proposals_seen": 2,
+            "actions_accepted": 0,
+            "topology_changes_applied": 0,
+            "caps": [
+              {
+                "attr": "max_proposals_per_window",
+                "limit": null,
+                "used": 2,
+                "exhausted": false,
+                "policy_id": null
+              },
+              {
+                "attr": "max_actions_per_window",
+                "limit": null,
+                "used": 0,
+                "exhausted": false,
+                "policy_id": null
+              },
+              {
+                "attr": "max_topology_changes",
+                "limit": null,
+                "used": 0,
+                "exhausted": false,
+                "policy_id": null
+              }
+            ]
+          }
+        }
+      },
+      {
+        "gid": "RING5",
+        "run_id": "RING5_demo",
+        "tick": 5,
+        "window_id": "RING5_ticks_1_5",
+        "C_t": 927048329,
+        "manifest_check": 96964647,
+        "nap_envelope_hash": "44820146021fac37a1f758be3ae254e25d9aaf13f87848461eb2adffcf38898d",
+        "umx_ledger_hash": "d98912cc33d0683f0963d596b4d92af57a410f3ea8cb30938243f37512bf93b6",
+        "loom_block_hash": "ebb5e94a00d1c5ae9376c4dfd322cba02f3d39b67d9d722e129ac09fd6e84765",
+        "apx_manifest_hash": "58bc40840b41645054727b5519e7839ca110baede5851149845a1ad12ceb68c2",
+        "prev_entry_hash": "5b66697b9bbe047ae730af649404561fe21b221def39b50dbf9f18fd41597b54",
+        "codex_library_hash": null,
+        "timestamp_utc": null,
+        "meta": {
+          "governance_budget": {
+            "proposals_seen": 2,
+            "actions_accepted": 0,
+            "topology_changes_applied": 0,
+            "caps": [
+              {
+                "attr": "max_proposals_per_window",
+                "limit": null,
+                "used": 2,
+                "exhausted": false,
+                "policy_id": null
+              },
+              {
+                "attr": "max_actions_per_window",
+                "limit": null,
+                "used": 0,
+                "exhausted": false,
+                "policy_id": null
+              },
+              {
+                "attr": "max_topology_changes",
+                "limit": null,
+                "used": 0,
+                "exhausted": false,
+                "policy_id": null
+              }
+            ]
+          }
+        }
+      }
+    ],
     "codex_motifs": [
       {
-        "created_at_tick": 2,
-        "last_updated_tick": 5,
         "library_id": "RING5_demo_LIB",
-        "mdl_stats": {
-          "L_self": 10,
-          "L_total": 14,
-          "L_usage": 4,
-          "delta_vs_baseline": -4
-        },
-        "meta": {
-          "runs": [
-            "RING5_demo"
-          ]
-        },
         "motif_id": "MOTIF_0001",
+        "profile": "CMP-2",
+        "source_gid": "RING5",
+        "source_window_id": "RING5_ticks_1_5",
         "pattern_descriptor": {
+          "type": "edge_flux_pattern_v1",
+          "edge_ids": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
           "du_signature": [
             7,
             1,
@@ -87,6 +1245,41 @@
             -1,
             7
           ],
+          "f_e_signature": [
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "mdl_stats": {
+          "L_self": 10,
+          "L_usage": 4,
+          "L_total": 14,
+          "delta_vs_baseline": -4
+        },
+        "usage_stats": {
+          "usage_count": 4,
+          "first_tick": 2,
+          "last_tick": 5
+        },
+        "created_at_tick": 2,
+        "last_updated_tick": 5,
+        "meta": {
+          "runs": [
+            "RING5_demo"
+          ]
+        }
+      },
+      {
+        "library_id": "RING5_demo_LIB",
+        "motif_id": "MOTIF_0002",
+        "profile": "CMP-2",
+        "source_gid": "RING5",
+        "source_window_id": "RING5_ticks_1_5",
+        "pattern_descriptor": {
+          "type": "edge_flux_pattern_v1",
           "edge_ids": [
             1,
             2,
@@ -94,41 +1287,6 @@
             4,
             5
           ],
-          "f_e_signature": [
-            0,
-            0,
-            0,
-            0,
-            0
-          ],
-          "type": "edge_flux_pattern_v1"
-        },
-        "profile": "CMP-2",
-        "source_gid": "RING5",
-        "source_window_id": "RING5_ticks_1_5",
-        "usage_stats": {
-          "first_tick": 2,
-          "last_tick": 5,
-          "usage_count": 4
-        }
-      },
-      {
-        "created_at_tick": 1,
-        "last_updated_tick": 1,
-        "library_id": "RING5_demo_LIB",
-        "mdl_stats": {
-          "L_self": 10,
-          "L_total": 11,
-          "L_usage": 1,
-          "delta_vs_baseline": -1
-        },
-        "meta": {
-          "runs": [
-            "RING5_demo"
-          ]
-        },
-        "motif_id": "MOTIF_0002",
-        "pattern_descriptor": {
           "du_signature": [
             10,
             0,
@@ -136,59 +1294,80 @@
             0,
             10
           ],
-          "edge_ids": [
-            1,
-            2,
-            3,
-            4,
-            5
-          ],
           "f_e_signature": [
             1,
             0,
             0,
             0,
             1
-          ],
-          "type": "edge_flux_pattern_v1"
+          ]
         },
-        "profile": "CMP-2",
-        "source_gid": "RING5",
-        "source_window_id": "RING5_ticks_1_5",
+        "mdl_stats": {
+          "L_self": 10,
+          "L_usage": 1,
+          "L_total": 11,
+          "delta_vs_baseline": -1
+        },
         "usage_stats": {
+          "usage_count": 1,
           "first_tick": 1,
-          "last_tick": 1,
-          "usage_count": 1
+          "last_tick": 1
+        },
+        "created_at_tick": 1,
+        "last_updated_tick": 1,
+        "meta": {
+          "runs": [
+            "RING5_demo"
+          ]
         }
       }
     ],
     "codex_proposals": [
       {
+        "proposal_id": "PROPOSAL_0001",
+        "library_id": "RING5_demo_LIB",
+        "motif_id": "MOTIF_0001",
+        "gid": "RING5",
+        "target_window_id": "RING5_ticks_1_5",
+        "target_location": {
+          "edge_ids": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "profile": "CMP-2"
+        },
         "action": "PLACE",
-        "budget_effect": {},
-        "created_at_tick": 5,
-        "evaluated_at_tick": 5,
         "expected_effect": {
           "delta_L_total": -4,
           "notes": "edge_flux_pattern_v1"
         },
-        "gid": "RING5",
+        "budget_effect": {},
+        "created_at_tick": 5,
+        "status": "REJECTED",
+        "governance_status": "OK",
+        "violated_policies": [],
+        "governance_scores": {},
         "governance_notes": {
           "notes": [
             "Governance mode OBSERVE (no actions applied)"
           ]
         },
-        "governance_scores": {},
-        "governance_status": "OK",
-        "library_id": "RING5_demo_LIB",
+        "evaluated_at_tick": 5,
         "meta": {
           "runs": [
             "RING5_demo"
           ]
-        },
-        "motif_id": "MOTIF_0001",
-        "proposal_id": "PROPOSAL_0001",
-        "status": "REJECTED",
+        }
+      },
+      {
+        "proposal_id": "PROPOSAL_0002",
+        "library_id": "RING5_demo_LIB",
+        "motif_id": "MOTIF_0002",
+        "gid": "RING5",
+        "target_window_id": "RING5_ticks_1_5",
         "target_location": {
           "edge_ids": [
             1,
@@ -199,1127 +1378,73 @@
           ],
           "profile": "CMP-2"
         },
-        "target_window_id": "RING5_ticks_1_5",
-        "violated_policies": []
-      },
-      {
         "action": "PLACE",
-        "budget_effect": {},
-        "created_at_tick": 1,
-        "evaluated_at_tick": 5,
         "expected_effect": {
           "delta_L_total": -1,
           "notes": "edge_flux_pattern_v1"
         },
-        "gid": "RING5",
+        "budget_effect": {},
+        "created_at_tick": 1,
+        "status": "REJECTED",
+        "governance_status": "OK",
+        "violated_policies": [],
+        "governance_scores": {},
         "governance_notes": {
           "notes": [
             "Governance mode OBSERVE (no actions applied)"
           ]
         },
-        "governance_scores": {},
-        "governance_status": "OK",
-        "library_id": "RING5_demo_LIB",
+        "evaluated_at_tick": 5,
         "meta": {
           "runs": [
             "RING5_demo"
           ]
-        },
-        "motif_id": "MOTIF_0002",
-        "proposal_id": "PROPOSAL_0002",
-        "status": "REJECTED",
-        "target_location": {
-          "edge_ids": [
-            1,
-            2,
-            3,
-            4,
-            5
-          ],
-          "profile": "CMP-2"
-        },
-        "target_window_id": "RING5_ticks_1_5",
-        "violated_policies": []
-      }
-    ],
-    "egress_envelopes": [
-      {
-        "gid": "RING5",
-        "layer": "EGRESS",
-        "meta": {},
-        "mode": "P",
-        "nid": "RING5",
-        "payload_ref": 379271437,
-        "prev_chain": 927048329,
-        "seq": 7,
-        "sig": "",
-        "slp_event_ids": [],
-        "tick": 5,
-        "v": 1
-      }
-    ],
-    "envelopes": [
-      {
-        "gid": "RING5",
-        "layer": "DATA",
-        "meta": {},
-        "mode": "P",
-        "nid": "RING5",
-        "payload_ref": 379271437,
-        "prev_chain": 1234567,
-        "seq": 1,
-        "sig": "",
-        "slp_event_ids": [],
-        "tick": 1,
-        "v": 1
-      },
-      {
-        "gid": "RING5",
-        "layer": "DATA",
-        "meta": {},
-        "mode": "P",
-        "nid": "RING5",
-        "payload_ref": 379271437,
-        "prev_chain": 20987847,
-        "seq": 2,
-        "sig": "",
-        "slp_event_ids": [],
-        "tick": 2,
-        "v": 1
-      },
-      {
-        "gid": "RING5",
-        "layer": "DATA",
-        "meta": {},
-        "mode": "P",
-        "nid": "RING5",
-        "payload_ref": 379271437,
-        "prev_chain": 356793608,
-        "seq": 3,
-        "sig": "",
-        "slp_event_ids": [],
-        "tick": 3,
-        "v": 1
-      },
-      {
-        "gid": "RING5",
-        "layer": "DATA",
-        "meta": {},
-        "mode": "P",
-        "nid": "RING5",
-        "payload_ref": 379271437,
-        "prev_chain": 65491504,
-        "seq": 4,
-        "sig": "",
-        "slp_event_ids": [],
-        "tick": 4,
-        "v": 1
-      },
-      {
-        "gid": "RING5",
-        "layer": "DATA",
-        "meta": {},
-        "mode": "P",
-        "nid": "RING5",
-        "payload_ref": 379271437,
-        "prev_chain": 113355772,
-        "seq": 5,
-        "sig": "",
-        "slp_event_ids": [],
-        "tick": 5,
-        "v": 1
+        }
       }
     ],
     "governance_budget_usage": {
+      "proposals_seen": 2,
       "actions_accepted": 0,
+      "topology_changes_applied": 0,
       "caps": [
         {
           "attr": "max_proposals_per_window",
-          "exhausted": false,
           "limit": null,
-          "policy_id": null,
-          "used": 2
+          "used": 2,
+          "exhausted": false,
+          "policy_id": null
         },
         {
           "attr": "max_actions_per_window",
-          "exhausted": false,
           "limit": null,
-          "policy_id": null,
-          "used": 0
+          "used": 0,
+          "exhausted": false,
+          "policy_id": null
         },
         {
           "attr": "max_topology_changes",
-          "exhausted": false,
           "limit": null,
-          "policy_id": null,
-          "used": 0
+          "used": 0,
+          "exhausted": false,
+          "policy_id": null
         }
-      ],
-      "proposals_seen": 2,
-      "topology_changes_applied": 0
+      ]
     },
-    "governance_envelopes": [
-      {
-        "gid": "RING5",
-        "layer": "GOV",
-        "meta": {
-          "codex_action_mode": "OBSERVE",
-          "event": "POLICY_SET_LOADED",
-          "governance_mode": "OBSERVE",
-          "policy_ids": [],
-          "policy_set_hash": "0a7621b8c6ef02a795db54b23571e77962c3917a388ad9d11f4f6f411ea2e0c9"
-        },
-        "mode": "G",
-        "nid": "RING5",
-        "payload_ref": 0,
-        "prev_chain": 1234567,
-        "seq": 1,
-        "sig": "",
-        "slp_event_ids": [],
-        "tick": 1,
-        "v": 1
-      },
-      {
-        "gid": "RING5",
-        "layer": "GOV",
-        "meta": {
-          "actions_accepted": 0,
-          "caps": [
-            {
-              "attr": "max_proposals_per_window",
-              "exhausted": false,
-              "limit": null,
-              "policy_id": null,
-              "used": 2
-            },
-            {
-              "attr": "max_actions_per_window",
-              "exhausted": false,
-              "limit": null,
-              "policy_id": null,
-              "used": 0
-            },
-            {
-              "attr": "max_topology_changes",
-              "exhausted": false,
-              "limit": null,
-              "policy_id": null,
-              "used": 0
-            }
-          ],
-          "event": "GOVERNANCE_DECISION_SUMMARY",
-          "governance_mode": "OBSERVE",
-          "policy_set_hash": "0a7621b8c6ef02a795db54b23571e77962c3917a388ad9d11f4f6f411ea2e0c9",
-          "proposals_seen": 2,
-          "topology_changes_applied": 0,
-          "window_id": "RING5_ticks_1_5"
-        },
-        "mode": "G",
-        "nid": "RING5",
-        "payload_ref": 0,
-        "prev_chain": 927048329,
-        "seq": 5,
-        "sig": "",
-        "slp_event_ids": [],
-        "tick": 5,
-        "v": 1
-      }
-    ],
-    "i_blocks": [],
     "ingress_envelopes": [],
-    "ledgers": [
+    "egress_envelopes": [
       {
-        "edges": [
-          {
-            "cap": 128,
-            "du": 10,
-            "e_id": 1,
-            "f_e": 1,
-            "i": 1,
-            "j": 2,
-            "raw": 1
-          },
-          {
-            "cap": 128,
-            "du": 0,
-            "e_id": 2,
-            "f_e": 0,
-            "i": 2,
-            "j": 3,
-            "raw": 0
-          },
-          {
-            "cap": 128,
-            "du": 0,
-            "e_id": 3,
-            "f_e": 0,
-            "i": 3,
-            "j": 4,
-            "raw": 0
-          },
-          {
-            "cap": 128,
-            "du": 0,
-            "e_id": 4,
-            "f_e": 0,
-            "i": 4,
-            "j": 5,
-            "raw": 0
-          },
-          {
-            "cap": 128,
-            "du": 10,
-            "e_id": 5,
-            "f_e": 1,
-            "i": 1,
-            "j": 5,
-            "raw": 1
-          }
-        ],
-        "post_u": [
-          8,
-          1,
-          0,
-          0,
-          1
-        ],
-        "pre_u": [
-          10,
-          0,
-          0,
-          0,
-          0
-        ],
-        "sum_post_u": 10,
-        "sum_pre_u": 10,
-        "tick": 1,
-        "z_check": 10
-      },
-      {
-        "edges": [
-          {
-            "cap": 128,
-            "du": 7,
-            "e_id": 1,
-            "f_e": 0,
-            "i": 1,
-            "j": 2,
-            "raw": 0
-          },
-          {
-            "cap": 128,
-            "du": 1,
-            "e_id": 2,
-            "f_e": 0,
-            "i": 2,
-            "j": 3,
-            "raw": 0
-          },
-          {
-            "cap": 128,
-            "du": 0,
-            "e_id": 3,
-            "f_e": 0,
-            "i": 3,
-            "j": 4,
-            "raw": 0
-          },
-          {
-            "cap": 128,
-            "du": -1,
-            "e_id": 4,
-            "f_e": 0,
-            "i": 4,
-            "j": 5,
-            "raw": 0
-          },
-          {
-            "cap": 128,
-            "du": 7,
-            "e_id": 5,
-            "f_e": 0,
-            "i": 1,
-            "j": 5,
-            "raw": 0
-          }
-        ],
-        "post_u": [
-          8,
-          1,
-          0,
-          0,
-          1
-        ],
-        "pre_u": [
-          8,
-          1,
-          0,
-          0,
-          1
-        ],
-        "sum_post_u": 10,
-        "sum_pre_u": 10,
-        "tick": 2,
-        "z_check": 10
-      },
-      {
-        "edges": [
-          {
-            "cap": 128,
-            "du": 7,
-            "e_id": 1,
-            "f_e": 0,
-            "i": 1,
-            "j": 2,
-            "raw": 0
-          },
-          {
-            "cap": 128,
-            "du": 1,
-            "e_id": 2,
-            "f_e": 0,
-            "i": 2,
-            "j": 3,
-            "raw": 0
-          },
-          {
-            "cap": 128,
-            "du": 0,
-            "e_id": 3,
-            "f_e": 0,
-            "i": 3,
-            "j": 4,
-            "raw": 0
-          },
-          {
-            "cap": 128,
-            "du": -1,
-            "e_id": 4,
-            "f_e": 0,
-            "i": 4,
-            "j": 5,
-            "raw": 0
-          },
-          {
-            "cap": 128,
-            "du": 7,
-            "e_id": 5,
-            "f_e": 0,
-            "i": 1,
-            "j": 5,
-            "raw": 0
-          }
-        ],
-        "post_u": [
-          8,
-          1,
-          0,
-          0,
-          1
-        ],
-        "pre_u": [
-          8,
-          1,
-          0,
-          0,
-          1
-        ],
-        "sum_post_u": 10,
-        "sum_pre_u": 10,
-        "tick": 3,
-        "z_check": 10
-      },
-      {
-        "edges": [
-          {
-            "cap": 128,
-            "du": 7,
-            "e_id": 1,
-            "f_e": 0,
-            "i": 1,
-            "j": 2,
-            "raw": 0
-          },
-          {
-            "cap": 128,
-            "du": 1,
-            "e_id": 2,
-            "f_e": 0,
-            "i": 2,
-            "j": 3,
-            "raw": 0
-          },
-          {
-            "cap": 128,
-            "du": 0,
-            "e_id": 3,
-            "f_e": 0,
-            "i": 3,
-            "j": 4,
-            "raw": 0
-          },
-          {
-            "cap": 128,
-            "du": -1,
-            "e_id": 4,
-            "f_e": 0,
-            "i": 4,
-            "j": 5,
-            "raw": 0
-          },
-          {
-            "cap": 128,
-            "du": 7,
-            "e_id": 5,
-            "f_e": 0,
-            "i": 1,
-            "j": 5,
-            "raw": 0
-          }
-        ],
-        "post_u": [
-          8,
-          1,
-          0,
-          0,
-          1
-        ],
-        "pre_u": [
-          8,
-          1,
-          0,
-          0,
-          1
-        ],
-        "sum_post_u": 10,
-        "sum_pre_u": 10,
-        "tick": 4,
-        "z_check": 10
-      },
-      {
-        "edges": [
-          {
-            "cap": 128,
-            "du": 7,
-            "e_id": 1,
-            "f_e": 0,
-            "i": 1,
-            "j": 2,
-            "raw": 0
-          },
-          {
-            "cap": 128,
-            "du": 1,
-            "e_id": 2,
-            "f_e": 0,
-            "i": 2,
-            "j": 3,
-            "raw": 0
-          },
-          {
-            "cap": 128,
-            "du": 0,
-            "e_id": 3,
-            "f_e": 0,
-            "i": 3,
-            "j": 4,
-            "raw": 0
-          },
-          {
-            "cap": 128,
-            "du": -1,
-            "e_id": 4,
-            "f_e": 0,
-            "i": 4,
-            "j": 5,
-            "raw": 0
-          },
-          {
-            "cap": 128,
-            "du": 7,
-            "e_id": 5,
-            "f_e": 0,
-            "i": 1,
-            "j": 5,
-            "raw": 0
-          }
-        ],
-        "post_u": [
-          8,
-          1,
-          0,
-          0,
-          1
-        ],
-        "pre_u": [
-          8,
-          1,
-          0,
-          0,
-          1
-        ],
-        "sum_post_u": 10,
-        "sum_pre_u": 10,
+        "v": 1,
         "tick": 5,
-        "z_check": 10
-      }
-    ],
-    "manifests": {
-      "RING5_APX_full_window": {
-        "apx_name": "RING5_APX_full_window",
-        "manifest_check": 379271437,
-        "profile": "CMP-2",
-        "streams": [
-          {
-            "L_model": 0,
-            "L_residual": 4,
-            "L_total": 4,
-            "description": "S1_post_u_deltas",
-            "params": 0,
-            "scheme": "R",
-            "stream_id": "S1_post_u_deltas"
-          },
-          {
-            "L_model": 0,
-            "L_residual": 4,
-            "L_total": 4,
-            "description": "S2_fluxes",
-            "params": 0,
-            "scheme": "R",
-            "stream_id": "S2_fluxes"
-          },
-          {
-            "L_model": 0,
-            "L_residual": 4,
-            "L_total": 4,
-            "description": "S3_post_u",
-            "params": 0,
-            "scheme": "R",
-            "stream_id": "S3_post_u"
-          }
-        ]
-      }
-    },
-    "p_blocks": [
-      {
-        "C_t": 20987847,
-        "edge_flux_summary": [
-          {
-            "e_id": 1,
-            "f_e": 1
-          },
-          {
-            "e_id": 2,
-            "f_e": 0
-          },
-          {
-            "e_id": 3,
-            "f_e": 0
-          },
-          {
-            "e_id": 4,
-            "f_e": 0
-          },
-          {
-            "e_id": 5,
-            "f_e": 1
-          }
-        ],
-        "s_t": 9,
-        "seq": 1,
-        "tick": 1
-      },
-      {
-        "C_t": 356793608,
-        "edge_flux_summary": [
-          {
-            "e_id": 1,
-            "f_e": 0
-          },
-          {
-            "e_id": 2,
-            "f_e": 0
-          },
-          {
-            "e_id": 3,
-            "f_e": 0
-          },
-          {
-            "e_id": 4,
-            "f_e": 0
-          },
-          {
-            "e_id": 5,
-            "f_e": 0
-          }
-        ],
-        "s_t": 9,
-        "seq": 2,
-        "tick": 2
-      },
-      {
-        "C_t": 65491504,
-        "edge_flux_summary": [
-          {
-            "e_id": 1,
-            "f_e": 0
-          },
-          {
-            "e_id": 2,
-            "f_e": 0
-          },
-          {
-            "e_id": 3,
-            "f_e": 0
-          },
-          {
-            "e_id": 4,
-            "f_e": 0
-          },
-          {
-            "e_id": 5,
-            "f_e": 0
-          }
-        ],
-        "s_t": 9,
-        "seq": 3,
-        "tick": 3
-      },
-      {
-        "C_t": 113355772,
-        "edge_flux_summary": [
-          {
-            "e_id": 1,
-            "f_e": 0
-          },
-          {
-            "e_id": 2,
-            "f_e": 0
-          },
-          {
-            "e_id": 3,
-            "f_e": 0
-          },
-          {
-            "e_id": 4,
-            "f_e": 0
-          },
-          {
-            "e_id": 5,
-            "f_e": 0
-          }
-        ],
-        "s_t": 9,
-        "seq": 4,
-        "tick": 4
-      },
-      {
-        "C_t": 927048329,
-        "edge_flux_summary": [
-          {
-            "e_id": 1,
-            "f_e": 0
-          },
-          {
-            "e_id": 2,
-            "f_e": 0
-          },
-          {
-            "e_id": 3,
-            "f_e": 0
-          },
-          {
-            "e_id": 4,
-            "f_e": 0
-          },
-          {
-            "e_id": 5,
-            "f_e": 0
-          }
-        ],
-        "s_t": 9,
-        "seq": 5,
-        "tick": 5
-      }
-    ],
-    "run_id": "RING5_demo",
-    "scenes": [
-      {
-        "C_prev": 1234567,
-        "C_t": 20987847,
         "gid": "RING5",
-        "ledger_ref": "umx_ledger_1",
-        "manifest_check": 379271437,
-        "meta": {
-          "manifest_ref": "RING5_APX_full_window",
-          "p_block_ref": "loom_p_block_1"
-        },
-        "nap_envelope_ref": null,
         "nid": "RING5",
-        "post_u": [
-          8,
-          1,
-          0,
-          0,
-          1
-        ],
-        "pre_u": [
-          10,
-          0,
-          0,
-          0,
-          0
-        ],
-        "run_id": "RING5_demo",
-        "tick": 1,
-        "window_id": "RING5_ticks_1_5"
-      },
-      {
-        "C_prev": 20987847,
-        "C_t": 356793608,
-        "gid": "RING5",
-        "ledger_ref": "umx_ledger_2",
-        "manifest_check": 379271437,
-        "meta": {
-          "manifest_ref": "RING5_APX_full_window",
-          "p_block_ref": "loom_p_block_2"
-        },
-        "nap_envelope_ref": null,
-        "nid": "RING5",
-        "post_u": [
-          8,
-          1,
-          0,
-          0,
-          1
-        ],
-        "pre_u": [
-          8,
-          1,
-          0,
-          0,
-          1
-        ],
-        "run_id": "RING5_demo",
-        "tick": 2,
-        "window_id": "RING5_ticks_1_5"
-      },
-      {
-        "C_prev": 356793608,
-        "C_t": 65491504,
-        "gid": "RING5",
-        "ledger_ref": "umx_ledger_3",
-        "manifest_check": 379271437,
-        "meta": {
-          "manifest_ref": "RING5_APX_full_window",
-          "p_block_ref": "loom_p_block_3"
-        },
-        "nap_envelope_ref": null,
-        "nid": "RING5",
-        "post_u": [
-          8,
-          1,
-          0,
-          0,
-          1
-        ],
-        "pre_u": [
-          8,
-          1,
-          0,
-          0,
-          1
-        ],
-        "run_id": "RING5_demo",
-        "tick": 3,
-        "window_id": "RING5_ticks_1_5"
-      },
-      {
-        "C_prev": 65491504,
-        "C_t": 113355772,
-        "gid": "RING5",
-        "ledger_ref": "umx_ledger_4",
-        "manifest_check": 379271437,
-        "meta": {
-          "manifest_ref": "RING5_APX_full_window",
-          "p_block_ref": "loom_p_block_4"
-        },
-        "nap_envelope_ref": null,
-        "nid": "RING5",
-        "post_u": [
-          8,
-          1,
-          0,
-          0,
-          1
-        ],
-        "pre_u": [
-          8,
-          1,
-          0,
-          0,
-          1
-        ],
-        "run_id": "RING5_demo",
-        "tick": 4,
-        "window_id": "RING5_ticks_1_5"
-      },
-      {
-        "C_prev": 113355772,
-        "C_t": 927048329,
-        "gid": "RING5",
-        "ledger_ref": "umx_ledger_5",
-        "manifest_check": 379271437,
-        "meta": {
-          "manifest_ref": "RING5_APX_full_window",
-          "p_block_ref": "loom_p_block_5"
-        },
-        "nap_envelope_ref": null,
-        "nid": "RING5",
-        "post_u": [
-          8,
-          1,
-          0,
-          0,
-          1
-        ],
-        "pre_u": [
-          8,
-          1,
-          0,
-          0,
-          1
-        ],
-        "run_id": "RING5_demo",
-        "tick": 5,
-        "window_id": "RING5_ticks_1_5"
-      }
-    ],
-    "u_ledger_entries": [
-      {
-        "C_t": 20987847,
-        "apx_manifest_hash": "0418261f71ffe32601a40cbef618289ed041085384cfe31cbfe9f4ca693e16c2",
-        "codex_library_hash": null,
-        "gid": "RING5",
-        "loom_block_hash": "a22d170488672a61f7d3d95dfb5943ba904abb293819f2ca7f8d9d6efb982e56",
-        "manifest_check": 379271437,
-        "meta": {
-          "governance_budget": {
-            "actions_accepted": 0,
-            "caps": [
-              {
-                "attr": "max_proposals_per_window",
-                "exhausted": false,
-                "limit": null,
-                "policy_id": null,
-                "used": 2
-              },
-              {
-                "attr": "max_actions_per_window",
-                "exhausted": false,
-                "limit": null,
-                "policy_id": null,
-                "used": 0
-              },
-              {
-                "attr": "max_topology_changes",
-                "exhausted": false,
-                "limit": null,
-                "policy_id": null,
-                "used": 0
-              }
-            ],
-            "proposals_seen": 2,
-            "topology_changes_applied": 0
-          }
-        },
-        "nap_envelope_hash": "2e183ebf33fca1887273947154eab708e25ef397eb2d534defdc7667efbc0f78",
-        "prev_entry_hash": null,
-        "run_id": "RING5_demo",
-        "tick": 1,
-        "timestamp_utc": null,
-        "umx_ledger_hash": "743bae58957577ec6da54ca377b70d62dcef4072f7585544eb5c3a4df5ead677",
-        "window_id": "RING5_ticks_1_5"
-      },
-      {
-        "C_t": 356793608,
-        "apx_manifest_hash": "0418261f71ffe32601a40cbef618289ed041085384cfe31cbfe9f4ca693e16c2",
-        "codex_library_hash": null,
-        "gid": "RING5",
-        "loom_block_hash": "d82ad90f93695692b9ad3945db800b33cfb2b97b08b95bce3b58169420e0694e",
-        "manifest_check": 379271437,
-        "meta": {
-          "governance_budget": {
-            "actions_accepted": 0,
-            "caps": [
-              {
-                "attr": "max_proposals_per_window",
-                "exhausted": false,
-                "limit": null,
-                "policy_id": null,
-                "used": 2
-              },
-              {
-                "attr": "max_actions_per_window",
-                "exhausted": false,
-                "limit": null,
-                "policy_id": null,
-                "used": 0
-              },
-              {
-                "attr": "max_topology_changes",
-                "exhausted": false,
-                "limit": null,
-                "policy_id": null,
-                "used": 0
-              }
-            ],
-            "proposals_seen": 2,
-            "topology_changes_applied": 0
-          }
-        },
-        "nap_envelope_hash": "05e548224a8b62c29d363c1eab63246ccb1e789b434c1547be08d4e36ea592fa",
-        "prev_entry_hash": "e46950378e6835b53da3f95ff406e333c0661194112866cb4437bc1c10586d40",
-        "run_id": "RING5_demo",
-        "tick": 2,
-        "timestamp_utc": null,
-        "umx_ledger_hash": "e5c1fa1742d680d27409cc26353c1d5c0c1b65f3b3dfbb017421a482c1697ac5",
-        "window_id": "RING5_ticks_1_5"
-      },
-      {
-        "C_t": 65491504,
-        "apx_manifest_hash": "0418261f71ffe32601a40cbef618289ed041085384cfe31cbfe9f4ca693e16c2",
-        "codex_library_hash": null,
-        "gid": "RING5",
-        "loom_block_hash": "e69239088ec67fff63ef594b2f49033b11a8c6c3d222cce3e077a89a4fa0b939",
-        "manifest_check": 379271437,
-        "meta": {
-          "governance_budget": {
-            "actions_accepted": 0,
-            "caps": [
-              {
-                "attr": "max_proposals_per_window",
-                "exhausted": false,
-                "limit": null,
-                "policy_id": null,
-                "used": 2
-              },
-              {
-                "attr": "max_actions_per_window",
-                "exhausted": false,
-                "limit": null,
-                "policy_id": null,
-                "used": 0
-              },
-              {
-                "attr": "max_topology_changes",
-                "exhausted": false,
-                "limit": null,
-                "policy_id": null,
-                "used": 0
-              }
-            ],
-            "proposals_seen": 2,
-            "topology_changes_applied": 0
-          }
-        },
-        "nap_envelope_hash": "ba345f54895d3c1b230a9c4e0cb0e49c41baa0981eaee9a2e94a1c1280214757",
-        "prev_entry_hash": "be82f256453af383faac5f1f8c1cd95bd50e5da3cf3ea8a77fccb12dcc08f568",
-        "run_id": "RING5_demo",
-        "tick": 3,
-        "timestamp_utc": null,
-        "umx_ledger_hash": "152050d97edd6dafe4971bf9f803c9280b106106c5b98fa8ae4c53c2757bf807",
-        "window_id": "RING5_ticks_1_5"
-      },
-      {
-        "C_t": 113355772,
-        "apx_manifest_hash": "0418261f71ffe32601a40cbef618289ed041085384cfe31cbfe9f4ca693e16c2",
-        "codex_library_hash": null,
-        "gid": "RING5",
-        "loom_block_hash": "11ff719ebdf71176e06ffff383ddedb24e3ee634a6b5f444e8e96fe1b1ee709e",
-        "manifest_check": 379271437,
-        "meta": {
-          "governance_budget": {
-            "actions_accepted": 0,
-            "caps": [
-              {
-                "attr": "max_proposals_per_window",
-                "exhausted": false,
-                "limit": null,
-                "policy_id": null,
-                "used": 2
-              },
-              {
-                "attr": "max_actions_per_window",
-                "exhausted": false,
-                "limit": null,
-                "policy_id": null,
-                "used": 0
-              },
-              {
-                "attr": "max_topology_changes",
-                "exhausted": false,
-                "limit": null,
-                "policy_id": null,
-                "used": 0
-              }
-            ],
-            "proposals_seen": 2,
-            "topology_changes_applied": 0
-          }
-        },
-        "nap_envelope_hash": "33976ad8caf1957f657bd5eae01a35e178fbbbdf0f31df4ef7082490e35d84ce",
-        "prev_entry_hash": "fdda12c60012d25ed80cfbe4d88059834c7c63035bc161115791c7025eba6241",
-        "run_id": "RING5_demo",
-        "tick": 4,
-        "timestamp_utc": null,
-        "umx_ledger_hash": "93bb40d4697d384bff5bf85054c0a71db51df2f06cd1217ef827f69c5c9a8a57",
-        "window_id": "RING5_ticks_1_5"
-      },
-      {
-        "C_t": 927048329,
-        "apx_manifest_hash": "0418261f71ffe32601a40cbef618289ed041085384cfe31cbfe9f4ca693e16c2",
-        "codex_library_hash": null,
-        "gid": "RING5",
-        "loom_block_hash": "ebb5e94a00d1c5ae9376c4dfd322cba02f3d39b67d9d722e129ac09fd6e84765",
-        "manifest_check": 379271437,
-        "meta": {
-          "governance_budget": {
-            "actions_accepted": 0,
-            "caps": [
-              {
-                "attr": "max_proposals_per_window",
-                "exhausted": false,
-                "limit": null,
-                "policy_id": null,
-                "used": 2
-              },
-              {
-                "attr": "max_actions_per_window",
-                "exhausted": false,
-                "limit": null,
-                "policy_id": null,
-                "used": 0
-              },
-              {
-                "attr": "max_topology_changes",
-                "exhausted": false,
-                "limit": null,
-                "policy_id": null,
-                "used": 0
-              }
-            ],
-            "proposals_seen": 2,
-            "topology_changes_applied": 0
-          }
-        },
-        "nap_envelope_hash": "130c07234313eb41a2be9b10e62c88c4baa3517e1ba272d244a8a35fd78161f5",
-        "prev_entry_hash": "368af23d2e9a295a6f0794d54863befbb945609f4b00cbb5f4c81d9409542f22",
-        "run_id": "RING5_demo",
-        "tick": 5,
-        "timestamp_utc": null,
-        "umx_ledger_hash": "c20922080421808f451c7a1e6aa6b2446e48ea775fc7c4a25c6ba6d1d4781c90",
-        "window_id": "RING5_ticks_1_5"
+        "layer": "EGRESS",
+        "mode": "P",
+        "payload_ref": 96964647,
+        "seq": 7,
+        "prev_chain": 927048329,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {}
       }
     ]
   }
