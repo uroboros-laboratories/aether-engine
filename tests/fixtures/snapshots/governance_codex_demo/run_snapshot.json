@@ -1,6 +1,28 @@
 {
   "config": {
+    "run_id": "GOV_CODEX_DEMO",
     "gid": "GF01",
+    "nid": "GF01",
+    "total_ticks": 8,
+    "primary_window_id": "GF01_W1_ticks_1_8",
+    "window_ids": [
+      "GF01_W1_ticks_1_8"
+    ],
+    "press_default_streams": [
+      {
+        "name": "S1_post_u_deltas",
+        "source": "post_u_deltas",
+        "scheme_hint": null,
+        "description": "post_u delta per node"
+      },
+      {
+        "name": "S2_fluxes",
+        "source": "fluxes",
+        "scheme_hint": null,
+        "description": "edge flux per edge"
+      }
+    ],
+    "pfna_inputs": [],
     "initial_state": [
       3,
       1,
@@ -8,89 +30,2297 @@
       0,
       0,
       0
-    ],
-    "nid": "GF01",
-    "pfna_inputs": [],
-    "press_default_streams": [
-      {
-        "description": "post_u delta per node",
-        "name": "S1_post_u_deltas",
-        "scheme_hint": null,
-        "source": "post_u_deltas"
-      },
-      {
-        "description": "edge flux per edge",
-        "name": "S2_fluxes",
-        "scheme_hint": null,
-        "source": "fluxes"
-      }
-    ],
-    "primary_window_id": "GF01_W1_ticks_1_8",
-    "run_id": "GOV_CODEX_DEMO",
-    "total_ticks": 8,
-    "window_ids": [
-      "GF01_W1_ticks_1_8"
     ]
   },
   "lifecycle_envelopes": [
     {
+      "v": 1,
+      "tick": 1,
       "gid": "GF01",
-      "layer": "CTRL",
-      "meta": {},
-      "mode": "P",
       "nid": "GF01",
+      "layer": "CTRL",
+      "mode": "P",
       "payload_ref": 0,
-      "prev_chain": 1234567,
       "seq": 1,
+      "prev_chain": 1234567,
       "sig": "",
       "slp_event_ids": [],
-      "tick": 1,
-      "v": 1
+      "meta": {}
     },
     {
+      "v": 1,
+      "tick": 8,
       "gid": "GF01",
-      "layer": "CTRL",
-      "meta": {},
-      "mode": "P",
       "nid": "GF01",
-      "payload_ref": 560330170,
-      "prev_chain": 588473909,
+      "layer": "CTRL",
+      "mode": "P",
+      "payload_ref": 786709051,
       "seq": 9,
+      "prev_chain": 588473909,
       "sig": "",
       "slp_event_ids": [],
-      "tick": 8,
-      "v": 1
+      "meta": {}
     }
   ],
   "tick_result": {
-    "codex_actions": [
+    "run_id": "GOV_CODEX_DEMO",
+    "ledgers": [
       {
-        "action": "PLACE",
-        "budget_effect": {},
-        "created_at_tick": 8,
-        "evaluated_at_tick": 8,
-        "expected_effect": {
-          "delta_L_total": -8,
-          "notes": "edge_flux_pattern_v1"
-        },
+        "tick": 1,
+        "sum_pre_u": 4,
+        "sum_post_u": 4,
+        "z_check": 4,
+        "pre_u": [
+          3,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "edges": [
+          {
+            "e_id": 1,
+            "i": 1,
+            "j": 2,
+            "du": 2,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "i": 1,
+            "j": 4,
+            "du": 3,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "i": 1,
+            "j": 6,
+            "du": 3,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 4,
+            "i": 2,
+            "j": 3,
+            "du": 1,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 5,
+            "i": 2,
+            "j": 5,
+            "du": 1,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 6,
+            "i": 3,
+            "j": 4,
+            "du": 0,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 7,
+            "i": 4,
+            "j": 5,
+            "du": 0,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 8,
+            "i": 5,
+            "j": 6,
+            "du": 0,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          }
+        ],
+        "post_u": [
+          3,
+          1,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "tick": 2,
+        "sum_pre_u": 4,
+        "sum_post_u": 4,
+        "z_check": 4,
+        "pre_u": [
+          3,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "edges": [
+          {
+            "e_id": 1,
+            "i": 1,
+            "j": 2,
+            "du": 2,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "i": 1,
+            "j": 4,
+            "du": 3,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "i": 1,
+            "j": 6,
+            "du": 3,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 4,
+            "i": 2,
+            "j": 3,
+            "du": 1,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 5,
+            "i": 2,
+            "j": 5,
+            "du": 1,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 6,
+            "i": 3,
+            "j": 4,
+            "du": 0,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 7,
+            "i": 4,
+            "j": 5,
+            "du": 0,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 8,
+            "i": 5,
+            "j": 6,
+            "du": 0,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          }
+        ],
+        "post_u": [
+          3,
+          1,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "tick": 3,
+        "sum_pre_u": 4,
+        "sum_post_u": 4,
+        "z_check": 4,
+        "pre_u": [
+          3,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "edges": [
+          {
+            "e_id": 1,
+            "i": 1,
+            "j": 2,
+            "du": 2,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "i": 1,
+            "j": 4,
+            "du": 3,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "i": 1,
+            "j": 6,
+            "du": 3,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 4,
+            "i": 2,
+            "j": 3,
+            "du": 1,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 5,
+            "i": 2,
+            "j": 5,
+            "du": 1,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 6,
+            "i": 3,
+            "j": 4,
+            "du": 0,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 7,
+            "i": 4,
+            "j": 5,
+            "du": 0,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 8,
+            "i": 5,
+            "j": 6,
+            "du": 0,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          }
+        ],
+        "post_u": [
+          3,
+          1,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "tick": 4,
+        "sum_pre_u": 4,
+        "sum_post_u": 4,
+        "z_check": 4,
+        "pre_u": [
+          3,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "edges": [
+          {
+            "e_id": 1,
+            "i": 1,
+            "j": 2,
+            "du": 2,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "i": 1,
+            "j": 4,
+            "du": 3,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "i": 1,
+            "j": 6,
+            "du": 3,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 4,
+            "i": 2,
+            "j": 3,
+            "du": 1,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 5,
+            "i": 2,
+            "j": 5,
+            "du": 1,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 6,
+            "i": 3,
+            "j": 4,
+            "du": 0,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 7,
+            "i": 4,
+            "j": 5,
+            "du": 0,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 8,
+            "i": 5,
+            "j": 6,
+            "du": 0,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          }
+        ],
+        "post_u": [
+          3,
+          1,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "tick": 5,
+        "sum_pre_u": 4,
+        "sum_post_u": 4,
+        "z_check": 4,
+        "pre_u": [
+          3,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "edges": [
+          {
+            "e_id": 1,
+            "i": 1,
+            "j": 2,
+            "du": 2,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "i": 1,
+            "j": 4,
+            "du": 3,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "i": 1,
+            "j": 6,
+            "du": 3,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 4,
+            "i": 2,
+            "j": 3,
+            "du": 1,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 5,
+            "i": 2,
+            "j": 5,
+            "du": 1,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 6,
+            "i": 3,
+            "j": 4,
+            "du": 0,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 7,
+            "i": 4,
+            "j": 5,
+            "du": 0,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 8,
+            "i": 5,
+            "j": 6,
+            "du": 0,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          }
+        ],
+        "post_u": [
+          3,
+          1,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "tick": 6,
+        "sum_pre_u": 4,
+        "sum_post_u": 4,
+        "z_check": 4,
+        "pre_u": [
+          3,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "edges": [
+          {
+            "e_id": 1,
+            "i": 1,
+            "j": 2,
+            "du": 2,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "i": 1,
+            "j": 4,
+            "du": 3,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "i": 1,
+            "j": 6,
+            "du": 3,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 4,
+            "i": 2,
+            "j": 3,
+            "du": 1,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 5,
+            "i": 2,
+            "j": 5,
+            "du": 1,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 6,
+            "i": 3,
+            "j": 4,
+            "du": 0,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 7,
+            "i": 4,
+            "j": 5,
+            "du": 0,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 8,
+            "i": 5,
+            "j": 6,
+            "du": 0,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          }
+        ],
+        "post_u": [
+          3,
+          1,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "tick": 7,
+        "sum_pre_u": 4,
+        "sum_post_u": 4,
+        "z_check": 4,
+        "pre_u": [
+          3,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "edges": [
+          {
+            "e_id": 1,
+            "i": 1,
+            "j": 2,
+            "du": 2,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "i": 1,
+            "j": 4,
+            "du": 3,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "i": 1,
+            "j": 6,
+            "du": 3,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 4,
+            "i": 2,
+            "j": 3,
+            "du": 1,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 5,
+            "i": 2,
+            "j": 5,
+            "du": 1,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 6,
+            "i": 3,
+            "j": 4,
+            "du": 0,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 7,
+            "i": 4,
+            "j": 5,
+            "du": 0,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 8,
+            "i": 5,
+            "j": 6,
+            "du": 0,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          }
+        ],
+        "post_u": [
+          3,
+          1,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "tick": 8,
+        "sum_pre_u": 4,
+        "sum_post_u": 4,
+        "z_check": 4,
+        "pre_u": [
+          3,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "edges": [
+          {
+            "e_id": 1,
+            "i": 1,
+            "j": 2,
+            "du": 2,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "i": 1,
+            "j": 4,
+            "du": 3,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "i": 1,
+            "j": 6,
+            "du": 3,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 4,
+            "i": 2,
+            "j": 3,
+            "du": 1,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 5,
+            "i": 2,
+            "j": 5,
+            "du": 1,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 6,
+            "i": 3,
+            "j": 4,
+            "du": 0,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 7,
+            "i": 4,
+            "j": 5,
+            "du": 0,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          },
+          {
+            "e_id": 8,
+            "i": 5,
+            "j": 6,
+            "du": 0,
+            "raw": 0,
+            "cap": 2147483647,
+            "f_e": 0
+          }
+        ],
+        "post_u": [
+          3,
+          1,
+          0,
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "p_blocks": [
+      {
+        "tick": 1,
+        "seq": 1,
+        "s_t": 9,
+        "C_t": 20987847,
+        "edge_flux_summary": [
+          {
+            "e_id": 1,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "f_e": 0
+          },
+          {
+            "e_id": 4,
+            "f_e": 0
+          },
+          {
+            "e_id": 5,
+            "f_e": 0
+          },
+          {
+            "e_id": 6,
+            "f_e": 0
+          },
+          {
+            "e_id": 7,
+            "f_e": 0
+          },
+          {
+            "e_id": 8,
+            "f_e": 0
+          }
+        ]
+      },
+      {
+        "tick": 2,
+        "seq": 2,
+        "s_t": 9,
+        "C_t": 356793608,
+        "edge_flux_summary": [
+          {
+            "e_id": 1,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "f_e": 0
+          },
+          {
+            "e_id": 4,
+            "f_e": 0
+          },
+          {
+            "e_id": 5,
+            "f_e": 0
+          },
+          {
+            "e_id": 6,
+            "f_e": 0
+          },
+          {
+            "e_id": 7,
+            "f_e": 0
+          },
+          {
+            "e_id": 8,
+            "f_e": 0
+          }
+        ]
+      },
+      {
+        "tick": 3,
+        "seq": 3,
+        "s_t": 9,
+        "C_t": 65491504,
+        "edge_flux_summary": [
+          {
+            "e_id": 1,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "f_e": 0
+          },
+          {
+            "e_id": 4,
+            "f_e": 0
+          },
+          {
+            "e_id": 5,
+            "f_e": 0
+          },
+          {
+            "e_id": 6,
+            "f_e": 0
+          },
+          {
+            "e_id": 7,
+            "f_e": 0
+          },
+          {
+            "e_id": 8,
+            "f_e": 0
+          }
+        ]
+      },
+      {
+        "tick": 4,
+        "seq": 4,
+        "s_t": 9,
+        "C_t": 113355772,
+        "edge_flux_summary": [
+          {
+            "e_id": 1,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "f_e": 0
+          },
+          {
+            "e_id": 4,
+            "f_e": 0
+          },
+          {
+            "e_id": 5,
+            "f_e": 0
+          },
+          {
+            "e_id": 6,
+            "f_e": 0
+          },
+          {
+            "e_id": 7,
+            "f_e": 0
+          },
+          {
+            "e_id": 8,
+            "f_e": 0
+          }
+        ]
+      },
+      {
+        "tick": 5,
+        "seq": 5,
+        "s_t": 9,
+        "C_t": 927048329,
+        "edge_flux_summary": [
+          {
+            "e_id": 1,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "f_e": 0
+          },
+          {
+            "e_id": 4,
+            "f_e": 0
+          },
+          {
+            "e_id": 5,
+            "f_e": 0
+          },
+          {
+            "e_id": 6,
+            "f_e": 0
+          },
+          {
+            "e_id": 7,
+            "f_e": 0
+          },
+          {
+            "e_id": 8,
+            "f_e": 0
+          }
+        ]
+      },
+      {
+        "tick": 6,
+        "seq": 6,
+        "s_t": 9,
+        "C_t": 759821701,
+        "edge_flux_summary": [
+          {
+            "e_id": 1,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "f_e": 0
+          },
+          {
+            "e_id": 4,
+            "f_e": 0
+          },
+          {
+            "e_id": 5,
+            "f_e": 0
+          },
+          {
+            "e_id": 6,
+            "f_e": 0
+          },
+          {
+            "e_id": 7,
+            "f_e": 0
+          },
+          {
+            "e_id": 8,
+            "f_e": 0
+          }
+        ]
+      },
+      {
+        "tick": 7,
+        "seq": 7,
+        "s_t": 9,
+        "C_t": 916969047,
+        "edge_flux_summary": [
+          {
+            "e_id": 1,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "f_e": 0
+          },
+          {
+            "e_id": 4,
+            "f_e": 0
+          },
+          {
+            "e_id": 5,
+            "f_e": 0
+          },
+          {
+            "e_id": 6,
+            "f_e": 0
+          },
+          {
+            "e_id": 7,
+            "f_e": 0
+          },
+          {
+            "e_id": 8,
+            "f_e": 0
+          }
+        ]
+      },
+      {
+        "tick": 8,
+        "seq": 8,
+        "s_t": 9,
+        "C_t": 588473909,
+        "edge_flux_summary": [
+          {
+            "e_id": 1,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "f_e": 0
+          },
+          {
+            "e_id": 4,
+            "f_e": 0
+          },
+          {
+            "e_id": 5,
+            "f_e": 0
+          },
+          {
+            "e_id": 6,
+            "f_e": 0
+          },
+          {
+            "e_id": 7,
+            "f_e": 0
+          },
+          {
+            "e_id": 8,
+            "f_e": 0
+          }
+        ]
+      }
+    ],
+    "i_blocks": [
+      {
+        "tick": 8,
+        "W": 8,
+        "C_t": 588473909,
+        "profile_version": "CMP-0",
+        "post_u": [
+          3,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "topology_snapshot": [
+          {
+            "e_id": 1,
+            "i": 1,
+            "j": 2,
+            "k": 1,
+            "cap": 2147483647,
+            "SC": 32,
+            "c": 0
+          },
+          {
+            "e_id": 2,
+            "i": 1,
+            "j": 4,
+            "k": 2,
+            "cap": 2147483647,
+            "SC": 32,
+            "c": 0
+          },
+          {
+            "e_id": 3,
+            "i": 1,
+            "j": 6,
+            "k": 1,
+            "cap": 2147483647,
+            "SC": 32,
+            "c": 0
+          },
+          {
+            "e_id": 4,
+            "i": 2,
+            "j": 3,
+            "k": 1,
+            "cap": 2147483647,
+            "SC": 32,
+            "c": 0
+          },
+          {
+            "e_id": 5,
+            "i": 2,
+            "j": 5,
+            "k": 2,
+            "cap": 2147483647,
+            "SC": 32,
+            "c": 0
+          },
+          {
+            "e_id": 6,
+            "i": 3,
+            "j": 4,
+            "k": 1,
+            "cap": 2147483647,
+            "SC": 32,
+            "c": 0
+          },
+          {
+            "e_id": 7,
+            "i": 4,
+            "j": 5,
+            "k": 1,
+            "cap": 2147483647,
+            "SC": 32,
+            "c": 0
+          },
+          {
+            "e_id": 8,
+            "i": 5,
+            "j": 6,
+            "k": 1,
+            "cap": 2147483647,
+            "SC": 32,
+            "c": 0
+          }
+        ]
+      }
+    ],
+    "manifests": {
+      "GF01_APX_v0_full_window": {
+        "apx_name": "GF01_APX_v0_full_window",
+        "profile": "CMP-0",
+        "manifest_check": 786709051,
+        "streams": [
+          {
+            "stream_id": "S1_post_u_deltas",
+            "description": "S1_post_u_deltas",
+            "scheme": "R",
+            "params": 0,
+            "L_model": 64,
+            "L_residual": 336,
+            "L_total": 400
+          },
+          {
+            "stream_id": "S2_fluxes",
+            "description": "S2_fluxes",
+            "scheme": "R",
+            "params": 0,
+            "L_model": 80,
+            "L_residual": 448,
+            "L_total": 528
+          }
+        ]
+      }
+    },
+    "scenes": [
+      {
         "gid": "GF01",
-        "governance_notes": {
-          "notes": []
-        },
-        "governance_scores": {
-          "topology_change_count": 8.0
-        },
-        "governance_status": "OK",
-        "library_id": "GOV_CODEX_DEMO_LIB",
+        "run_id": "GOV_CODEX_DEMO",
+        "tick": 1,
+        "nid": "GF01",
+        "pre_u": [
+          3,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "post_u": [
+          3,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "ledger_ref": "umx_ledger_1",
+        "C_prev": 1234567,
+        "C_t": 20987847,
+        "window_id": "GF01_W1_ticks_1_8",
+        "manifest_check": 786709051,
+        "nap_envelope_ref": null,
         "meta": {
-          "runs": [
-            "GOV_CODEX_DEMO"
+          "p_block_ref": "loom_p_block_1",
+          "manifest_ref": "GF01_APX_v0_full_window"
+        }
+      },
+      {
+        "gid": "GF01",
+        "run_id": "GOV_CODEX_DEMO",
+        "tick": 2,
+        "nid": "GF01",
+        "pre_u": [
+          3,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "post_u": [
+          3,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "ledger_ref": "umx_ledger_2",
+        "C_prev": 20987847,
+        "C_t": 356793608,
+        "window_id": "GF01_W1_ticks_1_8",
+        "manifest_check": 786709051,
+        "nap_envelope_ref": null,
+        "meta": {
+          "p_block_ref": "loom_p_block_2",
+          "manifest_ref": "GF01_APX_v0_full_window"
+        }
+      },
+      {
+        "gid": "GF01",
+        "run_id": "GOV_CODEX_DEMO",
+        "tick": 3,
+        "nid": "GF01",
+        "pre_u": [
+          3,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "post_u": [
+          3,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "ledger_ref": "umx_ledger_3",
+        "C_prev": 356793608,
+        "C_t": 65491504,
+        "window_id": "GF01_W1_ticks_1_8",
+        "manifest_check": 786709051,
+        "nap_envelope_ref": null,
+        "meta": {
+          "p_block_ref": "loom_p_block_3",
+          "manifest_ref": "GF01_APX_v0_full_window"
+        }
+      },
+      {
+        "gid": "GF01",
+        "run_id": "GOV_CODEX_DEMO",
+        "tick": 4,
+        "nid": "GF01",
+        "pre_u": [
+          3,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "post_u": [
+          3,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "ledger_ref": "umx_ledger_4",
+        "C_prev": 65491504,
+        "C_t": 113355772,
+        "window_id": "GF01_W1_ticks_1_8",
+        "manifest_check": 786709051,
+        "nap_envelope_ref": null,
+        "meta": {
+          "p_block_ref": "loom_p_block_4",
+          "manifest_ref": "GF01_APX_v0_full_window"
+        }
+      },
+      {
+        "gid": "GF01",
+        "run_id": "GOV_CODEX_DEMO",
+        "tick": 5,
+        "nid": "GF01",
+        "pre_u": [
+          3,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "post_u": [
+          3,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "ledger_ref": "umx_ledger_5",
+        "C_prev": 113355772,
+        "C_t": 927048329,
+        "window_id": "GF01_W1_ticks_1_8",
+        "manifest_check": 786709051,
+        "nap_envelope_ref": null,
+        "meta": {
+          "p_block_ref": "loom_p_block_5",
+          "manifest_ref": "GF01_APX_v0_full_window"
+        }
+      },
+      {
+        "gid": "GF01",
+        "run_id": "GOV_CODEX_DEMO",
+        "tick": 6,
+        "nid": "GF01",
+        "pre_u": [
+          3,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "post_u": [
+          3,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "ledger_ref": "umx_ledger_6",
+        "C_prev": 927048329,
+        "C_t": 759821701,
+        "window_id": "GF01_W1_ticks_1_8",
+        "manifest_check": 786709051,
+        "nap_envelope_ref": null,
+        "meta": {
+          "p_block_ref": "loom_p_block_6",
+          "manifest_ref": "GF01_APX_v0_full_window"
+        }
+      },
+      {
+        "gid": "GF01",
+        "run_id": "GOV_CODEX_DEMO",
+        "tick": 7,
+        "nid": "GF01",
+        "pre_u": [
+          3,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "post_u": [
+          3,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "ledger_ref": "umx_ledger_7",
+        "C_prev": 759821701,
+        "C_t": 916969047,
+        "window_id": "GF01_W1_ticks_1_8",
+        "manifest_check": 786709051,
+        "nap_envelope_ref": null,
+        "meta": {
+          "p_block_ref": "loom_p_block_7",
+          "manifest_ref": "GF01_APX_v0_full_window"
+        }
+      },
+      {
+        "gid": "GF01",
+        "run_id": "GOV_CODEX_DEMO",
+        "tick": 8,
+        "nid": "GF01",
+        "pre_u": [
+          3,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "post_u": [
+          3,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "ledger_ref": "umx_ledger_8",
+        "C_prev": 916969047,
+        "C_t": 588473909,
+        "window_id": "GF01_W1_ticks_1_8",
+        "manifest_check": 786709051,
+        "nap_envelope_ref": null,
+        "meta": {
+          "p_block_ref": "loom_p_block_8",
+          "manifest_ref": "GF01_APX_v0_full_window"
+        }
+      }
+    ],
+    "envelopes": [
+      {
+        "v": 1,
+        "tick": 1,
+        "gid": "GF01",
+        "nid": "GF01",
+        "layer": "DATA",
+        "mode": "P",
+        "payload_ref": 786709051,
+        "seq": 1,
+        "prev_chain": 1234567,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {
+          "pfna_integerization": []
+        }
+      },
+      {
+        "v": 1,
+        "tick": 2,
+        "gid": "GF01",
+        "nid": "GF01",
+        "layer": "DATA",
+        "mode": "P",
+        "payload_ref": 786709051,
+        "seq": 2,
+        "prev_chain": 20987847,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {
+          "pfna_integerization": []
+        }
+      },
+      {
+        "v": 1,
+        "tick": 3,
+        "gid": "GF01",
+        "nid": "GF01",
+        "layer": "DATA",
+        "mode": "P",
+        "payload_ref": 786709051,
+        "seq": 3,
+        "prev_chain": 356793608,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {
+          "pfna_integerization": []
+        }
+      },
+      {
+        "v": 1,
+        "tick": 4,
+        "gid": "GF01",
+        "nid": "GF01",
+        "layer": "DATA",
+        "mode": "P",
+        "payload_ref": 786709051,
+        "seq": 4,
+        "prev_chain": 65491504,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {
+          "pfna_integerization": []
+        }
+      },
+      {
+        "v": 1,
+        "tick": 5,
+        "gid": "GF01",
+        "nid": "GF01",
+        "layer": "DATA",
+        "mode": "P",
+        "payload_ref": 786709051,
+        "seq": 5,
+        "prev_chain": 113355772,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {
+          "pfna_integerization": []
+        }
+      },
+      {
+        "v": 1,
+        "tick": 6,
+        "gid": "GF01",
+        "nid": "GF01",
+        "layer": "DATA",
+        "mode": "P",
+        "payload_ref": 786709051,
+        "seq": 6,
+        "prev_chain": 927048329,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {
+          "pfna_integerization": []
+        }
+      },
+      {
+        "v": 1,
+        "tick": 7,
+        "gid": "GF01",
+        "nid": "GF01",
+        "layer": "DATA",
+        "mode": "P",
+        "payload_ref": 786709051,
+        "seq": 7,
+        "prev_chain": 759821701,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {
+          "pfna_integerization": []
+        }
+      },
+      {
+        "v": 1,
+        "tick": 8,
+        "gid": "GF01",
+        "nid": "GF01",
+        "layer": "DATA",
+        "mode": "P",
+        "payload_ref": 786709051,
+        "seq": 8,
+        "prev_chain": 916969047,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {
+          "pfna_integerization": []
+        }
+      }
+    ],
+    "governance_envelopes": [
+      {
+        "v": 1,
+        "tick": 1,
+        "gid": "GF01",
+        "nid": "GF01",
+        "layer": "GOV",
+        "mode": "G",
+        "payload_ref": 786709051,
+        "seq": 9,
+        "prev_chain": 1234567,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {
+          "event": "GATE_GOVERNANCE_DECISION",
+          "envelope_ref": "nap_1_1",
+          "tick": 1,
+          "seq": 1,
+          "status": "ACCEPTED",
+          "reasons": [],
+          "policy_set_hash": "1372f078185947f199b6d0a6463fae603b3b03953df9230a8f8741055ac61995",
+          "window_id": "GF01_W1_ticks_1_8"
+        }
+      },
+      {
+        "v": 1,
+        "tick": 2,
+        "gid": "GF01",
+        "nid": "GF01",
+        "layer": "GOV",
+        "mode": "G",
+        "payload_ref": 786709051,
+        "seq": 10,
+        "prev_chain": 20987847,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {
+          "event": "GATE_GOVERNANCE_DECISION",
+          "envelope_ref": "nap_2_2",
+          "tick": 2,
+          "seq": 2,
+          "status": "ACCEPTED",
+          "reasons": [],
+          "policy_set_hash": "1372f078185947f199b6d0a6463fae603b3b03953df9230a8f8741055ac61995",
+          "window_id": "GF01_W1_ticks_1_8"
+        }
+      },
+      {
+        "v": 1,
+        "tick": 3,
+        "gid": "GF01",
+        "nid": "GF01",
+        "layer": "GOV",
+        "mode": "G",
+        "payload_ref": 786709051,
+        "seq": 11,
+        "prev_chain": 356793608,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {
+          "event": "GATE_GOVERNANCE_DECISION",
+          "envelope_ref": "nap_3_3",
+          "tick": 3,
+          "seq": 3,
+          "status": "ACCEPTED",
+          "reasons": [],
+          "policy_set_hash": "1372f078185947f199b6d0a6463fae603b3b03953df9230a8f8741055ac61995",
+          "window_id": "GF01_W1_ticks_1_8"
+        }
+      },
+      {
+        "v": 1,
+        "tick": 4,
+        "gid": "GF01",
+        "nid": "GF01",
+        "layer": "GOV",
+        "mode": "G",
+        "payload_ref": 786709051,
+        "seq": 12,
+        "prev_chain": 65491504,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {
+          "event": "GATE_GOVERNANCE_DECISION",
+          "envelope_ref": "nap_4_4",
+          "tick": 4,
+          "seq": 4,
+          "status": "ACCEPTED",
+          "reasons": [],
+          "policy_set_hash": "1372f078185947f199b6d0a6463fae603b3b03953df9230a8f8741055ac61995",
+          "window_id": "GF01_W1_ticks_1_8"
+        }
+      },
+      {
+        "v": 1,
+        "tick": 5,
+        "gid": "GF01",
+        "nid": "GF01",
+        "layer": "GOV",
+        "mode": "G",
+        "payload_ref": 786709051,
+        "seq": 13,
+        "prev_chain": 113355772,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {
+          "event": "GATE_GOVERNANCE_DECISION",
+          "envelope_ref": "nap_5_5",
+          "tick": 5,
+          "seq": 5,
+          "status": "ACCEPTED",
+          "reasons": [],
+          "policy_set_hash": "1372f078185947f199b6d0a6463fae603b3b03953df9230a8f8741055ac61995",
+          "window_id": "GF01_W1_ticks_1_8"
+        }
+      },
+      {
+        "v": 1,
+        "tick": 6,
+        "gid": "GF01",
+        "nid": "GF01",
+        "layer": "GOV",
+        "mode": "G",
+        "payload_ref": 786709051,
+        "seq": 14,
+        "prev_chain": 927048329,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {
+          "event": "GATE_GOVERNANCE_DECISION",
+          "envelope_ref": "nap_6_6",
+          "tick": 6,
+          "seq": 6,
+          "status": "ACCEPTED",
+          "reasons": [],
+          "policy_set_hash": "1372f078185947f199b6d0a6463fae603b3b03953df9230a8f8741055ac61995",
+          "window_id": "GF01_W1_ticks_1_8"
+        }
+      },
+      {
+        "v": 1,
+        "tick": 7,
+        "gid": "GF01",
+        "nid": "GF01",
+        "layer": "GOV",
+        "mode": "G",
+        "payload_ref": 786709051,
+        "seq": 15,
+        "prev_chain": 759821701,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {
+          "event": "GATE_GOVERNANCE_DECISION",
+          "envelope_ref": "nap_7_7",
+          "tick": 7,
+          "seq": 7,
+          "status": "ACCEPTED",
+          "reasons": [],
+          "policy_set_hash": "1372f078185947f199b6d0a6463fae603b3b03953df9230a8f8741055ac61995",
+          "window_id": "GF01_W1_ticks_1_8"
+        }
+      },
+      {
+        "v": 1,
+        "tick": 8,
+        "gid": "GF01",
+        "nid": "GF01",
+        "layer": "GOV",
+        "mode": "G",
+        "payload_ref": 786709051,
+        "seq": 16,
+        "prev_chain": 916969047,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {
+          "event": "GATE_GOVERNANCE_DECISION",
+          "envelope_ref": "nap_8_8",
+          "tick": 8,
+          "seq": 8,
+          "status": "ACCEPTED",
+          "reasons": [],
+          "policy_set_hash": "1372f078185947f199b6d0a6463fae603b3b03953df9230a8f8741055ac61995",
+          "window_id": "GF01_W1_ticks_1_8"
+        }
+      },
+      {
+        "v": 1,
+        "tick": 1,
+        "gid": "GF01",
+        "nid": "GF01",
+        "layer": "GOV",
+        "mode": "G",
+        "payload_ref": 0,
+        "seq": 1,
+        "prev_chain": 1234567,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {
+          "event": "POLICY_SET_LOADED",
+          "policy_set_hash": "1372f078185947f199b6d0a6463fae603b3b03953df9230a8f8741055ac61995",
+          "policy_ids": [
+            "budget-demo",
+            "topology-demo"
+          ],
+          "governance_mode": "ENFORCE",
+          "codex_action_mode": "GOVERNED_APPLY"
+        }
+      },
+      {
+        "v": 1,
+        "tick": 8,
+        "gid": "GF01",
+        "nid": "GF01",
+        "layer": "GOV",
+        "mode": "G",
+        "payload_ref": 0,
+        "seq": 8,
+        "prev_chain": 588473909,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {
+          "event": "GOVERNANCE_DECISION_SUMMARY",
+          "policy_set_hash": "1372f078185947f199b6d0a6463fae603b3b03953df9230a8f8741055ac61995",
+          "window_id": "GF01_W1_ticks_1_8",
+          "governance_mode": "ENFORCE",
+          "proposals_seen": 1,
+          "actions_accepted": 1,
+          "topology_changes_applied": 8,
+          "caps": [
+            {
+              "attr": "max_proposals_per_window",
+              "limit": 2,
+              "used": 1,
+              "exhausted": false,
+              "policy_id": "budget-demo"
+            },
+            {
+              "attr": "max_actions_per_window",
+              "limit": 1,
+              "used": 1,
+              "exhausted": true,
+              "policy_id": "budget-demo"
+            },
+            {
+              "attr": "max_topology_changes",
+              "limit": 8,
+              "used": 8,
+              "exhausted": true,
+              "policy_id": "budget-demo"
+            }
           ]
-        },
+        }
+      },
+      {
+        "v": 1,
+        "tick": 8,
+        "gid": "GF01",
+        "nid": "GF01",
+        "layer": "GOV",
+        "mode": "G",
+        "payload_ref": 0,
+        "seq": 9,
+        "prev_chain": 588473909,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {
+          "event": "BUDGET_EXHAUSTION",
+          "policy_set_hash": "1372f078185947f199b6d0a6463fae603b3b03953df9230a8f8741055ac61995",
+          "window_id": "GF01_W1_ticks_1_8",
+          "governance_mode": "ENFORCE",
+          "exhausted_caps": [
+            {
+              "attr": "max_actions_per_window",
+              "limit": 1,
+              "used": 1,
+              "exhausted": true,
+              "policy_id": "budget-demo"
+            },
+            {
+              "attr": "max_topology_changes",
+              "limit": 8,
+              "used": 8,
+              "exhausted": true,
+              "policy_id": "budget-demo"
+            }
+          ]
+        }
+      }
+    ],
+    "u_ledger_entries": [
+      {
+        "gid": "GF01",
+        "run_id": "GOV_CODEX_DEMO",
+        "tick": 1,
+        "window_id": "GF01_W1_ticks_1_8",
+        "C_t": 20987847,
+        "manifest_check": 786709051,
+        "nap_envelope_hash": "b6030bac377840bd2409d1729e9dc88ba84e6e8b48f0877db59bdb6d82b14977",
+        "umx_ledger_hash": "4ae2da8621cd3fe61834d527aeaf5f26b907b7ae2729459f2f631996824027ea",
+        "loom_block_hash": "6db1f1a4b4a5b1159bddb6488bf738cdb89aa515eb2252bc7a3a863fd65a15bb",
+        "apx_manifest_hash": "83b49cdea6cf886ea1aa0c766c7920e8ed592f68f6adb4798c02a472d49e731d",
+        "prev_entry_hash": null,
+        "codex_library_hash": null,
+        "timestamp_utc": null,
+        "meta": {
+          "governance_budget": {
+            "proposals_seen": 1,
+            "actions_accepted": 1,
+            "topology_changes_applied": 8,
+            "caps": [
+              {
+                "attr": "max_proposals_per_window",
+                "limit": 2,
+                "used": 1,
+                "exhausted": false,
+                "policy_id": "budget-demo"
+              },
+              {
+                "attr": "max_actions_per_window",
+                "limit": 1,
+                "used": 1,
+                "exhausted": true,
+                "policy_id": "budget-demo"
+              },
+              {
+                "attr": "max_topology_changes",
+                "limit": 8,
+                "used": 8,
+                "exhausted": true,
+                "policy_id": "budget-demo"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "gid": "GF01",
+        "run_id": "GOV_CODEX_DEMO",
+        "tick": 2,
+        "window_id": "GF01_W1_ticks_1_8",
+        "C_t": 356793608,
+        "manifest_check": 786709051,
+        "nap_envelope_hash": "703e71623117594a2b499c5aa8fe413a8a771ed7347f7221cc24477b0d7b93ee",
+        "umx_ledger_hash": "6a4ddb693dcbc1a78550284d7b1352e9b55f1ff88b9a7cbba53c4723f6252c7b",
+        "loom_block_hash": "131712a31e5366f8088b55c65fb7a4a9d4579b43b93dab6c84d3ea3541a6aade",
+        "apx_manifest_hash": "83b49cdea6cf886ea1aa0c766c7920e8ed592f68f6adb4798c02a472d49e731d",
+        "prev_entry_hash": "23b26e5d597fe0dc2552f5665ac9ae920fc062fe618aae88e7b1682a1c0357af",
+        "codex_library_hash": null,
+        "timestamp_utc": null,
+        "meta": {
+          "governance_budget": {
+            "proposals_seen": 1,
+            "actions_accepted": 1,
+            "topology_changes_applied": 8,
+            "caps": [
+              {
+                "attr": "max_proposals_per_window",
+                "limit": 2,
+                "used": 1,
+                "exhausted": false,
+                "policy_id": "budget-demo"
+              },
+              {
+                "attr": "max_actions_per_window",
+                "limit": 1,
+                "used": 1,
+                "exhausted": true,
+                "policy_id": "budget-demo"
+              },
+              {
+                "attr": "max_topology_changes",
+                "limit": 8,
+                "used": 8,
+                "exhausted": true,
+                "policy_id": "budget-demo"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "gid": "GF01",
+        "run_id": "GOV_CODEX_DEMO",
+        "tick": 3,
+        "window_id": "GF01_W1_ticks_1_8",
+        "C_t": 65491504,
+        "manifest_check": 786709051,
+        "nap_envelope_hash": "91d5bbda0ffe4df35a0c909e17512d4a33734323dbfeabfc4a682632565ca3e5",
+        "umx_ledger_hash": "a1cfc7ce4f010fca120ebf766932c4e9b138fd0a212ad97238c9e71ce8af3f38",
+        "loom_block_hash": "8cfc0fc004ca4b7f3029aeadd3ae0cb5fcaec4d3c4514131c97fef24ba8d2aee",
+        "apx_manifest_hash": "83b49cdea6cf886ea1aa0c766c7920e8ed592f68f6adb4798c02a472d49e731d",
+        "prev_entry_hash": "363e362a205173fa807e24927c832f248f27392f126ea888fa62cd301603dd3e",
+        "codex_library_hash": null,
+        "timestamp_utc": null,
+        "meta": {
+          "governance_budget": {
+            "proposals_seen": 1,
+            "actions_accepted": 1,
+            "topology_changes_applied": 8,
+            "caps": [
+              {
+                "attr": "max_proposals_per_window",
+                "limit": 2,
+                "used": 1,
+                "exhausted": false,
+                "policy_id": "budget-demo"
+              },
+              {
+                "attr": "max_actions_per_window",
+                "limit": 1,
+                "used": 1,
+                "exhausted": true,
+                "policy_id": "budget-demo"
+              },
+              {
+                "attr": "max_topology_changes",
+                "limit": 8,
+                "used": 8,
+                "exhausted": true,
+                "policy_id": "budget-demo"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "gid": "GF01",
+        "run_id": "GOV_CODEX_DEMO",
+        "tick": 4,
+        "window_id": "GF01_W1_ticks_1_8",
+        "C_t": 113355772,
+        "manifest_check": 786709051,
+        "nap_envelope_hash": "efca81cea8a2607c578c49b2731e646bbf2ab3882df6f2f9a2a5a91b8b8f077c",
+        "umx_ledger_hash": "0e6bbad47867ebc7f05e2cc88de3eb562ff59fff4f959efca153344ba4dba1e2",
+        "loom_block_hash": "8d24dcf4565f5bc22b2d151eea2692364b071f3f083bcdb81731959fb765b054",
+        "apx_manifest_hash": "83b49cdea6cf886ea1aa0c766c7920e8ed592f68f6adb4798c02a472d49e731d",
+        "prev_entry_hash": "f8ea5db96588d05fd8ea90e75d044b373131955afa0196040fd6abe25b772664",
+        "codex_library_hash": null,
+        "timestamp_utc": null,
+        "meta": {
+          "governance_budget": {
+            "proposals_seen": 1,
+            "actions_accepted": 1,
+            "topology_changes_applied": 8,
+            "caps": [
+              {
+                "attr": "max_proposals_per_window",
+                "limit": 2,
+                "used": 1,
+                "exhausted": false,
+                "policy_id": "budget-demo"
+              },
+              {
+                "attr": "max_actions_per_window",
+                "limit": 1,
+                "used": 1,
+                "exhausted": true,
+                "policy_id": "budget-demo"
+              },
+              {
+                "attr": "max_topology_changes",
+                "limit": 8,
+                "used": 8,
+                "exhausted": true,
+                "policy_id": "budget-demo"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "gid": "GF01",
+        "run_id": "GOV_CODEX_DEMO",
+        "tick": 5,
+        "window_id": "GF01_W1_ticks_1_8",
+        "C_t": 927048329,
+        "manifest_check": 786709051,
+        "nap_envelope_hash": "3965b323c9161888c8d5063af59f050adde1a49038a80d3917b618eddb900c0f",
+        "umx_ledger_hash": "3dae0770b90673c5916097bad96d43731058e99288b1ebe3b369d603bd21c8b3",
+        "loom_block_hash": "22eff6db0f2895fb230bedc2ab718182db54475cd5312c0a2d3de3662fb19645",
+        "apx_manifest_hash": "83b49cdea6cf886ea1aa0c766c7920e8ed592f68f6adb4798c02a472d49e731d",
+        "prev_entry_hash": "8816daa4f0cfbf21d87203cfe842b8e6346cf15c4d73dc6af483922d94111d88",
+        "codex_library_hash": null,
+        "timestamp_utc": null,
+        "meta": {
+          "governance_budget": {
+            "proposals_seen": 1,
+            "actions_accepted": 1,
+            "topology_changes_applied": 8,
+            "caps": [
+              {
+                "attr": "max_proposals_per_window",
+                "limit": 2,
+                "used": 1,
+                "exhausted": false,
+                "policy_id": "budget-demo"
+              },
+              {
+                "attr": "max_actions_per_window",
+                "limit": 1,
+                "used": 1,
+                "exhausted": true,
+                "policy_id": "budget-demo"
+              },
+              {
+                "attr": "max_topology_changes",
+                "limit": 8,
+                "used": 8,
+                "exhausted": true,
+                "policy_id": "budget-demo"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "gid": "GF01",
+        "run_id": "GOV_CODEX_DEMO",
+        "tick": 6,
+        "window_id": "GF01_W1_ticks_1_8",
+        "C_t": 759821701,
+        "manifest_check": 786709051,
+        "nap_envelope_hash": "64526e411a5c5e1fceb6e9ed94d7000efba722287ff05c2fb369a9296c0600f3",
+        "umx_ledger_hash": "e5c5e93fe9c8997b59f9cc20dca2445037ccd711df40796bbff5ee59f897b409",
+        "loom_block_hash": "0824c7badddfc9757003135c2d722733015b2c2c2fa461f3370b97c35efd7924",
+        "apx_manifest_hash": "83b49cdea6cf886ea1aa0c766c7920e8ed592f68f6adb4798c02a472d49e731d",
+        "prev_entry_hash": "bda40cf13e6eed29ceae3489cc938010b68d4e1d3fc04ef6862398011a1d481a",
+        "codex_library_hash": null,
+        "timestamp_utc": null,
+        "meta": {
+          "governance_budget": {
+            "proposals_seen": 1,
+            "actions_accepted": 1,
+            "topology_changes_applied": 8,
+            "caps": [
+              {
+                "attr": "max_proposals_per_window",
+                "limit": 2,
+                "used": 1,
+                "exhausted": false,
+                "policy_id": "budget-demo"
+              },
+              {
+                "attr": "max_actions_per_window",
+                "limit": 1,
+                "used": 1,
+                "exhausted": true,
+                "policy_id": "budget-demo"
+              },
+              {
+                "attr": "max_topology_changes",
+                "limit": 8,
+                "used": 8,
+                "exhausted": true,
+                "policy_id": "budget-demo"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "gid": "GF01",
+        "run_id": "GOV_CODEX_DEMO",
+        "tick": 7,
+        "window_id": "GF01_W1_ticks_1_8",
+        "C_t": 916969047,
+        "manifest_check": 786709051,
+        "nap_envelope_hash": "dfde4df2d497902d6f9d1947025985c7bf47a4c97352644f6ba6d58f58d15ec3",
+        "umx_ledger_hash": "b974628aaa3bb5218cd2f03deedb8c493a85a42c9c7b433604baa80ac26e8733",
+        "loom_block_hash": "4d0d7071a5746aa482551cdeb72044eb300ba0b94bfa07c234fa23136350e05f",
+        "apx_manifest_hash": "83b49cdea6cf886ea1aa0c766c7920e8ed592f68f6adb4798c02a472d49e731d",
+        "prev_entry_hash": "5adb299d27187fd435d70d0cc9fb5217c8707985f0f55298da39fd3e2bc22918",
+        "codex_library_hash": null,
+        "timestamp_utc": null,
+        "meta": {
+          "governance_budget": {
+            "proposals_seen": 1,
+            "actions_accepted": 1,
+            "topology_changes_applied": 8,
+            "caps": [
+              {
+                "attr": "max_proposals_per_window",
+                "limit": 2,
+                "used": 1,
+                "exhausted": false,
+                "policy_id": "budget-demo"
+              },
+              {
+                "attr": "max_actions_per_window",
+                "limit": 1,
+                "used": 1,
+                "exhausted": true,
+                "policy_id": "budget-demo"
+              },
+              {
+                "attr": "max_topology_changes",
+                "limit": 8,
+                "used": 8,
+                "exhausted": true,
+                "policy_id": "budget-demo"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "gid": "GF01",
+        "run_id": "GOV_CODEX_DEMO",
+        "tick": 8,
+        "window_id": "GF01_W1_ticks_1_8",
+        "C_t": 588473909,
+        "manifest_check": 786709051,
+        "nap_envelope_hash": "8ab47b68372fe4a78c8f5f4e38311fe0d2ca4f1171071b1af6c5f15a26bc8385",
+        "umx_ledger_hash": "7b306b7429022460675c5b63f4bf981247d2bc0160c2104fc24925e27716aa1f",
+        "loom_block_hash": "b30811a68d044278296a7866896643f46466c2511ca92b7b583b89dcdac8dc3f",
+        "apx_manifest_hash": "83b49cdea6cf886ea1aa0c766c7920e8ed592f68f6adb4798c02a472d49e731d",
+        "prev_entry_hash": "8bbcb9e6b9fcb7b081bfe484cdd6aae717611031f3e3ad909aa462d3f8c9c209",
+        "codex_library_hash": null,
+        "timestamp_utc": null,
+        "meta": {
+          "governance_budget": {
+            "proposals_seen": 1,
+            "actions_accepted": 1,
+            "topology_changes_applied": 8,
+            "caps": [
+              {
+                "attr": "max_proposals_per_window",
+                "limit": 2,
+                "used": 1,
+                "exhausted": false,
+                "policy_id": "budget-demo"
+              },
+              {
+                "attr": "max_actions_per_window",
+                "limit": 1,
+                "used": 1,
+                "exhausted": true,
+                "policy_id": "budget-demo"
+              },
+              {
+                "attr": "max_topology_changes",
+                "limit": 8,
+                "used": 8,
+                "exhausted": true,
+                "policy_id": "budget-demo"
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "codex_motifs": [
+      {
+        "library_id": "GOV_CODEX_DEMO_LIB",
         "motif_id": "MOTIF_0001",
-        "proposal_id": "PROPOSAL_0001",
-        "status": "ACCEPTED",
-        "target_location": {
+        "profile": "CMP-0",
+        "source_gid": "GF01",
+        "source_window_id": "GF01_W1_ticks_1_8",
+        "pattern_descriptor": {
+          "type": "edge_flux_pattern_v1",
           "edge_ids": [
             1,
             2,
@@ -101,30 +2331,6 @@
             7,
             8
           ],
-          "profile": "CMP-0"
-        },
-        "target_window_id": "GF01_W1_ticks_1_8",
-        "violated_policies": []
-      }
-    ],
-    "codex_motifs": [
-      {
-        "created_at_tick": 1,
-        "last_updated_tick": 8,
-        "library_id": "GOV_CODEX_DEMO_LIB",
-        "mdl_stats": {
-          "L_self": 16,
-          "L_total": 24,
-          "L_usage": 8,
-          "delta_vs_baseline": -8
-        },
-        "meta": {
-          "runs": [
-            "GOV_CODEX_DEMO"
-          ]
-        },
-        "motif_id": "MOTIF_0001",
-        "pattern_descriptor": {
           "du_signature": [
             2,
             3,
@@ -135,16 +2341,6 @@
             0,
             0
           ],
-          "edge_ids": [
-            1,
-            2,
-            3,
-            4,
-            5,
-            6,
-            7,
-            8
-          ],
           "f_e_signature": [
             0,
             0,
@@ -154,46 +2350,35 @@
             0,
             0,
             0
-          ],
-          "type": "edge_flux_pattern_v1"
+          ]
         },
-        "profile": "CMP-0",
-        "source_gid": "GF01",
-        "source_window_id": "GF01_W1_ticks_1_8",
+        "mdl_stats": {
+          "L_self": 16,
+          "L_usage": 8,
+          "L_total": 24,
+          "delta_vs_baseline": -8
+        },
         "usage_stats": {
+          "usage_count": 8,
           "first_tick": 1,
-          "last_tick": 8,
-          "usage_count": 8
+          "last_tick": 8
+        },
+        "created_at_tick": 1,
+        "last_updated_tick": 8,
+        "meta": {
+          "runs": [
+            "GOV_CODEX_DEMO"
+          ]
         }
       }
     ],
     "codex_proposals": [
       {
-        "action": "PLACE",
-        "budget_effect": {},
-        "created_at_tick": 8,
-        "evaluated_at_tick": 8,
-        "expected_effect": {
-          "delta_L_total": -8,
-          "notes": "edge_flux_pattern_v1"
-        },
-        "gid": "GF01",
-        "governance_notes": {
-          "notes": []
-        },
-        "governance_scores": {
-          "topology_change_count": 8.0
-        },
-        "governance_status": "OK",
-        "library_id": "GOV_CODEX_DEMO_LIB",
-        "meta": {
-          "runs": [
-            "GOV_CODEX_DEMO"
-          ]
-        },
-        "motif_id": "MOTIF_0001",
         "proposal_id": "PROPOSAL_0001",
-        "status": "ACCEPTED",
+        "library_id": "GOV_CODEX_DEMO_LIB",
+        "motif_id": "MOTIF_0001",
+        "gid": "GF01",
+        "target_window_id": "GF01_W1_ticks_1_8",
         "target_location": {
           "edge_ids": [
             1,
@@ -207,2102 +2392,117 @@
           ],
           "profile": "CMP-0"
         },
+        "action": "PLACE",
+        "expected_effect": {
+          "delta_L_total": -8,
+          "notes": "edge_flux_pattern_v1"
+        },
+        "budget_effect": {},
+        "created_at_tick": 8,
+        "status": "ACCEPTED",
+        "governance_status": "OK",
+        "violated_policies": [],
+        "governance_scores": {
+          "topology_change_count": 8.0
+        },
+        "governance_notes": {
+          "notes": []
+        },
+        "evaluated_at_tick": 8,
+        "meta": {
+          "runs": [
+            "GOV_CODEX_DEMO"
+          ]
+        }
+      }
+    ],
+    "codex_actions": [
+      {
+        "proposal_id": "PROPOSAL_0001",
+        "library_id": "GOV_CODEX_DEMO_LIB",
+        "motif_id": "MOTIF_0001",
+        "gid": "GF01",
         "target_window_id": "GF01_W1_ticks_1_8",
-        "violated_policies": []
-      }
-    ],
-    "egress_envelopes": [
-      {
-        "gid": "GF01",
-        "layer": "EGRESS",
-        "meta": {},
-        "mode": "P",
-        "nid": "GF01",
-        "payload_ref": 560330170,
-        "prev_chain": 588473909,
-        "seq": 10,
-        "sig": "",
-        "slp_event_ids": [],
-        "tick": 8,
-        "v": 1
-      }
-    ],
-    "envelopes": [
-      {
-        "gid": "GF01",
-        "layer": "DATA",
-        "meta": {},
-        "mode": "P",
-        "nid": "GF01",
-        "payload_ref": 560330170,
-        "prev_chain": 1234567,
-        "seq": 1,
-        "sig": "",
-        "slp_event_ids": [],
-        "tick": 1,
-        "v": 1
-      },
-      {
-        "gid": "GF01",
-        "layer": "DATA",
-        "meta": {},
-        "mode": "P",
-        "nid": "GF01",
-        "payload_ref": 560330170,
-        "prev_chain": 20987847,
-        "seq": 2,
-        "sig": "",
-        "slp_event_ids": [],
-        "tick": 2,
-        "v": 1
-      },
-      {
-        "gid": "GF01",
-        "layer": "DATA",
-        "meta": {},
-        "mode": "P",
-        "nid": "GF01",
-        "payload_ref": 560330170,
-        "prev_chain": 356793608,
-        "seq": 3,
-        "sig": "",
-        "slp_event_ids": [],
-        "tick": 3,
-        "v": 1
-      },
-      {
-        "gid": "GF01",
-        "layer": "DATA",
-        "meta": {},
-        "mode": "P",
-        "nid": "GF01",
-        "payload_ref": 560330170,
-        "prev_chain": 65491504,
-        "seq": 4,
-        "sig": "",
-        "slp_event_ids": [],
-        "tick": 4,
-        "v": 1
-      },
-      {
-        "gid": "GF01",
-        "layer": "DATA",
-        "meta": {},
-        "mode": "P",
-        "nid": "GF01",
-        "payload_ref": 560330170,
-        "prev_chain": 113355772,
-        "seq": 5,
-        "sig": "",
-        "slp_event_ids": [],
-        "tick": 5,
-        "v": 1
-      },
-      {
-        "gid": "GF01",
-        "layer": "DATA",
-        "meta": {},
-        "mode": "P",
-        "nid": "GF01",
-        "payload_ref": 560330170,
-        "prev_chain": 927048329,
-        "seq": 6,
-        "sig": "",
-        "slp_event_ids": [],
-        "tick": 6,
-        "v": 1
-      },
-      {
-        "gid": "GF01",
-        "layer": "DATA",
-        "meta": {},
-        "mode": "P",
-        "nid": "GF01",
-        "payload_ref": 560330170,
-        "prev_chain": 759821701,
-        "seq": 7,
-        "sig": "",
-        "slp_event_ids": [],
-        "tick": 7,
-        "v": 1
-      },
-      {
-        "gid": "GF01",
-        "layer": "DATA",
-        "meta": {},
-        "mode": "P",
-        "nid": "GF01",
-        "payload_ref": 560330170,
-        "prev_chain": 916969047,
-        "seq": 8,
-        "sig": "",
-        "slp_event_ids": [],
-        "tick": 8,
-        "v": 1
+        "target_location": {
+          "edge_ids": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "profile": "CMP-0"
+        },
+        "action": "PLACE",
+        "expected_effect": {
+          "delta_L_total": -8,
+          "notes": "edge_flux_pattern_v1"
+        },
+        "budget_effect": {},
+        "created_at_tick": 8,
+        "status": "ACCEPTED",
+        "governance_status": "OK",
+        "violated_policies": [],
+        "governance_scores": {
+          "topology_change_count": 8.0
+        },
+        "governance_notes": {
+          "notes": []
+        },
+        "evaluated_at_tick": 8,
+        "meta": {
+          "runs": [
+            "GOV_CODEX_DEMO"
+          ]
+        }
       }
     ],
     "governance_budget_usage": {
+      "proposals_seen": 1,
       "actions_accepted": 1,
+      "topology_changes_applied": 8,
       "caps": [
         {
           "attr": "max_proposals_per_window",
-          "exhausted": false,
           "limit": 2,
-          "policy_id": "budget-demo",
-          "used": 1
+          "used": 1,
+          "exhausted": false,
+          "policy_id": "budget-demo"
         },
         {
           "attr": "max_actions_per_window",
-          "exhausted": true,
           "limit": 1,
-          "policy_id": "budget-demo",
-          "used": 1
+          "used": 1,
+          "exhausted": true,
+          "policy_id": "budget-demo"
         },
         {
           "attr": "max_topology_changes",
-          "exhausted": true,
           "limit": 8,
-          "policy_id": "budget-demo",
-          "used": 8
+          "used": 8,
+          "exhausted": true,
+          "policy_id": "budget-demo"
         }
-      ],
-      "proposals_seen": 1,
-      "topology_changes_applied": 8
+      ]
     },
-    "governance_envelopes": [
-      {
-        "gid": "GF01",
-        "layer": "GOV",
-        "meta": {
-          "codex_action_mode": "GOVERNED_APPLY",
-          "event": "POLICY_SET_LOADED",
-          "governance_mode": "ENFORCE",
-          "policy_ids": [
-            "budget-demo",
-            "topology-demo"
-          ],
-          "policy_set_hash": "1372f078185947f199b6d0a6463fae603b3b03953df9230a8f8741055ac61995"
-        },
-        "mode": "G",
-        "nid": "GF01",
-        "payload_ref": 0,
-        "prev_chain": 1234567,
-        "seq": 1,
-        "sig": "",
-        "slp_event_ids": [],
-        "tick": 1,
-        "v": 1
-      },
-      {
-        "gid": "GF01",
-        "layer": "GOV",
-        "meta": {
-          "actions_accepted": 1,
-          "caps": [
-            {
-              "attr": "max_proposals_per_window",
-              "exhausted": false,
-              "limit": 2,
-              "policy_id": "budget-demo",
-              "used": 1
-            },
-            {
-              "attr": "max_actions_per_window",
-              "exhausted": true,
-              "limit": 1,
-              "policy_id": "budget-demo",
-              "used": 1
-            },
-            {
-              "attr": "max_topology_changes",
-              "exhausted": true,
-              "limit": 8,
-              "policy_id": "budget-demo",
-              "used": 8
-            }
-          ],
-          "event": "GOVERNANCE_DECISION_SUMMARY",
-          "governance_mode": "ENFORCE",
-          "policy_set_hash": "1372f078185947f199b6d0a6463fae603b3b03953df9230a8f8741055ac61995",
-          "proposals_seen": 1,
-          "topology_changes_applied": 8,
-          "window_id": "GF01_W1_ticks_1_8"
-        },
-        "mode": "G",
-        "nid": "GF01",
-        "payload_ref": 0,
-        "prev_chain": 588473909,
-        "seq": 8,
-        "sig": "",
-        "slp_event_ids": [],
-        "tick": 8,
-        "v": 1
-      },
-      {
-        "gid": "GF01",
-        "layer": "GOV",
-        "meta": {
-          "event": "BUDGET_EXHAUSTION",
-          "exhausted_caps": [
-            {
-              "attr": "max_actions_per_window",
-              "exhausted": true,
-              "limit": 1,
-              "policy_id": "budget-demo",
-              "used": 1
-            },
-            {
-              "attr": "max_topology_changes",
-              "exhausted": true,
-              "limit": 8,
-              "policy_id": "budget-demo",
-              "used": 8
-            }
-          ],
-          "governance_mode": "ENFORCE",
-          "policy_set_hash": "1372f078185947f199b6d0a6463fae603b3b03953df9230a8f8741055ac61995",
-          "window_id": "GF01_W1_ticks_1_8"
-        },
-        "mode": "G",
-        "nid": "GF01",
-        "payload_ref": 0,
-        "prev_chain": 588473909,
-        "seq": 9,
-        "sig": "",
-        "slp_event_ids": [],
-        "tick": 8,
-        "v": 1
-      }
-    ],
-    "i_blocks": [
-      {
-        "C_t": 588473909,
-        "W": 8,
-        "post_u": [
-          3,
-          1,
-          0,
-          0,
-          0,
-          0
-        ],
-        "profile_version": "CMP-0",
-        "tick": 8,
-        "topology_snapshot": [
-          {
-            "SC": 32,
-            "c": 0,
-            "cap": 2147483647,
-            "e_id": 1,
-            "i": 1,
-            "j": 2,
-            "k": 1
-          },
-          {
-            "SC": 32,
-            "c": 0,
-            "cap": 2147483647,
-            "e_id": 2,
-            "i": 1,
-            "j": 4,
-            "k": 2
-          },
-          {
-            "SC": 32,
-            "c": 0,
-            "cap": 2147483647,
-            "e_id": 3,
-            "i": 1,
-            "j": 6,
-            "k": 1
-          },
-          {
-            "SC": 32,
-            "c": 0,
-            "cap": 2147483647,
-            "e_id": 4,
-            "i": 2,
-            "j": 3,
-            "k": 1
-          },
-          {
-            "SC": 32,
-            "c": 0,
-            "cap": 2147483647,
-            "e_id": 5,
-            "i": 2,
-            "j": 5,
-            "k": 2
-          },
-          {
-            "SC": 32,
-            "c": 0,
-            "cap": 2147483647,
-            "e_id": 6,
-            "i": 3,
-            "j": 4,
-            "k": 1
-          },
-          {
-            "SC": 32,
-            "c": 0,
-            "cap": 2147483647,
-            "e_id": 7,
-            "i": 4,
-            "j": 5,
-            "k": 1
-          },
-          {
-            "SC": 32,
-            "c": 0,
-            "cap": 2147483647,
-            "e_id": 8,
-            "i": 5,
-            "j": 6,
-            "k": 1
-          }
-        ]
-      }
-    ],
     "ingress_envelopes": [],
-    "ledgers": [
+    "egress_envelopes": [
       {
-        "edges": [
-          {
-            "cap": 2147483647,
-            "du": 2,
-            "e_id": 1,
-            "f_e": 0,
-            "i": 1,
-            "j": 2,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 3,
-            "e_id": 2,
-            "f_e": 0,
-            "i": 1,
-            "j": 4,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 3,
-            "e_id": 3,
-            "f_e": 0,
-            "i": 1,
-            "j": 6,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 1,
-            "e_id": 4,
-            "f_e": 0,
-            "i": 2,
-            "j": 3,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 1,
-            "e_id": 5,
-            "f_e": 0,
-            "i": 2,
-            "j": 5,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 0,
-            "e_id": 6,
-            "f_e": 0,
-            "i": 3,
-            "j": 4,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 0,
-            "e_id": 7,
-            "f_e": 0,
-            "i": 4,
-            "j": 5,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 0,
-            "e_id": 8,
-            "f_e": 0,
-            "i": 5,
-            "j": 6,
-            "raw": 0
-          }
-        ],
-        "post_u": [
-          3,
-          1,
-          0,
-          0,
-          0,
-          0
-        ],
-        "pre_u": [
-          3,
-          1,
-          0,
-          0,
-          0,
-          0
-        ],
-        "sum_post_u": 4,
-        "sum_pre_u": 4,
-        "tick": 1,
-        "z_check": 4
-      },
-      {
-        "edges": [
-          {
-            "cap": 2147483647,
-            "du": 2,
-            "e_id": 1,
-            "f_e": 0,
-            "i": 1,
-            "j": 2,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 3,
-            "e_id": 2,
-            "f_e": 0,
-            "i": 1,
-            "j": 4,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 3,
-            "e_id": 3,
-            "f_e": 0,
-            "i": 1,
-            "j": 6,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 1,
-            "e_id": 4,
-            "f_e": 0,
-            "i": 2,
-            "j": 3,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 1,
-            "e_id": 5,
-            "f_e": 0,
-            "i": 2,
-            "j": 5,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 0,
-            "e_id": 6,
-            "f_e": 0,
-            "i": 3,
-            "j": 4,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 0,
-            "e_id": 7,
-            "f_e": 0,
-            "i": 4,
-            "j": 5,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 0,
-            "e_id": 8,
-            "f_e": 0,
-            "i": 5,
-            "j": 6,
-            "raw": 0
-          }
-        ],
-        "post_u": [
-          3,
-          1,
-          0,
-          0,
-          0,
-          0
-        ],
-        "pre_u": [
-          3,
-          1,
-          0,
-          0,
-          0,
-          0
-        ],
-        "sum_post_u": 4,
-        "sum_pre_u": 4,
-        "tick": 2,
-        "z_check": 4
-      },
-      {
-        "edges": [
-          {
-            "cap": 2147483647,
-            "du": 2,
-            "e_id": 1,
-            "f_e": 0,
-            "i": 1,
-            "j": 2,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 3,
-            "e_id": 2,
-            "f_e": 0,
-            "i": 1,
-            "j": 4,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 3,
-            "e_id": 3,
-            "f_e": 0,
-            "i": 1,
-            "j": 6,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 1,
-            "e_id": 4,
-            "f_e": 0,
-            "i": 2,
-            "j": 3,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 1,
-            "e_id": 5,
-            "f_e": 0,
-            "i": 2,
-            "j": 5,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 0,
-            "e_id": 6,
-            "f_e": 0,
-            "i": 3,
-            "j": 4,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 0,
-            "e_id": 7,
-            "f_e": 0,
-            "i": 4,
-            "j": 5,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 0,
-            "e_id": 8,
-            "f_e": 0,
-            "i": 5,
-            "j": 6,
-            "raw": 0
-          }
-        ],
-        "post_u": [
-          3,
-          1,
-          0,
-          0,
-          0,
-          0
-        ],
-        "pre_u": [
-          3,
-          1,
-          0,
-          0,
-          0,
-          0
-        ],
-        "sum_post_u": 4,
-        "sum_pre_u": 4,
-        "tick": 3,
-        "z_check": 4
-      },
-      {
-        "edges": [
-          {
-            "cap": 2147483647,
-            "du": 2,
-            "e_id": 1,
-            "f_e": 0,
-            "i": 1,
-            "j": 2,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 3,
-            "e_id": 2,
-            "f_e": 0,
-            "i": 1,
-            "j": 4,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 3,
-            "e_id": 3,
-            "f_e": 0,
-            "i": 1,
-            "j": 6,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 1,
-            "e_id": 4,
-            "f_e": 0,
-            "i": 2,
-            "j": 3,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 1,
-            "e_id": 5,
-            "f_e": 0,
-            "i": 2,
-            "j": 5,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 0,
-            "e_id": 6,
-            "f_e": 0,
-            "i": 3,
-            "j": 4,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 0,
-            "e_id": 7,
-            "f_e": 0,
-            "i": 4,
-            "j": 5,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 0,
-            "e_id": 8,
-            "f_e": 0,
-            "i": 5,
-            "j": 6,
-            "raw": 0
-          }
-        ],
-        "post_u": [
-          3,
-          1,
-          0,
-          0,
-          0,
-          0
-        ],
-        "pre_u": [
-          3,
-          1,
-          0,
-          0,
-          0,
-          0
-        ],
-        "sum_post_u": 4,
-        "sum_pre_u": 4,
-        "tick": 4,
-        "z_check": 4
-      },
-      {
-        "edges": [
-          {
-            "cap": 2147483647,
-            "du": 2,
-            "e_id": 1,
-            "f_e": 0,
-            "i": 1,
-            "j": 2,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 3,
-            "e_id": 2,
-            "f_e": 0,
-            "i": 1,
-            "j": 4,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 3,
-            "e_id": 3,
-            "f_e": 0,
-            "i": 1,
-            "j": 6,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 1,
-            "e_id": 4,
-            "f_e": 0,
-            "i": 2,
-            "j": 3,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 1,
-            "e_id": 5,
-            "f_e": 0,
-            "i": 2,
-            "j": 5,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 0,
-            "e_id": 6,
-            "f_e": 0,
-            "i": 3,
-            "j": 4,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 0,
-            "e_id": 7,
-            "f_e": 0,
-            "i": 4,
-            "j": 5,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 0,
-            "e_id": 8,
-            "f_e": 0,
-            "i": 5,
-            "j": 6,
-            "raw": 0
-          }
-        ],
-        "post_u": [
-          3,
-          1,
-          0,
-          0,
-          0,
-          0
-        ],
-        "pre_u": [
-          3,
-          1,
-          0,
-          0,
-          0,
-          0
-        ],
-        "sum_post_u": 4,
-        "sum_pre_u": 4,
-        "tick": 5,
-        "z_check": 4
-      },
-      {
-        "edges": [
-          {
-            "cap": 2147483647,
-            "du": 2,
-            "e_id": 1,
-            "f_e": 0,
-            "i": 1,
-            "j": 2,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 3,
-            "e_id": 2,
-            "f_e": 0,
-            "i": 1,
-            "j": 4,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 3,
-            "e_id": 3,
-            "f_e": 0,
-            "i": 1,
-            "j": 6,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 1,
-            "e_id": 4,
-            "f_e": 0,
-            "i": 2,
-            "j": 3,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 1,
-            "e_id": 5,
-            "f_e": 0,
-            "i": 2,
-            "j": 5,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 0,
-            "e_id": 6,
-            "f_e": 0,
-            "i": 3,
-            "j": 4,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 0,
-            "e_id": 7,
-            "f_e": 0,
-            "i": 4,
-            "j": 5,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 0,
-            "e_id": 8,
-            "f_e": 0,
-            "i": 5,
-            "j": 6,
-            "raw": 0
-          }
-        ],
-        "post_u": [
-          3,
-          1,
-          0,
-          0,
-          0,
-          0
-        ],
-        "pre_u": [
-          3,
-          1,
-          0,
-          0,
-          0,
-          0
-        ],
-        "sum_post_u": 4,
-        "sum_pre_u": 4,
-        "tick": 6,
-        "z_check": 4
-      },
-      {
-        "edges": [
-          {
-            "cap": 2147483647,
-            "du": 2,
-            "e_id": 1,
-            "f_e": 0,
-            "i": 1,
-            "j": 2,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 3,
-            "e_id": 2,
-            "f_e": 0,
-            "i": 1,
-            "j": 4,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 3,
-            "e_id": 3,
-            "f_e": 0,
-            "i": 1,
-            "j": 6,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 1,
-            "e_id": 4,
-            "f_e": 0,
-            "i": 2,
-            "j": 3,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 1,
-            "e_id": 5,
-            "f_e": 0,
-            "i": 2,
-            "j": 5,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 0,
-            "e_id": 6,
-            "f_e": 0,
-            "i": 3,
-            "j": 4,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 0,
-            "e_id": 7,
-            "f_e": 0,
-            "i": 4,
-            "j": 5,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 0,
-            "e_id": 8,
-            "f_e": 0,
-            "i": 5,
-            "j": 6,
-            "raw": 0
-          }
-        ],
-        "post_u": [
-          3,
-          1,
-          0,
-          0,
-          0,
-          0
-        ],
-        "pre_u": [
-          3,
-          1,
-          0,
-          0,
-          0,
-          0
-        ],
-        "sum_post_u": 4,
-        "sum_pre_u": 4,
-        "tick": 7,
-        "z_check": 4
-      },
-      {
-        "edges": [
-          {
-            "cap": 2147483647,
-            "du": 2,
-            "e_id": 1,
-            "f_e": 0,
-            "i": 1,
-            "j": 2,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 3,
-            "e_id": 2,
-            "f_e": 0,
-            "i": 1,
-            "j": 4,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 3,
-            "e_id": 3,
-            "f_e": 0,
-            "i": 1,
-            "j": 6,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 1,
-            "e_id": 4,
-            "f_e": 0,
-            "i": 2,
-            "j": 3,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 1,
-            "e_id": 5,
-            "f_e": 0,
-            "i": 2,
-            "j": 5,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 0,
-            "e_id": 6,
-            "f_e": 0,
-            "i": 3,
-            "j": 4,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 0,
-            "e_id": 7,
-            "f_e": 0,
-            "i": 4,
-            "j": 5,
-            "raw": 0
-          },
-          {
-            "cap": 2147483647,
-            "du": 0,
-            "e_id": 8,
-            "f_e": 0,
-            "i": 5,
-            "j": 6,
-            "raw": 0
-          }
-        ],
-        "post_u": [
-          3,
-          1,
-          0,
-          0,
-          0,
-          0
-        ],
-        "pre_u": [
-          3,
-          1,
-          0,
-          0,
-          0,
-          0
-        ],
-        "sum_post_u": 4,
-        "sum_pre_u": 4,
+        "v": 1,
         "tick": 8,
-        "z_check": 4
-      }
-    ],
-    "manifests": {
-      "GF01_APX_v0_full_window": {
-        "apx_name": "GF01_APX_v0_full_window",
-        "manifest_check": 560330170,
-        "profile": "CMP-0",
-        "streams": [
-          {
-            "L_model": 0,
-            "L_residual": 7,
-            "L_total": 7,
-            "description": "S1_post_u_deltas",
-            "params": 0,
-            "scheme": "R",
-            "stream_id": "S1_post_u_deltas"
-          },
-          {
-            "L_model": 0,
-            "L_residual": 8,
-            "L_total": 8,
-            "description": "S2_fluxes",
-            "params": 0,
-            "scheme": "R",
-            "stream_id": "S2_fluxes"
-          }
-        ]
-      }
-    },
-    "p_blocks": [
-      {
-        "C_t": 20987847,
-        "edge_flux_summary": [
-          {
-            "e_id": 1,
-            "f_e": 0
-          },
-          {
-            "e_id": 2,
-            "f_e": 0
-          },
-          {
-            "e_id": 3,
-            "f_e": 0
-          },
-          {
-            "e_id": 4,
-            "f_e": 0
-          },
-          {
-            "e_id": 5,
-            "f_e": 0
-          },
-          {
-            "e_id": 6,
-            "f_e": 0
-          },
-          {
-            "e_id": 7,
-            "f_e": 0
-          },
-          {
-            "e_id": 8,
-            "f_e": 0
-          }
-        ],
-        "s_t": 9,
-        "seq": 1,
-        "tick": 1
-      },
-      {
-        "C_t": 356793608,
-        "edge_flux_summary": [
-          {
-            "e_id": 1,
-            "f_e": 0
-          },
-          {
-            "e_id": 2,
-            "f_e": 0
-          },
-          {
-            "e_id": 3,
-            "f_e": 0
-          },
-          {
-            "e_id": 4,
-            "f_e": 0
-          },
-          {
-            "e_id": 5,
-            "f_e": 0
-          },
-          {
-            "e_id": 6,
-            "f_e": 0
-          },
-          {
-            "e_id": 7,
-            "f_e": 0
-          },
-          {
-            "e_id": 8,
-            "f_e": 0
-          }
-        ],
-        "s_t": 9,
-        "seq": 2,
-        "tick": 2
-      },
-      {
-        "C_t": 65491504,
-        "edge_flux_summary": [
-          {
-            "e_id": 1,
-            "f_e": 0
-          },
-          {
-            "e_id": 2,
-            "f_e": 0
-          },
-          {
-            "e_id": 3,
-            "f_e": 0
-          },
-          {
-            "e_id": 4,
-            "f_e": 0
-          },
-          {
-            "e_id": 5,
-            "f_e": 0
-          },
-          {
-            "e_id": 6,
-            "f_e": 0
-          },
-          {
-            "e_id": 7,
-            "f_e": 0
-          },
-          {
-            "e_id": 8,
-            "f_e": 0
-          }
-        ],
-        "s_t": 9,
-        "seq": 3,
-        "tick": 3
-      },
-      {
-        "C_t": 113355772,
-        "edge_flux_summary": [
-          {
-            "e_id": 1,
-            "f_e": 0
-          },
-          {
-            "e_id": 2,
-            "f_e": 0
-          },
-          {
-            "e_id": 3,
-            "f_e": 0
-          },
-          {
-            "e_id": 4,
-            "f_e": 0
-          },
-          {
-            "e_id": 5,
-            "f_e": 0
-          },
-          {
-            "e_id": 6,
-            "f_e": 0
-          },
-          {
-            "e_id": 7,
-            "f_e": 0
-          },
-          {
-            "e_id": 8,
-            "f_e": 0
-          }
-        ],
-        "s_t": 9,
-        "seq": 4,
-        "tick": 4
-      },
-      {
-        "C_t": 927048329,
-        "edge_flux_summary": [
-          {
-            "e_id": 1,
-            "f_e": 0
-          },
-          {
-            "e_id": 2,
-            "f_e": 0
-          },
-          {
-            "e_id": 3,
-            "f_e": 0
-          },
-          {
-            "e_id": 4,
-            "f_e": 0
-          },
-          {
-            "e_id": 5,
-            "f_e": 0
-          },
-          {
-            "e_id": 6,
-            "f_e": 0
-          },
-          {
-            "e_id": 7,
-            "f_e": 0
-          },
-          {
-            "e_id": 8,
-            "f_e": 0
-          }
-        ],
-        "s_t": 9,
-        "seq": 5,
-        "tick": 5
-      },
-      {
-        "C_t": 759821701,
-        "edge_flux_summary": [
-          {
-            "e_id": 1,
-            "f_e": 0
-          },
-          {
-            "e_id": 2,
-            "f_e": 0
-          },
-          {
-            "e_id": 3,
-            "f_e": 0
-          },
-          {
-            "e_id": 4,
-            "f_e": 0
-          },
-          {
-            "e_id": 5,
-            "f_e": 0
-          },
-          {
-            "e_id": 6,
-            "f_e": 0
-          },
-          {
-            "e_id": 7,
-            "f_e": 0
-          },
-          {
-            "e_id": 8,
-            "f_e": 0
-          }
-        ],
-        "s_t": 9,
-        "seq": 6,
-        "tick": 6
-      },
-      {
-        "C_t": 916969047,
-        "edge_flux_summary": [
-          {
-            "e_id": 1,
-            "f_e": 0
-          },
-          {
-            "e_id": 2,
-            "f_e": 0
-          },
-          {
-            "e_id": 3,
-            "f_e": 0
-          },
-          {
-            "e_id": 4,
-            "f_e": 0
-          },
-          {
-            "e_id": 5,
-            "f_e": 0
-          },
-          {
-            "e_id": 6,
-            "f_e": 0
-          },
-          {
-            "e_id": 7,
-            "f_e": 0
-          },
-          {
-            "e_id": 8,
-            "f_e": 0
-          }
-        ],
-        "s_t": 9,
-        "seq": 7,
-        "tick": 7
-      },
-      {
-        "C_t": 588473909,
-        "edge_flux_summary": [
-          {
-            "e_id": 1,
-            "f_e": 0
-          },
-          {
-            "e_id": 2,
-            "f_e": 0
-          },
-          {
-            "e_id": 3,
-            "f_e": 0
-          },
-          {
-            "e_id": 4,
-            "f_e": 0
-          },
-          {
-            "e_id": 5,
-            "f_e": 0
-          },
-          {
-            "e_id": 6,
-            "f_e": 0
-          },
-          {
-            "e_id": 7,
-            "f_e": 0
-          },
-          {
-            "e_id": 8,
-            "f_e": 0
-          }
-        ],
-        "s_t": 9,
-        "seq": 8,
-        "tick": 8
-      }
-    ],
-    "run_id": "GOV_CODEX_DEMO",
-    "scenes": [
-      {
-        "C_prev": 1234567,
-        "C_t": 20987847,
         "gid": "GF01",
-        "ledger_ref": "umx_ledger_1",
-        "manifest_check": 560330170,
-        "meta": {
-          "manifest_ref": "GF01_APX_v0_full_window",
-          "p_block_ref": "loom_p_block_1"
-        },
-        "nap_envelope_ref": null,
         "nid": "GF01",
-        "post_u": [
-          3,
-          1,
-          0,
-          0,
-          0,
-          0
-        ],
-        "pre_u": [
-          3,
-          1,
-          0,
-          0,
-          0,
-          0
-        ],
-        "run_id": "GOV_CODEX_DEMO",
-        "tick": 1,
-        "window_id": "GF01_W1_ticks_1_8"
-      },
-      {
-        "C_prev": 20987847,
-        "C_t": 356793608,
-        "gid": "GF01",
-        "ledger_ref": "umx_ledger_2",
-        "manifest_check": 560330170,
-        "meta": {
-          "manifest_ref": "GF01_APX_v0_full_window",
-          "p_block_ref": "loom_p_block_2"
-        },
-        "nap_envelope_ref": null,
-        "nid": "GF01",
-        "post_u": [
-          3,
-          1,
-          0,
-          0,
-          0,
-          0
-        ],
-        "pre_u": [
-          3,
-          1,
-          0,
-          0,
-          0,
-          0
-        ],
-        "run_id": "GOV_CODEX_DEMO",
-        "tick": 2,
-        "window_id": "GF01_W1_ticks_1_8"
-      },
-      {
-        "C_prev": 356793608,
-        "C_t": 65491504,
-        "gid": "GF01",
-        "ledger_ref": "umx_ledger_3",
-        "manifest_check": 560330170,
-        "meta": {
-          "manifest_ref": "GF01_APX_v0_full_window",
-          "p_block_ref": "loom_p_block_3"
-        },
-        "nap_envelope_ref": null,
-        "nid": "GF01",
-        "post_u": [
-          3,
-          1,
-          0,
-          0,
-          0,
-          0
-        ],
-        "pre_u": [
-          3,
-          1,
-          0,
-          0,
-          0,
-          0
-        ],
-        "run_id": "GOV_CODEX_DEMO",
-        "tick": 3,
-        "window_id": "GF01_W1_ticks_1_8"
-      },
-      {
-        "C_prev": 65491504,
-        "C_t": 113355772,
-        "gid": "GF01",
-        "ledger_ref": "umx_ledger_4",
-        "manifest_check": 560330170,
-        "meta": {
-          "manifest_ref": "GF01_APX_v0_full_window",
-          "p_block_ref": "loom_p_block_4"
-        },
-        "nap_envelope_ref": null,
-        "nid": "GF01",
-        "post_u": [
-          3,
-          1,
-          0,
-          0,
-          0,
-          0
-        ],
-        "pre_u": [
-          3,
-          1,
-          0,
-          0,
-          0,
-          0
-        ],
-        "run_id": "GOV_CODEX_DEMO",
-        "tick": 4,
-        "window_id": "GF01_W1_ticks_1_8"
-      },
-      {
-        "C_prev": 113355772,
-        "C_t": 927048329,
-        "gid": "GF01",
-        "ledger_ref": "umx_ledger_5",
-        "manifest_check": 560330170,
-        "meta": {
-          "manifest_ref": "GF01_APX_v0_full_window",
-          "p_block_ref": "loom_p_block_5"
-        },
-        "nap_envelope_ref": null,
-        "nid": "GF01",
-        "post_u": [
-          3,
-          1,
-          0,
-          0,
-          0,
-          0
-        ],
-        "pre_u": [
-          3,
-          1,
-          0,
-          0,
-          0,
-          0
-        ],
-        "run_id": "GOV_CODEX_DEMO",
-        "tick": 5,
-        "window_id": "GF01_W1_ticks_1_8"
-      },
-      {
-        "C_prev": 927048329,
-        "C_t": 759821701,
-        "gid": "GF01",
-        "ledger_ref": "umx_ledger_6",
-        "manifest_check": 560330170,
-        "meta": {
-          "manifest_ref": "GF01_APX_v0_full_window",
-          "p_block_ref": "loom_p_block_6"
-        },
-        "nap_envelope_ref": null,
-        "nid": "GF01",
-        "post_u": [
-          3,
-          1,
-          0,
-          0,
-          0,
-          0
-        ],
-        "pre_u": [
-          3,
-          1,
-          0,
-          0,
-          0,
-          0
-        ],
-        "run_id": "GOV_CODEX_DEMO",
-        "tick": 6,
-        "window_id": "GF01_W1_ticks_1_8"
-      },
-      {
-        "C_prev": 759821701,
-        "C_t": 916969047,
-        "gid": "GF01",
-        "ledger_ref": "umx_ledger_7",
-        "manifest_check": 560330170,
-        "meta": {
-          "manifest_ref": "GF01_APX_v0_full_window",
-          "p_block_ref": "loom_p_block_7"
-        },
-        "nap_envelope_ref": null,
-        "nid": "GF01",
-        "post_u": [
-          3,
-          1,
-          0,
-          0,
-          0,
-          0
-        ],
-        "pre_u": [
-          3,
-          1,
-          0,
-          0,
-          0,
-          0
-        ],
-        "run_id": "GOV_CODEX_DEMO",
-        "tick": 7,
-        "window_id": "GF01_W1_ticks_1_8"
-      },
-      {
-        "C_prev": 916969047,
-        "C_t": 588473909,
-        "gid": "GF01",
-        "ledger_ref": "umx_ledger_8",
-        "manifest_check": 560330170,
-        "meta": {
-          "manifest_ref": "GF01_APX_v0_full_window",
-          "p_block_ref": "loom_p_block_8"
-        },
-        "nap_envelope_ref": null,
-        "nid": "GF01",
-        "post_u": [
-          3,
-          1,
-          0,
-          0,
-          0,
-          0
-        ],
-        "pre_u": [
-          3,
-          1,
-          0,
-          0,
-          0,
-          0
-        ],
-        "run_id": "GOV_CODEX_DEMO",
-        "tick": 8,
-        "window_id": "GF01_W1_ticks_1_8"
-      }
-    ],
-    "u_ledger_entries": [
-      {
-        "C_t": 20987847,
-        "apx_manifest_hash": "a23318615cd76c9bcfa1d357828aca3acf6263627083b7479e1a20b8e3ae7bc7",
-        "codex_library_hash": null,
-        "gid": "GF01",
-        "loom_block_hash": "6db1f1a4b4a5b1159bddb6488bf738cdb89aa515eb2252bc7a3a863fd65a15bb",
-        "manifest_check": 560330170,
-        "meta": {
-          "governance_budget": {
-            "actions_accepted": 1,
-            "caps": [
-              {
-                "attr": "max_proposals_per_window",
-                "exhausted": false,
-                "limit": 2,
-                "policy_id": "budget-demo",
-                "used": 1
-              },
-              {
-                "attr": "max_actions_per_window",
-                "exhausted": true,
-                "limit": 1,
-                "policy_id": "budget-demo",
-                "used": 1
-              },
-              {
-                "attr": "max_topology_changes",
-                "exhausted": true,
-                "limit": 8,
-                "policy_id": "budget-demo",
-                "used": 8
-              }
-            ],
-            "proposals_seen": 1,
-            "topology_changes_applied": 8
-          }
-        },
-        "nap_envelope_hash": "6cffcc81be7e96f9e5ee8f669ae5a243509366051afd86f958a5e573d31ca881",
-        "prev_entry_hash": null,
-        "run_id": "GOV_CODEX_DEMO",
-        "tick": 1,
-        "timestamp_utc": null,
-        "umx_ledger_hash": "2e3d4d6579469e15d80c50e1c7091bfca3b159c51235ef63fc989929747c3272",
-        "window_id": "GF01_W1_ticks_1_8"
-      },
-      {
-        "C_t": 356793608,
-        "apx_manifest_hash": "a23318615cd76c9bcfa1d357828aca3acf6263627083b7479e1a20b8e3ae7bc7",
-        "codex_library_hash": null,
-        "gid": "GF01",
-        "loom_block_hash": "131712a31e5366f8088b55c65fb7a4a9d4579b43b93dab6c84d3ea3541a6aade",
-        "manifest_check": 560330170,
-        "meta": {
-          "governance_budget": {
-            "actions_accepted": 1,
-            "caps": [
-              {
-                "attr": "max_proposals_per_window",
-                "exhausted": false,
-                "limit": 2,
-                "policy_id": "budget-demo",
-                "used": 1
-              },
-              {
-                "attr": "max_actions_per_window",
-                "exhausted": true,
-                "limit": 1,
-                "policy_id": "budget-demo",
-                "used": 1
-              },
-              {
-                "attr": "max_topology_changes",
-                "exhausted": true,
-                "limit": 8,
-                "policy_id": "budget-demo",
-                "used": 8
-              }
-            ],
-            "proposals_seen": 1,
-            "topology_changes_applied": 8
-          }
-        },
-        "nap_envelope_hash": "a2e957957a0a1b5dba8d5930574319aa597c0a5f9fa8d74320966f4167fea1ec",
-        "prev_entry_hash": "14bb26fb9d5db52bf61d8b189633dc2095dece307c3001583a257b51107bc277",
-        "run_id": "GOV_CODEX_DEMO",
-        "tick": 2,
-        "timestamp_utc": null,
-        "umx_ledger_hash": "d58c3cd0c0b4e19f1a916915947755337831079dbe818e4638fb0fec503ce36f",
-        "window_id": "GF01_W1_ticks_1_8"
-      },
-      {
-        "C_t": 65491504,
-        "apx_manifest_hash": "a23318615cd76c9bcfa1d357828aca3acf6263627083b7479e1a20b8e3ae7bc7",
-        "codex_library_hash": null,
-        "gid": "GF01",
-        "loom_block_hash": "8cfc0fc004ca4b7f3029aeadd3ae0cb5fcaec4d3c4514131c97fef24ba8d2aee",
-        "manifest_check": 560330170,
-        "meta": {
-          "governance_budget": {
-            "actions_accepted": 1,
-            "caps": [
-              {
-                "attr": "max_proposals_per_window",
-                "exhausted": false,
-                "limit": 2,
-                "policy_id": "budget-demo",
-                "used": 1
-              },
-              {
-                "attr": "max_actions_per_window",
-                "exhausted": true,
-                "limit": 1,
-                "policy_id": "budget-demo",
-                "used": 1
-              },
-              {
-                "attr": "max_topology_changes",
-                "exhausted": true,
-                "limit": 8,
-                "policy_id": "budget-demo",
-                "used": 8
-              }
-            ],
-            "proposals_seen": 1,
-            "topology_changes_applied": 8
-          }
-        },
-        "nap_envelope_hash": "3a0b422871d5a5945216e58368a958510c6763257d1249fefe77a71beafee6ec",
-        "prev_entry_hash": "66f6009044e2831ad13503fca19a7cfd02758f13e4adf08914c8b569920fd936",
-        "run_id": "GOV_CODEX_DEMO",
-        "tick": 3,
-        "timestamp_utc": null,
-        "umx_ledger_hash": "96c5ce653e64fb7bc757bada905e0b80959f4c0c951f892263c30dff2e0a96e4",
-        "window_id": "GF01_W1_ticks_1_8"
-      },
-      {
-        "C_t": 113355772,
-        "apx_manifest_hash": "a23318615cd76c9bcfa1d357828aca3acf6263627083b7479e1a20b8e3ae7bc7",
-        "codex_library_hash": null,
-        "gid": "GF01",
-        "loom_block_hash": "8d24dcf4565f5bc22b2d151eea2692364b071f3f083bcdb81731959fb765b054",
-        "manifest_check": 560330170,
-        "meta": {
-          "governance_budget": {
-            "actions_accepted": 1,
-            "caps": [
-              {
-                "attr": "max_proposals_per_window",
-                "exhausted": false,
-                "limit": 2,
-                "policy_id": "budget-demo",
-                "used": 1
-              },
-              {
-                "attr": "max_actions_per_window",
-                "exhausted": true,
-                "limit": 1,
-                "policy_id": "budget-demo",
-                "used": 1
-              },
-              {
-                "attr": "max_topology_changes",
-                "exhausted": true,
-                "limit": 8,
-                "policy_id": "budget-demo",
-                "used": 8
-              }
-            ],
-            "proposals_seen": 1,
-            "topology_changes_applied": 8
-          }
-        },
-        "nap_envelope_hash": "3e274a989837584fd49e8016e9c770848005e28078a409c627723da4c566fe1e",
-        "prev_entry_hash": "405cc13a6084b9d5f3e5ef95df6ab547520bc14a913564b167253809cb98be33",
-        "run_id": "GOV_CODEX_DEMO",
-        "tick": 4,
-        "timestamp_utc": null,
-        "umx_ledger_hash": "f7ecbd2bc04e49376799a536338973e9a033c5410d9b4ee121fcb4245063c3b8",
-        "window_id": "GF01_W1_ticks_1_8"
-      },
-      {
-        "C_t": 927048329,
-        "apx_manifest_hash": "a23318615cd76c9bcfa1d357828aca3acf6263627083b7479e1a20b8e3ae7bc7",
-        "codex_library_hash": null,
-        "gid": "GF01",
-        "loom_block_hash": "22eff6db0f2895fb230bedc2ab718182db54475cd5312c0a2d3de3662fb19645",
-        "manifest_check": 560330170,
-        "meta": {
-          "governance_budget": {
-            "actions_accepted": 1,
-            "caps": [
-              {
-                "attr": "max_proposals_per_window",
-                "exhausted": false,
-                "limit": 2,
-                "policy_id": "budget-demo",
-                "used": 1
-              },
-              {
-                "attr": "max_actions_per_window",
-                "exhausted": true,
-                "limit": 1,
-                "policy_id": "budget-demo",
-                "used": 1
-              },
-              {
-                "attr": "max_topology_changes",
-                "exhausted": true,
-                "limit": 8,
-                "policy_id": "budget-demo",
-                "used": 8
-              }
-            ],
-            "proposals_seen": 1,
-            "topology_changes_applied": 8
-          }
-        },
-        "nap_envelope_hash": "d141d21f0cc3ab1e3cbdd0ca5358219c8da4179bc74265d5bcf1254f1b68f0a4",
-        "prev_entry_hash": "05d3ca0aec2b62aa047f208c5ad8c69f34636b045deefd4f495ac0cfe2859b2f",
-        "run_id": "GOV_CODEX_DEMO",
-        "tick": 5,
-        "timestamp_utc": null,
-        "umx_ledger_hash": "703c442ce6379e551eee23078ed38eda31911d13a17bcf13380a7c86be3b2e62",
-        "window_id": "GF01_W1_ticks_1_8"
-      },
-      {
-        "C_t": 759821701,
-        "apx_manifest_hash": "a23318615cd76c9bcfa1d357828aca3acf6263627083b7479e1a20b8e3ae7bc7",
-        "codex_library_hash": null,
-        "gid": "GF01",
-        "loom_block_hash": "0824c7badddfc9757003135c2d722733015b2c2c2fa461f3370b97c35efd7924",
-        "manifest_check": 560330170,
-        "meta": {
-          "governance_budget": {
-            "actions_accepted": 1,
-            "caps": [
-              {
-                "attr": "max_proposals_per_window",
-                "exhausted": false,
-                "limit": 2,
-                "policy_id": "budget-demo",
-                "used": 1
-              },
-              {
-                "attr": "max_actions_per_window",
-                "exhausted": true,
-                "limit": 1,
-                "policy_id": "budget-demo",
-                "used": 1
-              },
-              {
-                "attr": "max_topology_changes",
-                "exhausted": true,
-                "limit": 8,
-                "policy_id": "budget-demo",
-                "used": 8
-              }
-            ],
-            "proposals_seen": 1,
-            "topology_changes_applied": 8
-          }
-        },
-        "nap_envelope_hash": "4cd1510e7178c887d08a5441f99a0238f79a29c328bf44b6e6b58e61e38d81fa",
-        "prev_entry_hash": "17f8b3f2f7d1388f1948f0c81ff644529af914a32faa4775fcb4288abe398234",
-        "run_id": "GOV_CODEX_DEMO",
-        "tick": 6,
-        "timestamp_utc": null,
-        "umx_ledger_hash": "616b7462f21bb272260b460c3aa5cf064bbced8f7b7f44ba6e619885ea093136",
-        "window_id": "GF01_W1_ticks_1_8"
-      },
-      {
-        "C_t": 916969047,
-        "apx_manifest_hash": "a23318615cd76c9bcfa1d357828aca3acf6263627083b7479e1a20b8e3ae7bc7",
-        "codex_library_hash": null,
-        "gid": "GF01",
-        "loom_block_hash": "4d0d7071a5746aa482551cdeb72044eb300ba0b94bfa07c234fa23136350e05f",
-        "manifest_check": 560330170,
-        "meta": {
-          "governance_budget": {
-            "actions_accepted": 1,
-            "caps": [
-              {
-                "attr": "max_proposals_per_window",
-                "exhausted": false,
-                "limit": 2,
-                "policy_id": "budget-demo",
-                "used": 1
-              },
-              {
-                "attr": "max_actions_per_window",
-                "exhausted": true,
-                "limit": 1,
-                "policy_id": "budget-demo",
-                "used": 1
-              },
-              {
-                "attr": "max_topology_changes",
-                "exhausted": true,
-                "limit": 8,
-                "policy_id": "budget-demo",
-                "used": 8
-              }
-            ],
-            "proposals_seen": 1,
-            "topology_changes_applied": 8
-          }
-        },
-        "nap_envelope_hash": "5161a0300bdf1d595e582ed7ca3dd0f420ce3d36f4311efb92d22f9863dc3a87",
-        "prev_entry_hash": "ef3212b651e7891274f2a681a72ec67dc00a5a85ee3c6bfae5a83d8eae6569a6",
-        "run_id": "GOV_CODEX_DEMO",
-        "tick": 7,
-        "timestamp_utc": null,
-        "umx_ledger_hash": "d5e7f68b9e17965f190fd7a70b87380c804578adec8c71e8b2c726ef1f3c31f0",
-        "window_id": "GF01_W1_ticks_1_8"
-      },
-      {
-        "C_t": 588473909,
-        "apx_manifest_hash": "a23318615cd76c9bcfa1d357828aca3acf6263627083b7479e1a20b8e3ae7bc7",
-        "codex_library_hash": null,
-        "gid": "GF01",
-        "loom_block_hash": "b30811a68d044278296a7866896643f46466c2511ca92b7b583b89dcdac8dc3f",
-        "manifest_check": 560330170,
-        "meta": {
-          "governance_budget": {
-            "actions_accepted": 1,
-            "caps": [
-              {
-                "attr": "max_proposals_per_window",
-                "exhausted": false,
-                "limit": 2,
-                "policy_id": "budget-demo",
-                "used": 1
-              },
-              {
-                "attr": "max_actions_per_window",
-                "exhausted": true,
-                "limit": 1,
-                "policy_id": "budget-demo",
-                "used": 1
-              },
-              {
-                "attr": "max_topology_changes",
-                "exhausted": true,
-                "limit": 8,
-                "policy_id": "budget-demo",
-                "used": 8
-              }
-            ],
-            "proposals_seen": 1,
-            "topology_changes_applied": 8
-          }
-        },
-        "nap_envelope_hash": "39801dbdf2aeaa883d9ec2a456d29a9f91ffdae1edb43938c9c5dcf25de02e7d",
-        "prev_entry_hash": "1d7c0c4b8e3a3bf11f17b70b14288a355676cf3b13134ef060a780ce6b28a189",
-        "run_id": "GOV_CODEX_DEMO",
-        "tick": 8,
-        "timestamp_utc": null,
-        "umx_ledger_hash": "09db5e74ca0374b16b6f05ac7c0bc0bf75e17861c384db993024bc7cad22515d",
-        "window_id": "GF01_W1_ticks_1_8"
+        "layer": "EGRESS",
+        "mode": "P",
+        "payload_ref": 786709051,
+        "seq": 10,
+        "prev_chain": 588473909,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {}
       }
     ]
   }

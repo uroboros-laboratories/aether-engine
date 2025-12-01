@@ -6,6 +6,8 @@ statistics that later Codex phases can use to identify motifs.
 """
 from __future__ import annotations
 
+import hashlib
+import json
 from dataclasses import dataclass, field
 from typing import Dict, Iterable, Mapping, Optional, Sequence, Tuple
 
@@ -15,6 +17,62 @@ from loom.loom import LoomIBlockV1, LoomPBlockV1
 from press import APXManifestV1, APXiViewV1
 from press.aeon import AEONWindowGrammarV1, AEONWindowRegistry
 from umx.tick_ledger import EdgeFluxV1, UMXTickLedgerV1
+
+
+def _canonical_hash(payload: dict) -> str:
+    """Return a deterministic SHA-256 hash for the given payload."""
+
+    canonical = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+@dataclass(frozen=True)
+class CodexProposalGatePolicyV1:
+    """Minimal policy for evaluating Codex proposals."""
+
+    min_delta_L_total: float = 0.0
+    min_fidelity: float = 0.0
+
+    def __post_init__(self) -> None:
+        if self.min_fidelity < 0:
+            raise ValueError("min_fidelity must be non-negative")
+
+
+@dataclass(frozen=True)
+class CodexLedgerEntryV1:
+    """Hash-chained structural ledger entry for proposal lifecycle."""
+
+    entry_id: str
+    proposal_id: str
+    state: str
+    decision: str
+    delta_L_total: float
+    fidelity_score: float
+    created_at_tick: int
+    notes: dict = field(default_factory=dict)
+    prev_hash: str = ""
+    entry_hash: str = field(init=False)
+
+    def __post_init__(self) -> None:
+        if self.state not in {"PROPOSE", "REVIEW", "COMMIT"}:
+            raise ValueError("state must be PROPOSE, REVIEW, or COMMIT")
+        if self.decision not in {"PENDING", "ACCEPT", "REJECT"}:
+            raise ValueError("decision must be PENDING, ACCEPT, or REJECT")
+        if self.created_at_tick < 0:
+            raise ValueError("created_at_tick must be non-negative")
+
+        payload = {
+            "entry_id": self.entry_id,
+            "proposal_id": self.proposal_id,
+            "state": self.state,
+            "decision": self.decision,
+            "delta_L_total": self.delta_L_total,
+            "fidelity_score": self.fidelity_score,
+            "created_at_tick": self.created_at_tick,
+            "notes": self.notes,
+            "prev_hash": self.prev_hash,
+        }
+        object.__setattr__(self, "entry_hash", _canonical_hash(payload))
 
 
 @dataclass(frozen=True)
@@ -206,6 +264,7 @@ class CodexContext:
         self.profile = profile
         self.library: list[CodexLibraryEntryV1] = list(entries) if entries else []
         self.proposals: list[CodexProposalV1] = []
+        self.structural_ledger: list[CodexLedgerEntryV1] = []
         self.runtime_stats = CodexRuntimeStats()
         self._last_ingest_window: Optional[str] = None
         self._last_ingest_gid: Optional[str] = None
@@ -293,6 +352,35 @@ class CodexContext:
         self._last_ingest_gid = gid
         self._last_ingest_window = resolved_window_id
         self._last_ingest_tick_range = (start_tick, end_tick)
+
+    def _next_ledger_id(self) -> str:
+        return f"LEDGER_{len(self.structural_ledger) + 1:04d}"
+
+    def _append_ledger_entry(
+        self,
+        *,
+        proposal_id: str,
+        state: str,
+        decision: str,
+        delta_L_total: float,
+        fidelity_score: float,
+        created_at_tick: int,
+        notes: dict | None = None,
+    ) -> CodexLedgerEntryV1:
+        prev_hash = self.structural_ledger[-1].entry_hash if self.structural_ledger else ""
+        entry = CodexLedgerEntryV1(
+            entry_id=self._next_ledger_id(),
+            proposal_id=proposal_id,
+            state=state,
+            decision=decision,
+            delta_L_total=delta_L_total,
+            fidelity_score=fidelity_score,
+            created_at_tick=created_at_tick,
+            prev_hash=prev_hash,
+            notes=notes or {},
+        )
+        self.structural_ledger.append(entry)
+        return entry
 
     def learn_edge_flux_motifs(self, *, threshold: int = 2) -> list[CodexLibraryEntryV1]:
         """Detect repeated ledger signatures as simple edge-flux motifs."""
@@ -540,9 +628,83 @@ class CodexContext:
             )
 
             self.proposals.append(proposal)
+            self._append_ledger_entry(
+                proposal_id=proposal.proposal_id,
+                state="PROPOSE",
+                decision="PENDING",
+                delta_L_total=proposal.expected_effect.get("delta_L_total", 0),
+                fidelity_score=float(proposal.expected_effect.get("fidelity", 1.0)),
+                created_at_tick=proposal.created_at_tick,
+                notes={"action": proposal.action, "window_id": proposal.target_window_id},
+            )
             proposals.append(proposal)
             proposal_index += 1
             existing_keys.add(key)
 
         return proposals
+
+    def evaluate_proposals(
+        self,
+        *,
+        policy: CodexProposalGatePolicyV1,
+        fidelity_scores: Optional[Mapping[str, float]] = None,
+    ) -> list[CodexLedgerEntryV1]:
+        """Evaluate pending proposals and record ledger transitions."""
+
+        decisions: list[CodexLedgerEntryV1] = []
+        scores = dict(fidelity_scores or {})
+        for proposal in sorted(self.proposals, key=lambda item: item.proposal_id):
+            delta_L_total = float(proposal.expected_effect.get("delta_L_total", 0.0))
+            fidelity_score = float(scores.get(proposal.proposal_id, proposal.expected_effect.get("fidelity", 1.0)))
+
+            delta_ok = delta_L_total <= -policy.min_delta_L_total if policy.min_delta_L_total > 0 else delta_L_total < 0
+            fidelity_ok = fidelity_score >= policy.min_fidelity
+            accepted = delta_ok and fidelity_ok
+
+            proposal_status = "ACCEPTED" if accepted else "REJECTED"
+            governance_status = "OK" if accepted else "HARD_FAIL"
+            decision_note = {
+                "delta_ok": delta_ok,
+                "fidelity_ok": fidelity_ok,
+                "policy_min_delta_L_total": policy.min_delta_L_total,
+                "policy_min_fidelity": policy.min_fidelity,
+            }
+
+            self._append_ledger_entry(
+                proposal_id=proposal.proposal_id,
+                state="REVIEW",
+                decision="ACCEPT" if accepted else "REJECT",
+                delta_L_total=delta_L_total,
+                fidelity_score=fidelity_score,
+                created_at_tick=proposal.created_at_tick,
+                notes=decision_note,
+            )
+
+            if accepted:
+                commit_entry = self._append_ledger_entry(
+                    proposal_id=proposal.proposal_id,
+                    state="COMMIT",
+                    decision="ACCEPT",
+                    delta_L_total=delta_L_total,
+                    fidelity_score=fidelity_score,
+                    created_at_tick=proposal.created_at_tick,
+                    notes={"reason": "accepted"},
+                )
+                decisions.append(commit_entry)
+            else:
+                decisions.append(self.structural_ledger[-1])
+
+            object.__setattr__(proposal, "status", proposal_status)
+            object.__setattr__(proposal, "governance_status", governance_status)
+            object.__setattr__(proposal, "evaluated_at_tick", proposal.created_at_tick)
+            object.__setattr__(proposal, "governance_scores", {"delta_L_total": delta_L_total, "fidelity": fidelity_score})
+            object.__setattr__(proposal, "governance_notes", decision_note)
+            if not accepted:
+                violated = (
+                    "delta_L_total" if not delta_ok else None,
+                    "fidelity" if not fidelity_ok else None,
+                )
+                object.__setattr__(proposal, "violated_policies", tuple(filter(None, violated)))
+
+        return decisions
 

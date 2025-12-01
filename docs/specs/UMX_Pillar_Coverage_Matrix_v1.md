@@ -9,6 +9,12 @@
 
 This is a **first-pass coverage map**. It groups master-spec requirements into themes rather than listing every sentence individually, but it’s designed so we can refine it down to line-level later if needed.
 
+## Phase 6 Coverage Crosswalk
+
+- **CMP-0 + policy hooks delivered.** Causal radius, epsilon-cap, deterministic ordering, and kill-switch semantics implemented in `umx.engine` with regression coverage in `tests/unit/test_umx_engine.py` and lifecycle checks in `tests/unit/test_session_lifecycle.py`.
+- **Cross-pillar run path validated.** Gate PFNA ingress, Loom persistence, Press streams, and U-Ledger checkpoints are exercised by `tests/gf01/test_run_gf01.py` and `tests/integration/test_full_system_demo.py`, with snapshots under `tests/snapshots/` confirming deterministic outputs.
+- **Governance traceability complete.** Codex decisions and Gate governance envelopes feed U-Ledger checkpoints for UMX runs, validated via refreshed governance snapshots and `tests/unit/test_gate_governance.py`.
+
 ---
 
 ## 1. Legend

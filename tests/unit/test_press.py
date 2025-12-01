@@ -1,9 +1,10 @@
 """Press/APX GF-01 tests for Issue 4."""
 from __future__ import annotations
 
+import hashlib
 import pytest
 
-from press import APXiDescriptorV1, PressWindowContextV1
+from press import APXiDescriptorV1, PressWindowContextV1, decode_stream
 from umx.profile_cmp0 import gf01_profile_cmp0
 from umx.run_context import UMXRunContext
 from umx.topology_profile import gf01_topology_profile
@@ -45,11 +46,11 @@ def test_gf01_full_window_manifest_matches_spec():
     assert len(manifest.streams) == 2
     assert manifest.streams[0].stream_id == "S1_post_u_deltas"
     assert manifest.streams[0].scheme == "R"
-    assert manifest.streams[0].L_total == 7
+    assert manifest.streams[0].L_total == 400
     assert manifest.streams[1].stream_id == "S2_fluxes"
     assert manifest.streams[1].scheme == "R"
-    assert manifest.streams[1].L_total == 8
-    assert manifest.manifest_check == 487809945
+    assert manifest.streams[1].L_total == 528
+    assert manifest.manifest_check == 824666593
 
 
 def test_gf01_two_tick_window_manifest_matches_spec():
@@ -58,9 +59,9 @@ def test_gf01_two_tick_window_manifest_matches_spec():
     assert manifest.apx_name == "GF01_APX_v0_ticks_1_2"
     assert manifest.profile == "CMP-0"
     assert len(manifest.streams) == 2
-    assert manifest.streams[0].L_total == 1
-    assert manifest.streams[1].L_total == 2
-    assert manifest.manifest_check == 869911338
+    assert manifest.streams[0].L_total == 112
+    assert manifest.streams[1].L_total == 144
+    assert manifest.manifest_check == 757609893
 
 
 def test_press_window_context_enforces_tick_alignment():
@@ -76,7 +77,7 @@ def test_press_window_context_enforces_tick_alignment():
     press_ctx.append("S_delta", 1)
     press_ctx.append("S_delta", 2)
     manifest = press_ctx.close_window("w1_manifest")
-    assert manifest.streams[0].L_total == 1
+    assert manifest.streams[0].L_total == 32
 
 
 def test_press_window_context_rejects_incomplete_streams():
@@ -118,7 +119,7 @@ def test_id_scheme_counts_entries_and_width():
     manifest = press_ctx.close_window("id_manifest")
     stream = manifest.streams[0]
     assert stream.scheme == "ID"
-    assert (stream.L_model, stream.L_residual, stream.L_total) == (1, 3, 4)
+    assert (stream.L_model, stream.L_residual, stream.L_total) == (16, 24, 40)
 
 
 def test_r_scheme_validates_width_and_lengths():
@@ -134,7 +135,7 @@ def test_r_scheme_validates_width_and_lengths():
     manifest = press_ctx.close_window("r_manifest")
     stream = manifest.streams[0]
     assert stream.scheme == "R"
-    assert (stream.L_model, stream.L_residual, stream.L_total) == (0, 2, 2)
+    assert (stream.L_model, stream.L_residual, stream.L_total) == (32, 32, 64)
 
 
 def test_gr_scheme_groups_runs():
@@ -149,7 +150,7 @@ def test_gr_scheme_groups_runs():
     manifest = press_ctx.close_window("gr_manifest")
     stream = manifest.streams[0]
     assert stream.scheme == "GR"
-    assert (stream.L_model, stream.L_residual, stream.L_total) == (2, 3, 5)
+    assert (stream.L_model, stream.L_residual, stream.L_total) == (40, 24, 64)
 
 
 def test_stream_width_mismatch_raises():
@@ -182,11 +183,11 @@ def test_manifest_supports_multiple_streams_and_schemes():
     assert [s.stream_id for s in manifest.streams] == ["S_id", "S_r", "S_gr"]
     assert [s.scheme for s in manifest.streams] == ["ID", "R", "GR"]
     assert [(s.L_model, s.L_residual, s.L_total) for s in manifest.streams] == [
-        (1, 3, 4),
-        (0, 2, 2),
-        (1, 1, 2),
+        (16, 24, 40),
+        (32, 32, 64),
+        (32, 16, 48),
     ]
-    assert manifest.manifest_check == 483033096
+    assert manifest.manifest_check == 967035058
 
 
 def test_manifest_check_reflects_scheme_choice():
@@ -209,6 +210,55 @@ def test_manifest_check_reflects_scheme_choice():
     manifest_id = press_ctx_id.close_window("manifest_id")
 
     assert manifest_r.manifest_check != manifest_id.manifest_check
+
+
+def test_encode_window_returns_payloads_and_manifest_with_mdl_choice():
+    profile = gf01_profile_cmp0()
+    topo = gf01_topology_profile()
+    run_ctx = UMXRunContext(topo=topo, profile=profile, gid="GF01", run_id="run_0")
+    run_ctx.init_state([3, 1, 0, 0, 0, 0])
+
+    press_ctx = PressWindowContextV1(
+        gid="GF01", run_id="run_0", window_id="GF01_window", start_tick=1, end_tick=4, profile=profile
+    )
+    press_ctx.register_stream("deltas", description="post_u delta per node")
+    press_ctx.register_stream("fluxes", description="edge flux per edge")
+
+    for _ in range(4):
+        ledger = run_ctx.step()
+        deltas = tuple(post - pre for post, pre in zip(ledger.post_u, ledger.pre_u))
+        fluxes = tuple(edge.f_e for edge in ledger.edges)
+        press_ctx.append("deltas", deltas)
+        press_ctx.append("fluxes", fluxes)
+
+    package = press_ctx.encode_window("GF01_APX_v0_ticks_1_4")
+    manifest = package.manifest
+
+    assert manifest.apx_name == "GF01_APX_v0_ticks_1_4"
+    assert [s.stream_id for s in manifest.streams] == ["deltas", "fluxes"]
+    assert [s.scheme for s in manifest.streams] == ["GR", "GR"]
+    assert manifest.manifest_check == 979761199
+    assert set(package.payloads.keys()) == {"deltas", "fluxes"}
+    for payload in package.payloads.values():
+        assert payload.checksum_hex == hashlib.sha256(payload.payload).hexdigest()
+        assert payload.payload
+
+
+def test_decode_stream_round_trips_payload():
+    profile = gf01_profile_cmp0()
+    press_ctx = PressWindowContextV1(
+        gid="G", run_id="R", window_id="simple", start_tick=1, end_tick=3, profile=profile
+    )
+    press_ctx.register_stream("simple_stream", description="simple", scheme_hint="GR")
+    for value in (5, 5, 7):
+        press_ctx.append("simple_stream", value)
+
+    package = press_ctx.encode_window("simple_manifest")
+    payload = package.payloads["simple_stream"]
+    stream_manifest = next(s for s in package.manifest.streams if s.stream_id == "simple_stream")
+    decoded = decode_stream(stream_manifest, payload.payload)
+
+    assert decoded == [5, 5, 7]
 
 
 def test_apxi_disabled_matches_phase2_behaviour():

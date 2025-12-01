@@ -3,13 +3,18 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from src.umx import (
     EdgeFluxV1,
+    ProfileCMP0V1,
+    UMXDiagnosticsConfig,
     UMXRunContext,
     UMXTickLedgerV1,
     gf01_profile_cmp0,
     gf01_topology_profile,
     load_topology_profile,
+    step,
     topology_profile_from_dict,
 )
 
@@ -167,3 +172,141 @@ def test_conservation_guard_raises_when_sums_mismatch():
     except ValueError:
         return
     raise AssertionError("Expected ValueError for mismatched sums")
+
+
+def test_causal_radius_clamps_flux_and_sets_policy_note():
+    topo = topology_profile_from_dict(
+        {
+            "gid": "CAUSAL_CLAMP",
+            "profile": "CMP-0",
+            "N": 2,
+            "nodes": [
+                {"node_id": 1, "label": "a"},
+                {"node_id": 2, "label": "b"},
+            ],
+            "edges": [
+                {
+                    "e_id": 1,
+                    "i": 1,
+                    "j": 2,
+                    "k": 10,
+                    "cap": 50,
+                    "SC": 10,
+                    "c": 0,
+                    "causal_radius": 2,
+                }
+            ],
+            "SC": 10,
+        }
+    )
+    profile = gf01_profile_cmp0()
+
+    ledger = step(1, [20, 0], topo, profile)
+
+    assert ledger.edges[0].raw == 2
+    assert ledger.edges[0].f_e == 2
+    assert ledger.causal_radius_applied is True
+    assert "causal_radius_clamped" in ledger.policy_notes
+
+
+def test_epsilon_cap_clamps_raw_flux():
+    topo = topology_profile_from_dict(
+        {
+            "gid": "EPSILON_CAP",
+            "profile": "CMP-0",
+            "N": 2,
+            "nodes": [
+                {"node_id": 1, "label": "a"},
+                {"node_id": 2, "label": "b"},
+            ],
+            "edges": [
+                {"e_id": 1, "i": 1, "j": 2, "k": 10, "cap": 50, "SC": 10, "c": 0}
+            ],
+            "SC": 10,
+        }
+    )
+    profile = ProfileCMP0V1(epsilon_cap=1)
+
+    ledger = step(1, [20, 0], topo, profile)
+
+    assert ledger.edges[0].raw == 1
+    assert ledger.edges[0].f_e == 1
+    assert ledger.epsilon_applied is True
+    assert "epsilon_cap_applied" in ledger.policy_notes
+
+
+def test_diagnostics_record_policy_violations_when_enforced():
+    topo = topology_profile_from_dict(
+        {
+            "gid": "POLICY_FLAGS",
+            "profile": "CMP-0",
+            "N": 2,
+            "nodes": [
+                {"node_id": 1, "label": "a"},
+                {"node_id": 2, "label": "b"},
+            ],
+            "edges": [
+                {
+                    "e_id": 1,
+                    "i": 1,
+                    "j": 2,
+                    "k": 10,
+                    "cap": 50,
+                    "SC": 10,
+                    "c": 0,
+                    "causal_radius": 3,
+                }
+            ],
+            "SC": 10,
+        }
+    )
+    profile = ProfileCMP0V1(epsilon_cap=2)
+    ctx = UMXRunContext(
+        topo=topo,
+        profile=profile,
+        diag_config=UMXDiagnosticsConfig(
+            enabled=True,
+            enforce_causal_radius=True,
+            enforce_epsilon_cap=True,
+        ),
+    )
+    ctx.init_state([50, 0])
+
+    ledger = ctx.step()
+
+    assert ledger.causal_radius_applied is True
+    assert ledger.epsilon_applied is True
+    diag = ctx.diagnostics[-1]
+    assert "causal radius exceeded" in diag.policy_violations
+    assert "epsilon cap triggered" in diag.policy_violations
+    assert ctx.killed is False
+
+
+def test_kill_switch_halts_on_violation():
+    topo = topology_profile_from_dict(
+        {
+            "gid": "NEGATIVE_STATE",
+            "profile": "CMP-0",
+            "N": 1,
+            "nodes": [{"node_id": 1, "label": "solo"}],
+            "edges": [],
+            "SC": 1,
+        }
+    )
+    profile = gf01_profile_cmp0()
+    ctx = UMXRunContext(
+        topo=topo,
+        profile=profile,
+        diag_config=UMXDiagnosticsConfig(
+            enabled=True,
+            allow_negative=False,
+            kill_on_violation=True,
+        ),
+    )
+    ctx.init_state([-5])
+
+    with pytest.raises(ValueError):
+        ctx.step()
+
+    assert ctx.killed is True
+    assert ctx.kill_reason and "negative values detected" in ctx.kill_reason

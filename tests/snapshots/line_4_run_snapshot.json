@@ -1,247 +1,106 @@
 {
   "config": {
+    "run_id": "LINE4_demo",
     "gid": "LINE4",
+    "nid": "LINE4",
+    "total_ticks": 6,
+    "primary_window_id": "LINE4_ticks_1_6",
+    "window_ids": [
+      "LINE4_ticks_1_6"
+    ],
+    "press_default_streams": [
+      {
+        "name": "S1_post_u_deltas",
+        "source": "post_u_deltas",
+        "scheme_hint": null,
+        "description": "post_u delta per node"
+      },
+      {
+        "name": "S2_fluxes",
+        "source": "fluxes",
+        "scheme_hint": null,
+        "description": "edge flux per edge"
+      }
+    ],
+    "pfna_inputs": [],
     "initial_state": [
       8,
       4,
       0,
       0
-    ],
-    "nid": "LINE4",
-    "pfna_inputs": [],
-    "press_default_streams": [
-      {
-        "description": "post_u delta per node",
-        "name": "S1_post_u_deltas",
-        "scheme_hint": null,
-        "source": "post_u_deltas"
-      },
-      {
-        "description": "edge flux per edge",
-        "name": "S2_fluxes",
-        "scheme_hint": null,
-        "source": "fluxes"
-      }
-    ],
-    "primary_window_id": "LINE4_ticks_1_6",
-    "run_id": "LINE4_demo",
-    "total_ticks": 6,
-    "window_ids": [
-      "LINE4_ticks_1_6"
     ]
   },
   "lifecycle_envelopes": [
     {
+      "v": 1,
+      "tick": 1,
       "gid": "LINE4",
-      "layer": "CTRL",
-      "meta": {},
-      "mode": "P",
       "nid": "LINE4",
+      "layer": "CTRL",
+      "mode": "P",
       "payload_ref": 0,
-      "prev_chain": 1234567,
       "seq": 1,
+      "prev_chain": 1234567,
       "sig": "",
       "slp_event_ids": [],
-      "tick": 1,
-      "v": 1
+      "meta": {}
     },
     {
+      "v": 1,
+      "tick": 6,
       "gid": "LINE4",
-      "layer": "CTRL",
-      "meta": {},
-      "mode": "P",
       "nid": "LINE4",
-      "payload_ref": 286776878,
-      "prev_chain": 759821701,
+      "layer": "CTRL",
+      "mode": "P",
+      "payload_ref": 71810111,
       "seq": 7,
+      "prev_chain": 759821701,
       "sig": "",
       "slp_event_ids": [],
-      "tick": 6,
-      "v": 1
+      "meta": {}
     }
   ],
   "tick_result": {
-    "egress_envelopes": [
-      {
-        "gid": "LINE4",
-        "layer": "EGRESS",
-        "meta": {},
-        "mode": "P",
-        "nid": "LINE4",
-        "payload_ref": 286776878,
-        "prev_chain": 759821701,
-        "seq": 8,
-        "sig": "",
-        "slp_event_ids": [],
-        "tick": 6,
-        "v": 1
-      }
-    ],
-    "envelopes": [
-      {
-        "gid": "LINE4",
-        "layer": "DATA",
-        "meta": {},
-        "mode": "P",
-        "nid": "LINE4",
-        "payload_ref": 286776878,
-        "prev_chain": 1234567,
-        "seq": 1,
-        "sig": "",
-        "slp_event_ids": [],
-        "tick": 1,
-        "v": 1
-      },
-      {
-        "gid": "LINE4",
-        "layer": "DATA",
-        "meta": {},
-        "mode": "P",
-        "nid": "LINE4",
-        "payload_ref": 286776878,
-        "prev_chain": 20987847,
-        "seq": 2,
-        "sig": "",
-        "slp_event_ids": [],
-        "tick": 2,
-        "v": 1
-      },
-      {
-        "gid": "LINE4",
-        "layer": "DATA",
-        "meta": {},
-        "mode": "P",
-        "nid": "LINE4",
-        "payload_ref": 286776878,
-        "prev_chain": 356793608,
-        "seq": 3,
-        "sig": "",
-        "slp_event_ids": [],
-        "tick": 3,
-        "v": 1
-      },
-      {
-        "gid": "LINE4",
-        "layer": "DATA",
-        "meta": {},
-        "mode": "P",
-        "nid": "LINE4",
-        "payload_ref": 286776878,
-        "prev_chain": 65491504,
-        "seq": 4,
-        "sig": "",
-        "slp_event_ids": [],
-        "tick": 4,
-        "v": 1
-      },
-      {
-        "gid": "LINE4",
-        "layer": "DATA",
-        "meta": {},
-        "mode": "P",
-        "nid": "LINE4",
-        "payload_ref": 286776878,
-        "prev_chain": 113355772,
-        "seq": 5,
-        "sig": "",
-        "slp_event_ids": [],
-        "tick": 5,
-        "v": 1
-      },
-      {
-        "gid": "LINE4",
-        "layer": "DATA",
-        "meta": {},
-        "mode": "P",
-        "nid": "LINE4",
-        "payload_ref": 286776878,
-        "prev_chain": 927048329,
-        "seq": 6,
-        "sig": "",
-        "slp_event_ids": [],
-        "tick": 6,
-        "v": 1
-      }
-    ],
-    "governance_envelopes": [],
-    "i_blocks": [],
-    "ingress_envelopes": [],
+    "run_id": "LINE4_demo",
     "ledgers": [
       {
-        "edges": [
-          {
-            "cap": 64,
-            "du": 4,
-            "e_id": 1,
-            "f_e": 0,
-            "i": 1,
-            "j": 2,
-            "raw": 0
-          },
-          {
-            "cap": 64,
-            "du": 4,
-            "e_id": 2,
-            "f_e": 0,
-            "i": 2,
-            "j": 3,
-            "raw": 0
-          },
-          {
-            "cap": 64,
-            "du": 0,
-            "e_id": 3,
-            "f_e": 0,
-            "i": 3,
-            "j": 4,
-            "raw": 0
-          }
-        ],
-        "post_u": [
-          8,
-          4,
-          0,
-          0
-        ],
-        "pre_u": [
-          8,
-          4,
-          0,
-          0
-        ],
-        "sum_post_u": 12,
-        "sum_pre_u": 12,
         "tick": 1,
-        "z_check": 12
-      },
-      {
+        "sum_pre_u": 12,
+        "sum_post_u": 12,
+        "z_check": 12,
+        "pre_u": [
+          8,
+          4,
+          0,
+          0
+        ],
         "edges": [
           {
-            "cap": 64,
-            "du": 4,
             "e_id": 1,
-            "f_e": 0,
             "i": 1,
             "j": 2,
-            "raw": 0
+            "du": 4,
+            "raw": 0,
+            "cap": 64,
+            "f_e": 0
           },
           {
-            "cap": 64,
-            "du": 4,
             "e_id": 2,
-            "f_e": 0,
             "i": 2,
             "j": 3,
-            "raw": 0
+            "du": 4,
+            "raw": 0,
+            "cap": 64,
+            "f_e": 0
           },
           {
-            "cap": 64,
-            "du": 0,
             "e_id": 3,
-            "f_e": 0,
             "i": 3,
             "j": 4,
-            "raw": 0
+            "du": 0,
+            "raw": 0,
+            "cap": 64,
+            "f_e": 0
           }
         ],
         "post_u": [
@@ -249,46 +108,46 @@
           4,
           0,
           0
-        ],
-        "pre_u": [
-          8,
-          4,
-          0,
-          0
-        ],
-        "sum_post_u": 12,
-        "sum_pre_u": 12,
+        ]
+      },
+      {
         "tick": 2,
-        "z_check": 12
-      },
-      {
+        "sum_pre_u": 12,
+        "sum_post_u": 12,
+        "z_check": 12,
+        "pre_u": [
+          8,
+          4,
+          0,
+          0
+        ],
         "edges": [
           {
-            "cap": 64,
-            "du": 4,
             "e_id": 1,
-            "f_e": 0,
             "i": 1,
             "j": 2,
-            "raw": 0
+            "du": 4,
+            "raw": 0,
+            "cap": 64,
+            "f_e": 0
           },
           {
-            "cap": 64,
-            "du": 4,
             "e_id": 2,
-            "f_e": 0,
             "i": 2,
             "j": 3,
-            "raw": 0
+            "du": 4,
+            "raw": 0,
+            "cap": 64,
+            "f_e": 0
           },
           {
-            "cap": 64,
-            "du": 0,
             "e_id": 3,
-            "f_e": 0,
             "i": 3,
             "j": 4,
-            "raw": 0
+            "du": 0,
+            "raw": 0,
+            "cap": 64,
+            "f_e": 0
           }
         ],
         "post_u": [
@@ -296,46 +155,46 @@
           4,
           0,
           0
-        ],
-        "pre_u": [
-          8,
-          4,
-          0,
-          0
-        ],
-        "sum_post_u": 12,
-        "sum_pre_u": 12,
+        ]
+      },
+      {
         "tick": 3,
-        "z_check": 12
-      },
-      {
+        "sum_pre_u": 12,
+        "sum_post_u": 12,
+        "z_check": 12,
+        "pre_u": [
+          8,
+          4,
+          0,
+          0
+        ],
         "edges": [
           {
-            "cap": 64,
-            "du": 4,
             "e_id": 1,
-            "f_e": 0,
             "i": 1,
             "j": 2,
-            "raw": 0
+            "du": 4,
+            "raw": 0,
+            "cap": 64,
+            "f_e": 0
           },
           {
-            "cap": 64,
-            "du": 4,
             "e_id": 2,
-            "f_e": 0,
             "i": 2,
             "j": 3,
-            "raw": 0
+            "du": 4,
+            "raw": 0,
+            "cap": 64,
+            "f_e": 0
           },
           {
-            "cap": 64,
-            "du": 0,
             "e_id": 3,
-            "f_e": 0,
             "i": 3,
             "j": 4,
-            "raw": 0
+            "du": 0,
+            "raw": 0,
+            "cap": 64,
+            "f_e": 0
           }
         ],
         "post_u": [
@@ -343,46 +202,46 @@
           4,
           0,
           0
-        ],
-        "pre_u": [
-          8,
-          4,
-          0,
-          0
-        ],
-        "sum_post_u": 12,
-        "sum_pre_u": 12,
+        ]
+      },
+      {
         "tick": 4,
-        "z_check": 12
-      },
-      {
+        "sum_pre_u": 12,
+        "sum_post_u": 12,
+        "z_check": 12,
+        "pre_u": [
+          8,
+          4,
+          0,
+          0
+        ],
         "edges": [
           {
-            "cap": 64,
-            "du": 4,
             "e_id": 1,
-            "f_e": 0,
             "i": 1,
             "j": 2,
-            "raw": 0
+            "du": 4,
+            "raw": 0,
+            "cap": 64,
+            "f_e": 0
           },
           {
-            "cap": 64,
-            "du": 4,
             "e_id": 2,
-            "f_e": 0,
             "i": 2,
             "j": 3,
-            "raw": 0
+            "du": 4,
+            "raw": 0,
+            "cap": 64,
+            "f_e": 0
           },
           {
-            "cap": 64,
-            "du": 0,
             "e_id": 3,
-            "f_e": 0,
             "i": 3,
             "j": 4,
-            "raw": 0
+            "du": 0,
+            "raw": 0,
+            "cap": 64,
+            "f_e": 0
           }
         ],
         "post_u": [
@@ -390,46 +249,46 @@
           4,
           0,
           0
-        ],
-        "pre_u": [
-          8,
-          4,
-          0,
-          0
-        ],
-        "sum_post_u": 12,
-        "sum_pre_u": 12,
+        ]
+      },
+      {
         "tick": 5,
-        "z_check": 12
-      },
-      {
+        "sum_pre_u": 12,
+        "sum_post_u": 12,
+        "z_check": 12,
+        "pre_u": [
+          8,
+          4,
+          0,
+          0
+        ],
         "edges": [
           {
-            "cap": 64,
-            "du": 4,
             "e_id": 1,
-            "f_e": 0,
             "i": 1,
             "j": 2,
-            "raw": 0
+            "du": 4,
+            "raw": 0,
+            "cap": 64,
+            "f_e": 0
           },
           {
-            "cap": 64,
-            "du": 4,
             "e_id": 2,
-            "f_e": 0,
             "i": 2,
             "j": 3,
-            "raw": 0
+            "du": 4,
+            "raw": 0,
+            "cap": 64,
+            "f_e": 0
           },
           {
-            "cap": 64,
-            "du": 0,
             "e_id": 3,
-            "f_e": 0,
             "i": 3,
             "j": 4,
-            "raw": 0
+            "du": 0,
+            "raw": 0,
+            "cap": 64,
+            "f_e": 0
           }
         ],
         "post_u": [
@@ -437,444 +296,597 @@
           4,
           0,
           0
-        ],
+        ]
+      },
+      {
+        "tick": 6,
+        "sum_pre_u": 12,
+        "sum_post_u": 12,
+        "z_check": 12,
         "pre_u": [
           8,
           4,
           0,
           0
         ],
-        "sum_post_u": 12,
-        "sum_pre_u": 12,
-        "tick": 6,
-        "z_check": 12
+        "edges": [
+          {
+            "e_id": 1,
+            "i": 1,
+            "j": 2,
+            "du": 4,
+            "raw": 0,
+            "cap": 64,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "i": 2,
+            "j": 3,
+            "du": 4,
+            "raw": 0,
+            "cap": 64,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "i": 3,
+            "j": 4,
+            "du": 0,
+            "raw": 0,
+            "cap": 64,
+            "f_e": 0
+          }
+        ],
+        "post_u": [
+          8,
+          4,
+          0,
+          0
+        ]
       }
     ],
+    "p_blocks": [
+      {
+        "tick": 1,
+        "seq": 1,
+        "s_t": 9,
+        "C_t": 20987847,
+        "edge_flux_summary": [
+          {
+            "e_id": 1,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "f_e": 0
+          }
+        ]
+      },
+      {
+        "tick": 2,
+        "seq": 2,
+        "s_t": 9,
+        "C_t": 356793608,
+        "edge_flux_summary": [
+          {
+            "e_id": 1,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "f_e": 0
+          }
+        ]
+      },
+      {
+        "tick": 3,
+        "seq": 3,
+        "s_t": 9,
+        "C_t": 65491504,
+        "edge_flux_summary": [
+          {
+            "e_id": 1,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "f_e": 0
+          }
+        ]
+      },
+      {
+        "tick": 4,
+        "seq": 4,
+        "s_t": 9,
+        "C_t": 113355772,
+        "edge_flux_summary": [
+          {
+            "e_id": 1,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "f_e": 0
+          }
+        ]
+      },
+      {
+        "tick": 5,
+        "seq": 5,
+        "s_t": 9,
+        "C_t": 927048329,
+        "edge_flux_summary": [
+          {
+            "e_id": 1,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "f_e": 0
+          }
+        ]
+      },
+      {
+        "tick": 6,
+        "seq": 6,
+        "s_t": 9,
+        "C_t": 759821701,
+        "edge_flux_summary": [
+          {
+            "e_id": 1,
+            "f_e": 0
+          },
+          {
+            "e_id": 2,
+            "f_e": 0
+          },
+          {
+            "e_id": 3,
+            "f_e": 0
+          }
+        ]
+      }
+    ],
+    "i_blocks": [],
     "manifests": {
       "LINE4_APX_full_window": {
         "apx_name": "LINE4_APX_full_window",
-        "manifest_check": 286776878,
         "profile": "CMP-1",
+        "manifest_check": 71810111,
         "streams": [
           {
-            "L_model": 0,
-            "L_residual": 5,
-            "L_total": 5,
+            "stream_id": "S1_post_u_deltas",
             "description": "S1_post_u_deltas",
-            "params": 0,
             "scheme": "R",
-            "stream_id": "S1_post_u_deltas"
+            "params": 0,
+            "L_model": 48,
+            "L_residual": 160,
+            "L_total": 208
           },
           {
-            "L_model": 0,
-            "L_residual": 5,
-            "L_total": 5,
+            "stream_id": "S2_fluxes",
             "description": "S2_fluxes",
-            "params": 0,
             "scheme": "R",
-            "stream_id": "S2_fluxes"
+            "params": 0,
+            "L_model": 40,
+            "L_residual": 120,
+            "L_total": 160
           },
           {
-            "L_model": 0,
-            "L_residual": 5,
-            "L_total": 5,
+            "stream_id": "S3_prev_chain",
             "description": "Loom chain between ticks",
-            "params": 0,
             "scheme": "R",
-            "stream_id": "S3_prev_chain"
+            "params": 0,
+            "L_model": 48,
+            "L_residual": 184,
+            "L_total": 232
           }
         ]
       }
     },
-    "p_blocks": [
-      {
-        "C_t": 20987847,
-        "edge_flux_summary": [
-          {
-            "e_id": 1,
-            "f_e": 0
-          },
-          {
-            "e_id": 2,
-            "f_e": 0
-          },
-          {
-            "e_id": 3,
-            "f_e": 0
-          }
-        ],
-        "s_t": 9,
-        "seq": 1,
-        "tick": 1
-      },
-      {
-        "C_t": 356793608,
-        "edge_flux_summary": [
-          {
-            "e_id": 1,
-            "f_e": 0
-          },
-          {
-            "e_id": 2,
-            "f_e": 0
-          },
-          {
-            "e_id": 3,
-            "f_e": 0
-          }
-        ],
-        "s_t": 9,
-        "seq": 2,
-        "tick": 2
-      },
-      {
-        "C_t": 65491504,
-        "edge_flux_summary": [
-          {
-            "e_id": 1,
-            "f_e": 0
-          },
-          {
-            "e_id": 2,
-            "f_e": 0
-          },
-          {
-            "e_id": 3,
-            "f_e": 0
-          }
-        ],
-        "s_t": 9,
-        "seq": 3,
-        "tick": 3
-      },
-      {
-        "C_t": 113355772,
-        "edge_flux_summary": [
-          {
-            "e_id": 1,
-            "f_e": 0
-          },
-          {
-            "e_id": 2,
-            "f_e": 0
-          },
-          {
-            "e_id": 3,
-            "f_e": 0
-          }
-        ],
-        "s_t": 9,
-        "seq": 4,
-        "tick": 4
-      },
-      {
-        "C_t": 927048329,
-        "edge_flux_summary": [
-          {
-            "e_id": 1,
-            "f_e": 0
-          },
-          {
-            "e_id": 2,
-            "f_e": 0
-          },
-          {
-            "e_id": 3,
-            "f_e": 0
-          }
-        ],
-        "s_t": 9,
-        "seq": 5,
-        "tick": 5
-      },
-      {
-        "C_t": 759821701,
-        "edge_flux_summary": [
-          {
-            "e_id": 1,
-            "f_e": 0
-          },
-          {
-            "e_id": 2,
-            "f_e": 0
-          },
-          {
-            "e_id": 3,
-            "f_e": 0
-          }
-        ],
-        "s_t": 9,
-        "seq": 6,
-        "tick": 6
-      }
-    ],
-    "run_id": "LINE4_demo",
     "scenes": [
       {
+        "gid": "LINE4",
+        "run_id": "LINE4_demo",
+        "tick": 1,
+        "nid": "LINE4",
+        "pre_u": [
+          8,
+          4,
+          0,
+          0
+        ],
+        "post_u": [
+          8,
+          4,
+          0,
+          0
+        ],
+        "ledger_ref": "umx_ledger_1",
         "C_prev": 1234567,
         "C_t": 20987847,
-        "gid": "LINE4",
-        "ledger_ref": "umx_ledger_1",
-        "manifest_check": 286776878,
-        "meta": {
-          "manifest_ref": "LINE4_APX_full_window",
-          "p_block_ref": "loom_p_block_1"
-        },
+        "window_id": "LINE4_ticks_1_6",
+        "manifest_check": 71810111,
         "nap_envelope_ref": null,
+        "meta": {
+          "p_block_ref": "loom_p_block_1",
+          "manifest_ref": "LINE4_APX_full_window"
+        }
+      },
+      {
+        "gid": "LINE4",
+        "run_id": "LINE4_demo",
+        "tick": 2,
         "nid": "LINE4",
-        "post_u": [
-          8,
-          4,
-          0,
-          0
-        ],
         "pre_u": [
           8,
           4,
           0,
           0
         ],
-        "run_id": "LINE4_demo",
-        "tick": 1,
-        "window_id": "LINE4_ticks_1_6"
-      },
-      {
+        "post_u": [
+          8,
+          4,
+          0,
+          0
+        ],
+        "ledger_ref": "umx_ledger_2",
         "C_prev": 20987847,
         "C_t": 356793608,
-        "gid": "LINE4",
-        "ledger_ref": "umx_ledger_2",
-        "manifest_check": 286776878,
-        "meta": {
-          "manifest_ref": "LINE4_APX_full_window",
-          "p_block_ref": "loom_p_block_2"
-        },
+        "window_id": "LINE4_ticks_1_6",
+        "manifest_check": 71810111,
         "nap_envelope_ref": null,
+        "meta": {
+          "p_block_ref": "loom_p_block_2",
+          "manifest_ref": "LINE4_APX_full_window"
+        }
+      },
+      {
+        "gid": "LINE4",
+        "run_id": "LINE4_demo",
+        "tick": 3,
         "nid": "LINE4",
-        "post_u": [
-          8,
-          4,
-          0,
-          0
-        ],
         "pre_u": [
           8,
           4,
           0,
           0
         ],
-        "run_id": "LINE4_demo",
-        "tick": 2,
-        "window_id": "LINE4_ticks_1_6"
-      },
-      {
+        "post_u": [
+          8,
+          4,
+          0,
+          0
+        ],
+        "ledger_ref": "umx_ledger_3",
         "C_prev": 356793608,
         "C_t": 65491504,
-        "gid": "LINE4",
-        "ledger_ref": "umx_ledger_3",
-        "manifest_check": 286776878,
-        "meta": {
-          "manifest_ref": "LINE4_APX_full_window",
-          "p_block_ref": "loom_p_block_3"
-        },
+        "window_id": "LINE4_ticks_1_6",
+        "manifest_check": 71810111,
         "nap_envelope_ref": null,
+        "meta": {
+          "p_block_ref": "loom_p_block_3",
+          "manifest_ref": "LINE4_APX_full_window"
+        }
+      },
+      {
+        "gid": "LINE4",
+        "run_id": "LINE4_demo",
+        "tick": 4,
         "nid": "LINE4",
-        "post_u": [
-          8,
-          4,
-          0,
-          0
-        ],
         "pre_u": [
           8,
           4,
           0,
           0
         ],
-        "run_id": "LINE4_demo",
-        "tick": 3,
-        "window_id": "LINE4_ticks_1_6"
-      },
-      {
+        "post_u": [
+          8,
+          4,
+          0,
+          0
+        ],
+        "ledger_ref": "umx_ledger_4",
         "C_prev": 65491504,
         "C_t": 113355772,
-        "gid": "LINE4",
-        "ledger_ref": "umx_ledger_4",
-        "manifest_check": 286776878,
-        "meta": {
-          "manifest_ref": "LINE4_APX_full_window",
-          "p_block_ref": "loom_p_block_4"
-        },
+        "window_id": "LINE4_ticks_1_6",
+        "manifest_check": 71810111,
         "nap_envelope_ref": null,
+        "meta": {
+          "p_block_ref": "loom_p_block_4",
+          "manifest_ref": "LINE4_APX_full_window"
+        }
+      },
+      {
+        "gid": "LINE4",
+        "run_id": "LINE4_demo",
+        "tick": 5,
         "nid": "LINE4",
-        "post_u": [
-          8,
-          4,
-          0,
-          0
-        ],
         "pre_u": [
           8,
           4,
           0,
           0
         ],
-        "run_id": "LINE4_demo",
-        "tick": 4,
-        "window_id": "LINE4_ticks_1_6"
-      },
-      {
+        "post_u": [
+          8,
+          4,
+          0,
+          0
+        ],
+        "ledger_ref": "umx_ledger_5",
         "C_prev": 113355772,
         "C_t": 927048329,
-        "gid": "LINE4",
-        "ledger_ref": "umx_ledger_5",
-        "manifest_check": 286776878,
-        "meta": {
-          "manifest_ref": "LINE4_APX_full_window",
-          "p_block_ref": "loom_p_block_5"
-        },
+        "window_id": "LINE4_ticks_1_6",
+        "manifest_check": 71810111,
         "nap_envelope_ref": null,
+        "meta": {
+          "p_block_ref": "loom_p_block_5",
+          "manifest_ref": "LINE4_APX_full_window"
+        }
+      },
+      {
+        "gid": "LINE4",
+        "run_id": "LINE4_demo",
+        "tick": 6,
         "nid": "LINE4",
-        "post_u": [
-          8,
-          4,
-          0,
-          0
-        ],
         "pre_u": [
           8,
           4,
           0,
           0
         ],
-        "run_id": "LINE4_demo",
-        "tick": 5,
-        "window_id": "LINE4_ticks_1_6"
-      },
-      {
+        "post_u": [
+          8,
+          4,
+          0,
+          0
+        ],
+        "ledger_ref": "umx_ledger_6",
         "C_prev": 927048329,
         "C_t": 759821701,
-        "gid": "LINE4",
-        "ledger_ref": "umx_ledger_6",
-        "manifest_check": 286776878,
-        "meta": {
-          "manifest_ref": "LINE4_APX_full_window",
-          "p_block_ref": "loom_p_block_6"
-        },
+        "window_id": "LINE4_ticks_1_6",
+        "manifest_check": 71810111,
         "nap_envelope_ref": null,
-        "nid": "LINE4",
-        "post_u": [
-          8,
-          4,
-          0,
-          0
-        ],
-        "pre_u": [
-          8,
-          4,
-          0,
-          0
-        ],
-        "run_id": "LINE4_demo",
-        "tick": 6,
-        "window_id": "LINE4_ticks_1_6"
+        "meta": {
+          "p_block_ref": "loom_p_block_6",
+          "manifest_ref": "LINE4_APX_full_window"
+        }
       }
     ],
+    "envelopes": [
+      {
+        "v": 1,
+        "tick": 1,
+        "gid": "LINE4",
+        "nid": "LINE4",
+        "layer": "DATA",
+        "mode": "P",
+        "payload_ref": 71810111,
+        "seq": 1,
+        "prev_chain": 1234567,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {
+          "pfna_integerization": []
+        }
+      },
+      {
+        "v": 1,
+        "tick": 2,
+        "gid": "LINE4",
+        "nid": "LINE4",
+        "layer": "DATA",
+        "mode": "P",
+        "payload_ref": 71810111,
+        "seq": 2,
+        "prev_chain": 20987847,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {
+          "pfna_integerization": []
+        }
+      },
+      {
+        "v": 1,
+        "tick": 3,
+        "gid": "LINE4",
+        "nid": "LINE4",
+        "layer": "DATA",
+        "mode": "P",
+        "payload_ref": 71810111,
+        "seq": 3,
+        "prev_chain": 356793608,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {
+          "pfna_integerization": []
+        }
+      },
+      {
+        "v": 1,
+        "tick": 4,
+        "gid": "LINE4",
+        "nid": "LINE4",
+        "layer": "DATA",
+        "mode": "P",
+        "payload_ref": 71810111,
+        "seq": 4,
+        "prev_chain": 65491504,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {
+          "pfna_integerization": []
+        }
+      },
+      {
+        "v": 1,
+        "tick": 5,
+        "gid": "LINE4",
+        "nid": "LINE4",
+        "layer": "DATA",
+        "mode": "P",
+        "payload_ref": 71810111,
+        "seq": 5,
+        "prev_chain": 113355772,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {
+          "pfna_integerization": []
+        }
+      },
+      {
+        "v": 1,
+        "tick": 6,
+        "gid": "LINE4",
+        "nid": "LINE4",
+        "layer": "DATA",
+        "mode": "P",
+        "payload_ref": 71810111,
+        "seq": 6,
+        "prev_chain": 927048329,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {
+          "pfna_integerization": []
+        }
+      }
+    ],
+    "governance_envelopes": [],
     "u_ledger_entries": [
       {
-        "C_t": 20987847,
-        "apx_manifest_hash": "72ee6eac41b873395c0ea9e71a8c0f4394c21f3df1c7b111adb19388cf176de9",
-        "codex_library_hash": null,
         "gid": "LINE4",
-        "loom_block_hash": "04db047dc7e44b41a58a009679d0c9c69eb0e6a1e7507960cd0c7ca8292ff0f4",
-        "manifest_check": 286776878,
-        "meta": {},
-        "nap_envelope_hash": "aa3436b9723d7980582e1c06c681aaccbdf8061b6bbbf776e5a927f8c87cffa6",
-        "prev_entry_hash": null,
         "run_id": "LINE4_demo",
         "tick": 1,
+        "window_id": "LINE4_ticks_1_6",
+        "C_t": 20987847,
+        "manifest_check": 71810111,
+        "nap_envelope_hash": "5c5b9740260bf84058053c9602060b67c88f6174db5caded0c200f5c1dee9ba9",
+        "umx_ledger_hash": "4a7b584002b31c538eb589b5fb42c94767292144baff7eaafd08e57e7cb74cdf",
+        "loom_block_hash": "04db047dc7e44b41a58a009679d0c9c69eb0e6a1e7507960cd0c7ca8292ff0f4",
+        "apx_manifest_hash": "1a5e5ee6b2ce7b79605b5a02fa770318b695c46a2a8588932d7c670628d56dea",
+        "prev_entry_hash": null,
+        "codex_library_hash": null,
         "timestamp_utc": null,
-        "umx_ledger_hash": "32a5d1316c3bbcf5b1d4621c0900789c2887e9255128e6e1cc28ac42a92bc7f8",
-        "window_id": "LINE4_ticks_1_6"
+        "meta": {}
       },
       {
-        "C_t": 356793608,
-        "apx_manifest_hash": "72ee6eac41b873395c0ea9e71a8c0f4394c21f3df1c7b111adb19388cf176de9",
-        "codex_library_hash": null,
         "gid": "LINE4",
-        "loom_block_hash": "e2488772382aec5b58e9222de95b17a72a1b80e0ababc0e430c0d28485cd02b8",
-        "manifest_check": 286776878,
-        "meta": {},
-        "nap_envelope_hash": "f4c81ebb99fa288dbdcc1f8f2a4fba1757e212aead05935ede45f0f06f2b31a9",
-        "prev_entry_hash": "4e6f36eef5ab9a0ac8d02adc318929a63a39d08c9f7e74b4e6a030af1a9985cf",
         "run_id": "LINE4_demo",
         "tick": 2,
+        "window_id": "LINE4_ticks_1_6",
+        "C_t": 356793608,
+        "manifest_check": 71810111,
+        "nap_envelope_hash": "1fc2fcbb0491ff715790d26eba9d99b0317a8a97b06def4c353ddc04b6163c8b",
+        "umx_ledger_hash": "b6903723f7576acae086ec298eadbbd988f59cc91340c7cfdd4891411d530d2b",
+        "loom_block_hash": "e2488772382aec5b58e9222de95b17a72a1b80e0ababc0e430c0d28485cd02b8",
+        "apx_manifest_hash": "1a5e5ee6b2ce7b79605b5a02fa770318b695c46a2a8588932d7c670628d56dea",
+        "prev_entry_hash": "f995c463c2ceec8518949579d1e587bef17fe30bc0cebf4495fef763a2c55165",
+        "codex_library_hash": null,
         "timestamp_utc": null,
-        "umx_ledger_hash": "956205532b3001074cecd52405c0c0ec9e5fd1a2c85f20fd1b31b90c9241522e",
-        "window_id": "LINE4_ticks_1_6"
+        "meta": {}
       },
       {
-        "C_t": 65491504,
-        "apx_manifest_hash": "72ee6eac41b873395c0ea9e71a8c0f4394c21f3df1c7b111adb19388cf176de9",
-        "codex_library_hash": null,
         "gid": "LINE4",
-        "loom_block_hash": "acc605886a319f7f92f7255e860f956fa8e5d8a2a94d478d5398abcd98b7a5db",
-        "manifest_check": 286776878,
-        "meta": {},
-        "nap_envelope_hash": "62e9de282ca12fd427e69c8e5bfda71a9d71463f1df76c3e00ed0fcb78aaf49c",
-        "prev_entry_hash": "071c05b76cbd72cb9f7f26098ea2b2564ff0f2c670968d5671f3419fe0cd3f8c",
         "run_id": "LINE4_demo",
         "tick": 3,
+        "window_id": "LINE4_ticks_1_6",
+        "C_t": 65491504,
+        "manifest_check": 71810111,
+        "nap_envelope_hash": "609b14ce4d62e45d4f809e55d098ffaaa5bace5247d753605f7c5525d170d25a",
+        "umx_ledger_hash": "7b58274bed529c1c53720d75645a99c12b776b4b33a3b33f1b9b9de02b6c48ab",
+        "loom_block_hash": "acc605886a319f7f92f7255e860f956fa8e5d8a2a94d478d5398abcd98b7a5db",
+        "apx_manifest_hash": "1a5e5ee6b2ce7b79605b5a02fa770318b695c46a2a8588932d7c670628d56dea",
+        "prev_entry_hash": "0fe6aa52a3df537021cc9981f8f3a6808b016f150e1f612df4b277ec0756963b",
+        "codex_library_hash": null,
         "timestamp_utc": null,
-        "umx_ledger_hash": "6e553679d392d2f9a104ed87776647128a6ea6634057e5a7792d94702b2a3859",
-        "window_id": "LINE4_ticks_1_6"
+        "meta": {}
       },
       {
-        "C_t": 113355772,
-        "apx_manifest_hash": "72ee6eac41b873395c0ea9e71a8c0f4394c21f3df1c7b111adb19388cf176de9",
-        "codex_library_hash": null,
         "gid": "LINE4",
-        "loom_block_hash": "8e9bd822e61ffc971f7e5617ad35b6e151342512586f862ed2bc42fe5f706322",
-        "manifest_check": 286776878,
-        "meta": {},
-        "nap_envelope_hash": "8f6053a0f61d3139c9484aee51d2289a422e66e400cd79346bce003afbd1c71d",
-        "prev_entry_hash": "5ef2f8392c85b02167c95b265acd9f5085b9a3e903f397cb35da53dee0a6b65a",
         "run_id": "LINE4_demo",
         "tick": 4,
+        "window_id": "LINE4_ticks_1_6",
+        "C_t": 113355772,
+        "manifest_check": 71810111,
+        "nap_envelope_hash": "8f7802c870eaab9def359cffff48981a108a988226480246afca82378c6d829b",
+        "umx_ledger_hash": "62d1b140e1d7ff5e8ed2c4a4903e35a788eff07254c4ab68d104224e460b8d03",
+        "loom_block_hash": "8e9bd822e61ffc971f7e5617ad35b6e151342512586f862ed2bc42fe5f706322",
+        "apx_manifest_hash": "1a5e5ee6b2ce7b79605b5a02fa770318b695c46a2a8588932d7c670628d56dea",
+        "prev_entry_hash": "c634c5bb709970d33bec2d0c962b4e049420053943d262950ad1a270707b27c6",
+        "codex_library_hash": null,
         "timestamp_utc": null,
-        "umx_ledger_hash": "89e4f5e44f880c3d7bdc0f8dcfa94d7e2f37c88e15e53edea9a47eaa2d714f91",
-        "window_id": "LINE4_ticks_1_6"
+        "meta": {}
       },
       {
-        "C_t": 927048329,
-        "apx_manifest_hash": "72ee6eac41b873395c0ea9e71a8c0f4394c21f3df1c7b111adb19388cf176de9",
-        "codex_library_hash": null,
         "gid": "LINE4",
-        "loom_block_hash": "adddbe6d164b384ca2f89e7ff22dac4b1c5a1a77efd19c8b95efe5e6320c8724",
-        "manifest_check": 286776878,
-        "meta": {},
-        "nap_envelope_hash": "9c67c4b584ea348ffc6aaeb5484127ce5f101c6d8069ee0717614aa109835eda",
-        "prev_entry_hash": "4ed5e8437cbc97d45c09fa5bfcb463c7f7fbe120d5a95977edaea42b9626ddca",
         "run_id": "LINE4_demo",
         "tick": 5,
+        "window_id": "LINE4_ticks_1_6",
+        "C_t": 927048329,
+        "manifest_check": 71810111,
+        "nap_envelope_hash": "a6cb3e71ec015260bb37d5f4aac0e7059f04c0154e60d2af8dbc06d8997157e3",
+        "umx_ledger_hash": "84821aa847528a20fb4bc7bbd4836eae2255541062c92fe100d611d54751bb5a",
+        "loom_block_hash": "adddbe6d164b384ca2f89e7ff22dac4b1c5a1a77efd19c8b95efe5e6320c8724",
+        "apx_manifest_hash": "1a5e5ee6b2ce7b79605b5a02fa770318b695c46a2a8588932d7c670628d56dea",
+        "prev_entry_hash": "b3bcdd36f841023621908ab72472e3293bb74bcf5d51bb0fe1ecfd6edb20e4ba",
+        "codex_library_hash": null,
         "timestamp_utc": null,
-        "umx_ledger_hash": "47c9beb783f39c4cbd724b0e2e85e01b2aa4135c5329d51c7bd0f46b36528977",
-        "window_id": "LINE4_ticks_1_6"
+        "meta": {}
       },
       {
-        "C_t": 759821701,
-        "apx_manifest_hash": "72ee6eac41b873395c0ea9e71a8c0f4394c21f3df1c7b111adb19388cf176de9",
-        "codex_library_hash": null,
         "gid": "LINE4",
-        "loom_block_hash": "716ec9917a6b63cbc05b75bf8f33959ef2c67736cdf0e39fab268bbe10604dfd",
-        "manifest_check": 286776878,
-        "meta": {},
-        "nap_envelope_hash": "5e855f413f5b355f49672be406e42923c8cb8197a0b6bc7ed6389d338277bf30",
-        "prev_entry_hash": "87ef265005cbe76cb65420b1ed8602b0a12aaa74515c4733a1c34434d416cb1e",
         "run_id": "LINE4_demo",
         "tick": 6,
+        "window_id": "LINE4_ticks_1_6",
+        "C_t": 759821701,
+        "manifest_check": 71810111,
+        "nap_envelope_hash": "de932cd494d483b8e1e625c948eda7d391c88598555cbc315e1c058046047018",
+        "umx_ledger_hash": "a7d75de5d885b322b2cc490d6716defdf0bc339948416e4c3b7f75e64bd74993",
+        "loom_block_hash": "716ec9917a6b63cbc05b75bf8f33959ef2c67736cdf0e39fab268bbe10604dfd",
+        "apx_manifest_hash": "1a5e5ee6b2ce7b79605b5a02fa770318b695c46a2a8588932d7c670628d56dea",
+        "prev_entry_hash": "1c8e59ce07c295c20af2796c68543182b8e98a9a319002c03daa9751e4c66d67",
+        "codex_library_hash": null,
         "timestamp_utc": null,
-        "umx_ledger_hash": "dc95e3857e6fc56ec7ec9903c888979557bcb74e94d1e19134c9f805961c61ec",
-        "window_id": "LINE4_ticks_1_6"
+        "meta": {}
+      }
+    ],
+    "ingress_envelopes": [],
+    "egress_envelopes": [
+      {
+        "v": 1,
+        "tick": 6,
+        "gid": "LINE4",
+        "nid": "LINE4",
+        "layer": "EGRESS",
+        "mode": "P",
+        "payload_ref": 71810111,
+        "seq": 8,
+        "prev_chain": 759821701,
+        "sig": "",
+        "slp_event_ids": [],
+        "meta": {}
       }
     ]
   }

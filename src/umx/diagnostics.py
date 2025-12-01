@@ -13,13 +13,20 @@ class UMXDiagnosticsConfig:
     summaries that can flag conservation issues, negative values, or numeric
     overflow. Violations are surfaced via the returned diagnostics record and
     can optionally raise an exception when ``raise_on_violation`` is True.
+
+    Additional policy hooks can enforce causal-radius and epsilon-cap handling
+    reported by the tick ledger. Setting ``kill_on_violation`` allows a caller
+    to halt the run as soon as a violation is detected.
     """
 
     enabled: bool = False
     check_conservation: bool = True
     allow_negative: bool = True
     overflow_limit: Optional[int] = None
+    enforce_causal_radius: bool = False
+    enforce_epsilon_cap: bool = False
     raise_on_violation: bool = False
+    kill_on_violation: bool = False
 
     def evaluate_tick(
         self,
@@ -30,6 +37,7 @@ class UMXDiagnosticsConfig:
         sum_pre_u: Optional[int] = None,
         sum_post_u: Optional[int] = None,
         z_check: Optional[int] = None,
+        policy_notes: Optional[Sequence[str]] = None,
     ) -> "UMXDiagnosticsRecord":
         """Evaluate invariants for a single tick and return diagnostics."""
 
@@ -40,6 +48,7 @@ class UMXDiagnosticsConfig:
             sum_pre_u=sum_pre_u,
             sum_post_u=sum_post_u,
             z_check=z_check,
+            policy_notes=policy_notes,
             config=self,
         )
         if self.raise_on_violation and record.violations:
@@ -66,6 +75,8 @@ class UMXDiagnosticsRecord:
     overflow_limit: Optional[int]
     overflow_pre: bool
     overflow_post: bool
+    policy_notes: List[str] = field(default_factory=list)
+    policy_violations: List[str] = field(default_factory=list)
     violations: List[str] = field(default_factory=list)
 
     @classmethod
@@ -79,6 +90,7 @@ class UMXDiagnosticsRecord:
         sum_pre_u: Optional[int] = None,
         sum_post_u: Optional[int] = None,
         z_check: Optional[int] = None,
+        policy_notes: Optional[Sequence[str]] = None,
     ) -> "UMXDiagnosticsRecord":
         """Create a diagnostics record from state arrays and config."""
 
@@ -105,6 +117,13 @@ class UMXDiagnosticsRecord:
             overflow_pre = any(abs(value) > limit for value in pre_u)
             overflow_post = any(abs(value) > limit for value in post_u)
 
+        notes = list(policy_notes or [])
+        policy_violations: List[str] = []
+        if config.enforce_causal_radius and "causal_radius_clamped" in notes:
+            policy_violations.append("causal radius exceeded")
+        if config.enforce_epsilon_cap and "epsilon_cap_applied" in notes:
+            policy_violations.append("epsilon cap triggered")
+
         violations: List[str] = []
         if config.check_conservation and not conservation_ok:
             violations.append(
@@ -116,6 +135,7 @@ class UMXDiagnosticsRecord:
             violations.append(
                 f"overflow detected beyond limit {config.overflow_limit}"
             )
+        violations.extend(policy_violations)
 
         return cls(
             tick=tick,
@@ -131,5 +151,7 @@ class UMXDiagnosticsRecord:
             overflow_limit=config.overflow_limit,
             overflow_pre=overflow_pre,
             overflow_post=overflow_post,
+            policy_notes=notes,
+            policy_violations=policy_violations,
             violations=violations,
         )

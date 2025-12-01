@@ -34,6 +34,8 @@ class UMXRunContext:
     state: Optional[List[int]] = field(default=None, repr=False)
     diag_config: Optional[UMXDiagnosticsConfig] = None
     diagnostics: List[UMXDiagnosticsRecord] = field(default_factory=list, repr=False)
+    killed: bool = False
+    kill_reason: Optional[str] = None
 
     def __post_init__(self) -> None:
         if not self.gid:
@@ -54,6 +56,8 @@ class UMXRunContext:
             raise ValueError("Initial state length must match topology N")
         self.state = list(u0)
         self.tick = 0
+        self.killed = False
+        self.kill_reason = None
 
     def apply_external_inputs(self, deltas: Sequence[int]) -> List[int]:
         """Apply a vector of external inputs to the current state.
@@ -76,6 +80,10 @@ class UMXRunContext:
 
         if self.state is None:
             raise ValueError("Call init_state(u0) before stepping the run")
+        if self.killed:
+            raise ValueError(
+                f"Run halted by kill-switch: {self.kill_reason or 'violation recorded'}"
+            )
 
         next_tick = self.tick + 1
         ledger = umx_step(next_tick, self.state, self.topo, self.profile)
@@ -87,8 +95,15 @@ class UMXRunContext:
                 sum_pre_u=ledger.sum_pre_u,
                 sum_post_u=ledger.sum_post_u,
                 z_check=ledger.z_check,
+                policy_notes=ledger.policy_notes,
             )
             self.diagnostics.append(diagnostics)
+            if self.diag_config.kill_on_violation and diagnostics.violations:
+                self.killed = True
+                self.kill_reason = "; ".join(diagnostics.violations)
+                raise ValueError(
+                    f"UMX run killed at tick {ledger.tick}: {self.kill_reason}"
+                )
         self.state = ledger.post_u
         self.tick = ledger.tick
         return ledger

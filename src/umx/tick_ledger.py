@@ -34,6 +34,10 @@ class UMXTickLedgerV1:
     pre_u: List[int]
     edges: List[EdgeFluxV1] = field(default_factory=list)
     post_u: List[int] = field(default_factory=list)
+    nap_ref: str = ""
+    causal_radius_applied: bool = False
+    epsilon_applied: bool = False
+    policy_notes: List[str] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         if self.sum_pre_u != self.sum_post_u or self.z_check != self.sum_pre_u:
@@ -42,3 +46,5 @@ class UMXTickLedgerV1:
             raise ValueError("pre_u and post_u must be populated")
         if len(self.pre_u) != len(self.post_u):
             raise ValueError("pre_u and post_u must have the same length")
+        if not isinstance(self.nap_ref, str):
+            raise ValueError("nap_ref must be a string")

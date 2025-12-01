@@ -10,6 +10,7 @@ from umx.tick_ledger import UMXTickLedgerV1
 from umx.topology_profile import TopologyProfileV1
 
 from .loom import LoomIBlockV1, LoomPBlockV1, compute_s_t, step as loom_step
+from .chain import LoomChainRecorder, LoomChainState
 
 
 SeqRule = Callable[[UMXTickLedgerV1], int]
@@ -41,6 +42,7 @@ class LoomRunContext:
     p_blocks: List[LoomPBlockV1] = field(default_factory=list, init=False)
     i_blocks: List[LoomIBlockV1] = field(default_factory=list, init=False)
     ledgers: List[UMXTickLedgerV1] = field(default_factory=list, init=False)
+    recorder: LoomChainRecorder = field(default_factory=LoomChainRecorder)
 
     def __post_init__(self) -> None:
         if self.umx_ctx:
@@ -78,9 +80,12 @@ class LoomRunContext:
 
         self.C_t = C_t
         self.p_blocks.append(p_block)
+        self.recorder.record_p_block(p_block)
         self.ledgers.append(ledger)
         if maybe_i_block:
             self.i_blocks.append(maybe_i_block)
+            window_hashes = self.recorder.p_hashes[-maybe_i_block.W :]
+            self.recorder.record_i_block(maybe_i_block, window_hashes)
         return p_block, maybe_i_block
 
     def step(self) -> Tuple[UMXTickLedgerV1, LoomPBlockV1, Optional[LoomIBlockV1]]:
@@ -145,3 +150,8 @@ class LoomRunContext:
         replay_ctx.tick = checkpoint.tick
         replay_ctx.run_until(tick)
         return replay_ctx.current_state()
+
+    def chain_state(self) -> LoomChainState:
+        """Export chain tip information for NAP envelopes or diagnostics."""
+
+        return self.recorder.chain_state()

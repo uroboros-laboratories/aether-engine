@@ -35,6 +35,7 @@ class EdgeProfileV1:
     cap: int
     SC: int
     c: int = 0
+    causal_radius: int | None = None
     attrs: Dict[str, object] = field(default_factory=dict)
 
 
@@ -48,6 +49,9 @@ class TopologyProfileV1:
     nodes: List[NodeProfileV1]
     edges: List[EdgeProfileV1]
     SC: int
+    causal_radius: int = 0
+    max_edge_cap: int | None = None
+    nap_ref: str | None = None
     meta: Dict[str, object] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
@@ -55,6 +59,12 @@ class TopologyProfileV1:
         self._validate_edges()
         if self.SC <= 0:
             raise ValueError("SC must be a positive integer")
+        if self.causal_radius < 0:
+            raise ValueError("causal_radius must be non-negative")
+        if self.max_edge_cap is not None and (
+            not isinstance(self.max_edge_cap, int) or self.max_edge_cap <= 0
+        ):
+            raise ValueError("max_edge_cap must be a positive integer when provided")
 
     def _validate_nodes(self) -> None:
         node_ids = [_ensure_int(node.node_id, "node.node_id") for node in self.nodes]
@@ -82,6 +92,10 @@ class TopologyProfileV1:
                 raise ValueError("Edge SC must be positive")
             if edge.SC != self.SC:
                 raise ValueError("Each edge SC must match the topology SC")
+            if edge.causal_radius is not None and (
+                not isinstance(edge.causal_radius, int) or edge.causal_radius <= 0
+            ):
+                raise ValueError("edge.causal_radius must be a positive integer when provided")
 
 
 def gf01_topology_profile() -> TopologyProfileV1:
@@ -134,10 +148,25 @@ def _load_edge(entry: Mapping[str, Any]) -> EdgeProfileV1:
     cap = _ensure_int(entry.get("cap"), "edge.cap")
     sc = _ensure_int(entry.get("SC"), "edge.SC")
     c = _ensure_int(entry.get("c", 0), "edge.c")
+    causal_radius = entry.get("causal_radius")
+    if causal_radius is not None:
+        causal_radius = _ensure_int(causal_radius, "edge.causal_radius")
+        if causal_radius <= 0:
+            raise ValueError("edge.causal_radius must be positive when provided")
     attrs = entry.get("attrs", {})
     if not isinstance(attrs, Mapping):
         raise ValueError("edge.attrs must be an object if provided")
-    return EdgeProfileV1(e_id=e_id, i=i, j=j, k=k, cap=cap, SC=sc, c=c, attrs=dict(attrs))
+    return EdgeProfileV1(
+        e_id=e_id,
+        i=i,
+        j=j,
+        k=k,
+        cap=cap,
+        SC=sc,
+        c=c,
+        causal_radius=causal_radius,
+        attrs=dict(attrs),
+    )
 
 
 def topology_profile_from_dict(data: Mapping[str, Any]) -> TopologyProfileV1:
@@ -157,6 +186,7 @@ def topology_profile_from_dict(data: Mapping[str, Any]) -> TopologyProfileV1:
         profile = str(data["profile"])
         N = _ensure_int(data["N"], "N")
         SC = _ensure_int(data["SC"], "SC")
+        causal_radius = _ensure_int(data.get("causal_radius", 0), "causal_radius")
     except KeyError as exc:  # pragma: no cover - explicit message for clarity
         raise ValueError(f"Missing required field: {exc.args[0]}") from exc
 
@@ -176,6 +206,16 @@ def topology_profile_from_dict(data: Mapping[str, Any]) -> TopologyProfileV1:
     if not isinstance(meta, Mapping):
         raise ValueError("meta must be an object if provided")
 
+    max_edge_cap = data.get("max_edge_cap")
+    if max_edge_cap is not None:
+        max_edge_cap = _ensure_int(max_edge_cap, "max_edge_cap")
+        if max_edge_cap <= 0:
+            raise ValueError("max_edge_cap must be a positive integer when provided")
+
+    nap_ref = data.get("nap_ref")
+    if nap_ref is not None and not isinstance(nap_ref, str):
+        raise ValueError("nap_ref must be a string when provided")
+
     return TopologyProfileV1(
         gid=gid,
         profile=profile,
@@ -183,6 +223,9 @@ def topology_profile_from_dict(data: Mapping[str, Any]) -> TopologyProfileV1:
         nodes=nodes,
         edges=edges,
         SC=SC,
+        causal_radius=causal_radius,
+        max_edge_cap=max_edge_cap,
+        nap_ref=nap_ref,
         meta=dict(meta),
     )
 

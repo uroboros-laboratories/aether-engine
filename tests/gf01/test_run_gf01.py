@@ -65,10 +65,10 @@ def test_run_gf01_emits_expected_artefacts():
     manifest_short = result.manifests["GF01_APX_v0_ticks_1_2"]
     assert isinstance(manifest_full, APXManifestV1)
     assert isinstance(manifest_short, APXManifestV1)
-    assert manifest_full.manifest_check == 487809945
-    assert manifest_short.manifest_check == 869911338
-    assert [s.L_total for s in manifest_full.streams] == [7, 8]
-    assert [s.L_total for s in manifest_short.streams] == [1, 2]
+    assert manifest_full.manifest_check == 824666593
+    assert manifest_short.manifest_check == 757609893
+    assert [s.L_total for s in manifest_full.streams] == [400, 528]
+    assert [s.L_total for s in manifest_short.streams] == [112, 144]
 
     assert len(result.scenes) == 8
     assert len(result.envelopes) == 8

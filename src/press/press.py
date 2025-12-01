@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Dict, Iterable, List, Mapping, Sequence, Tuple
+from typing import Dict, Iterable, List, Mapping, MutableMapping, Sequence, Tuple
 
 from umx.profile_cmp0 import ProfileCMP0V1
 
@@ -26,6 +26,35 @@ class APXStreamV1:
             raise ValueError("stream_id must be a non-empty string")
         if self.scheme not in {"R", "GR", "ID"}:
             raise ValueError("scheme must be one of 'R', 'GR', or 'ID'")
+
+
+@dataclass(frozen=True)
+class APXPayloadV1:
+    """Binary payload for a Press/APX stream."""
+
+    stream_id: str
+    scheme: str
+    payload: bytes
+    checksum_hex: str
+
+
+@dataclass(frozen=True)
+class APXResidualPayloadV1:
+    """Residual payload recorded via SimB for one logical stream."""
+
+    stream_id: str
+    codec: str
+    payload: bytes
+    checksum_hex: str
+
+
+@dataclass(frozen=True)
+class APXPackageV1:
+    """Manifest + payload bundle for a window."""
+
+    manifest: APXManifestV1
+    payloads: Dict[str, APXPayloadV1]
+    residuals: Dict[str, APXResidualPayloadV1] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -92,6 +121,21 @@ def _value_as_tuple(value: Sequence[int]) -> tuple[int, ...]:
     return (value,)
 
 
+def _varint_bits(value: int) -> int:
+    """Return the number of bits required to represent a zigzag-varint encoded int."""
+
+    if value < 0:
+        value = -value
+    bits = 0
+    remaining = value
+    while True:
+        bits += 8
+        remaining >>= 7
+        if not remaining:
+            break
+    return bits
+
+
 def compute_id_mode_lengths(values: Sequence[Sequence[int]]) -> Dict[str, int]:
     """Return model/residual/total bit counts for ID (identity) mode."""
 
@@ -99,28 +143,34 @@ def compute_id_mode_lengths(values: Sequence[Sequence[int]]) -> Dict[str, int]:
         return {"L_model": 0, "L_residual": 0, "L_total": 0}
 
     width = _ensure_consistent_width(values)
-    L_model = width
-    L_residual = len(values) * width
+    header_bits = _varint_bits(width) + _varint_bits(len(values))
+    payload_bits = sum(_varint_bits(abs(v) * 2) for value in values for v in _value_as_tuple(value))
+    L_model = header_bits
+    L_residual = payload_bits
     L_total = L_model + L_residual
     return {"L_model": L_model, "L_residual": L_residual, "L_total": L_total}
 
 
 def compute_r_mode_lengths(values: Sequence[Sequence[int]]) -> Dict[str, int]:
-    """Return model/residual/total bit counts for simple R-mode.
-
-    R-mode here is intentionally minimal for GF-01 parity: the model cost is 0,
-    residual cost grows with the number of tick-aligned entries, plus a small
-    bump when the tuple width suggests a wider flux vector.
-    """
+    """Return model/residual/total bit counts for delta (R) mode."""
 
     if not values:
         return {"L_model": 0, "L_residual": 0, "L_total": 0}
 
     width = _ensure_consistent_width(values)
-    L_model = 0
-    L_residual = max(0, len(values) - 1)
-    if width >= 8:
-        L_residual += 1
+    header_bits = _varint_bits(width) + _varint_bits(len(values))
+
+    first = _value_as_tuple(values[0])
+    model_bits = sum(_varint_bits(abs(v) * 2) for v in first)
+    deltas_bits = 0
+    prev = first
+    for value in values[1:]:
+        curr = _value_as_tuple(value)
+        deltas_bits += sum(_varint_bits(abs(c - p) * 2) for c, p in zip(curr, prev))
+        prev = curr
+
+    L_model = header_bits + model_bits
+    L_residual = deltas_bits
     L_total = L_model + L_residual
     return {"L_model": L_model, "L_residual": L_residual, "L_total": L_total}
 
@@ -133,22 +183,24 @@ def compute_gr_mode_lengths(values: Sequence[Sequence[int]]) -> Dict[str, int]:
 
     width = _ensure_consistent_width(values)
 
-    runs: List[int] = []
-    prev = values[0]
+    runs: List[Tuple[int, Tuple[int, ...]]] = []
+    prev = _value_as_tuple(values[0])
     count = 1
     for value in values[1:]:
-        if _value_as_tuple(value) == _value_as_tuple(prev):
+        current = _value_as_tuple(value)
+        if current == prev:
             count += 1
         else:
-            runs.append(count)
-            prev = value
+            runs.append((count, prev))
+            prev = current
             count = 1
-    runs.append(count)
+    runs.append((count, prev))
 
-    L_model = max(0, len(runs) - 1)
-    L_residual = sum(max(0, run_len - 1) for run_len in runs)
-    if width >= 8:
-        L_residual += 1
+    header_bits = _varint_bits(width) + _varint_bits(len(runs))
+    model_bits = sum(_varint_bits(abs(component) * 2) for _, value in runs for component in value)
+    residual_bits = sum(_varint_bits(run_len) for run_len, _ in runs)
+    L_model = header_bits + model_bits
+    L_residual = residual_bits
     L_total = L_model + L_residual
     return {"L_model": L_model, "L_residual": L_residual, "L_total": L_total}
 
@@ -323,6 +375,66 @@ class PressWindowContextV1:
                 self._expected_tick[name] = self.start_tick
             self._apxi_view = None if apxi_view is None else apxi_view
         return manifest
+
+    def encode_window(
+        self,
+        apx_name: str,
+        *,
+        prefer_scheme_hints: bool = True,
+        residual_tables: Mapping[str, "SimBResidualTableV1"] | None = None,
+    ) -> APXPackageV1:
+        """Encode all buffered streams using SimA ID/R/GR with MDL selection.
+
+        Optional residual_tables allow attaching SimB payloads for the same stream
+        names. They are passed through to the returned package for APX capsule
+        construction.
+        """
+
+        from press.sima import build_manifest_stream, encode_window_streams
+
+        expected_entries = self.end_tick - self.start_tick + 1
+        for name, stream in self.streams.items():
+            if len(stream.values) != expected_entries:
+                raise ValueError(
+                    f"Stream '{name}' has {len(stream.values)} entries but expected "
+                    f"{expected_entries} based on tick range"
+                )
+
+        encoded_streams = encode_window_streams(self.streams.values(), prefer_scheme_hints=prefer_scheme_hints)
+        apx_streams: List[APXStreamV1] = []
+        payloads: MutableMapping[str, APXPayloadV1] = {}
+
+        for name in sorted(self.streams.keys()):
+            encoded = encoded_streams[name]
+            manifest_stream = build_manifest_stream(name, self.streams[name].description, encoded)
+            apx_streams.append(manifest_stream)
+            payloads[name] = APXPayloadV1(
+                stream_id=name,
+                scheme=encoded.scheme,
+                payload=encoded.payload,
+                checksum_hex=encoded.checksum_hex,
+            )
+
+        apxi_view = self._build_apxi_view(apx_name)
+        manifest_check = compute_manifest_check(apx_name, self.profile, apx_streams)
+        manifest = APXManifestV1(
+            apx_name=apx_name,
+            profile=self.profile.name,
+            manifest_check=manifest_check,
+            gid=self.gid,
+            window_id=self.window_id,
+            streams=apx_streams,
+            apxi_view_ref=apxi_view.view_id if apxi_view else None,
+        )
+        self._apxi_view = apxi_view
+
+        if self.clear_on_close:
+            for name, stream in self.streams.items():
+                stream.values.clear()
+                self._expected_tick[name] = self.start_tick
+            self._apxi_view = None if apxi_view is None else apxi_view
+        residuals = residual_tables or {}
+        return APXPackageV1(manifest=manifest, payloads=dict(payloads), residuals=dict(residuals))
 
     def get_apxi_view(self) -> "APXiViewV1 | None":
         """Return the most recent APXi view computed for this window, if any."""

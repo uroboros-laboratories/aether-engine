@@ -7,8 +7,11 @@ from typing import Dict, Iterable, List, Mapping, Optional, Sequence, TYPE_CHECK
 from gate import (
     NAPEnvelopeV1,
     PFNAInputV0,
+    PFNAIngressQueue,
+    PFNATransformV1,
     PressStreamSpecV1,
     SceneFrameV1,
+    apply_governance_to_envelopes,
     _default_press_stream_specs,
     _pfna_payload_ref,
     build_scene_and_envelope,
@@ -16,9 +19,14 @@ from gate import (
 from governance import BudgetUsage, GovernedActionQueue, GovernanceConfigV1, governed_decision_loop
 from ops import StructuredLogger
 from loom.loom import LoomIBlockV1, LoomPBlockV1
+from loom.chain import LoomBlockStore, LoomChainRecorder
 from loom.run_context import LoomRunContext
 from press import APXManifestV1, APXiDescriptorV1, APXiViewV1, PressWindowContextV1
-from uledger import ULedgerEntryV1, build_uledger_entries
+from uledger import (
+    ULedgerCheckpointV1,
+    ULedgerEntryV1,
+    build_and_validate_uledger,
+)
 from umx.profile_cmp0 import ProfileCMP0V1, gf01_profile_cmp0
 from umx.run_context import UMXRunContext
 from umx.tick_ledger import UMXTickLedgerV1
@@ -48,6 +56,7 @@ class GF01RunResult:
     governance: GovernanceConfigV1 | None = None
     governance_budget_usage: BudgetUsage | None = None
     governance_envelopes: List[NAPEnvelopeV1] = field(default_factory=list)
+    u_ledger_checkpoint: ULedgerCheckpointV1 | None = None
     codex_motifs: tuple["CodexLibraryEntryV1", ...] = ()
     codex_proposals: tuple["CodexProposalV1", ...] = ()
     codex_actions: tuple["CodexProposalV1", ...] = ()
@@ -134,8 +143,13 @@ def _append_press_values(
 
 
 def _group_pfna_inputs(
-    pfna_inputs: Iterable[PFNAInputV0], topo: TopologyProfileV1, gid: str, run_id: str
-) -> Dict[int, List[PFNAInputV0]]:
+    pfna_inputs: Iterable[PFNAInputV0],
+    topo: TopologyProfileV1,
+    gid: str,
+    run_id: str,
+    *,
+    as_mapping: bool = True,
+) -> Dict[int, List[PFNAInputV0]] | Tuple[PFNAInputV0, ...]:
     grouped: Dict[int, List[PFNAInputV0]] = {}
     for pfna in pfna_inputs:
         if pfna.gid != gid:
@@ -145,7 +159,14 @@ def _group_pfna_inputs(
         if len(pfna.values) != topo.N:
             raise ValueError("PFNA values length must match topology N")
         grouped.setdefault(pfna.tick, []).append(pfna)
-    return grouped
+
+    if as_mapping:
+        return grouped
+
+    flattened: List[PFNAInputV0] = []
+    for tick in sorted(grouped.keys()):
+        flattened.extend(sorted(grouped[tick], key=lambda item: item.pfna_id))
+    return tuple(flattened)
 
 
 def _apply_pfna_initial_state(base_state: Sequence[int], pfna_inputs: Iterable[PFNAInputV0]) -> List[int]:
@@ -168,11 +189,13 @@ def run_cmp0_tick_loop(
     run_id: str,
     nid: str,
     pfna_inputs: Optional[Iterable[PFNAInputV0]] = None,
+    pfna_transform: PFNATransformV1 | None = None,
     press_default_streams: Optional[Iterable[PressStreamSpecV1]] = None,
     logger: Optional[StructuredLogger] = None,
     governance: GovernanceConfigV1 | None = None,
     codex_ctx: "CodexContext" | None = None,
     codex_proposals: Sequence["CodexProposalV1"] | None = None,
+    loom_block_store: LoomBlockStore | None = None,
 ) -> GF01RunResult:
     """Execute a CMP-0 tick loop and assemble SceneFrame-driven artefacts."""
 
@@ -217,23 +240,38 @@ def run_cmp0_tick_loop(
             },
         )
 
-    pfna_by_tick: Dict[int, List[PFNAInputV0]] = {}
-    initial_pfna: List[PFNAInputV0] = []
     effective_initial_state: List[int] = list(initial_state)
+    ingress_queue = PFNAIngressQueue(transform=pfna_transform)
     if pfna_inputs:
-        pfna_by_tick = _group_pfna_inputs(pfna_inputs, topo=topo, gid=topo.gid, run_id=run_id)
-        initial_pfna = pfna_by_tick.pop(0, [])
-        if initial_pfna:
-            effective_initial_state = _apply_pfna_initial_state(initial_state, initial_pfna)
+        ingress_queue.extend(
+            _group_pfna_inputs(
+                pfna_inputs, topo=topo, gid=topo.gid, run_id=run_id, as_mapping=False
+            )
+        )
+
+    initial_pfna_events = ingress_queue.pop_ready(0)
+    if initial_pfna_events:
+        effective_initial_state = _apply_pfna_initial_state(
+            initial_state, [event.as_pfna_input for event in initial_pfna_events]
+        )
 
     ctx = UMXRunContext(topo=topo, profile=profile, gid=topo.gid, run_id=run_id)
     ctx.init_state(effective_initial_state)
-    loom_ctx = LoomRunContext(profile=profile, topo=topo, umx_ctx=ctx)
+    loom_ctx = LoomRunContext(
+        profile=profile,
+        topo=topo,
+        umx_ctx=ctx,
+        recorder=LoomChainRecorder(store=loom_block_store)
+        if loom_block_store
+        else LoomChainRecorder(),
+    )
 
     ledgers: List[UMXTickLedgerV1] = []
     p_blocks: List[LoomPBlockV1] = []
     i_blocks: List[LoomIBlockV1] = []
-    tick_cache: List[tuple[UMXTickLedgerV1, LoomPBlockV1, int, List[str]]] = []
+    tick_cache: List[
+        tuple[UMXTickLedgerV1, LoomPBlockV1, int, List[str], List[Mapping[str, object]]]
+    ] = []
     ingress_envelopes: List[NAPEnvelopeV1] = []
     egress_envelopes: List[NAPEnvelopeV1] = []
 
@@ -241,13 +279,33 @@ def run_cmp0_tick_loop(
         next_tick = ctx.tick + 1
         pfna_refs_for_tick: List[str] = []
         pfna_batch: List[PFNAInputV0] = []
-        if next_tick in pfna_by_tick:
+        pfna_audit_for_tick: List[Mapping[str, object]] = []
+        pfna_events = ingress_queue.pop_ready(next_tick)
+        pfna_meta_for_tick: List[Mapping[str, object]] = []
+        if pfna_events:
             pfna_deltas = [0 for _ in range(topo.N)]
-            pfna_batch = pfna_by_tick[next_tick]
-            for pfna in pfna_batch:
-                pfna_refs_for_tick.append(pfna.pfna_id)
-                pfna_deltas = [acc + int(delta) for acc, delta in zip(pfna_deltas, pfna.values)]
+            for event in pfna_events:
+                pfna_refs_for_tick.append(event.pfna.pfna_id)
+                pfna_batch.append(event.as_pfna_input)
+                pfna_audit_for_tick.append(
+                    {
+                        "pfna_id": event.pfna.pfna_id,
+                        "audit": event.audit,
+                        "values": event.integerized,
+                    }
+                )
+                pfna_deltas = [acc + int(delta) for acc, delta in zip(pfna_deltas, event.integerized)]
+            pfna_meta_for_tick = pfna_audit_for_tick or [
+                {"pfna_id": pfna.pfna_id, "values": pfna.values, "audit": ()}
+                for pfna in pfna_batch
+            ]
             ctx.apply_external_inputs(pfna_deltas)
+
+        if pfna_refs_for_tick and not pfna_meta_for_tick:
+            pfna_meta_for_tick = [
+                {"pfna_id": ref, "values": tuple(), "audit": ()}
+                for ref in pfna_refs_for_tick
+            ]
 
         prev_chain = loom_ctx.current_chain_value()
         if pfna_batch:
@@ -283,7 +341,9 @@ def run_cmp0_tick_loop(
 
         ledgers.append(ledger)
         p_blocks.append(p_block)
-        tick_cache.append((ledger, p_block, prev_chain, pfna_refs_for_tick))
+        tick_cache.append(
+            (ledger, p_block, prev_chain, pfna_refs_for_tick, pfna_meta_for_tick)
+        )
         if maybe_i_block:
             i_blocks.append(maybe_i_block)
 
@@ -327,7 +387,9 @@ def run_cmp0_tick_loop(
 
     scenes: List[SceneFrameV1] = []
     envelopes: List[NAPEnvelopeV1] = []
-    for ledger, p_block, prev_chain, pfna_refs in tick_cache:
+    for ledger, p_block, prev_chain, pfna_refs, pfna_audit in tick_cache:
+        scene_meta: Dict[str, object] | None = {"pfna_integerization": pfna_audit}
+
         scene, envelope = build_scene_and_envelope(
             gid=topo.gid,
             run_id=run_id,
@@ -341,16 +403,27 @@ def run_cmp0_tick_loop(
             p_block_ref=f"loom_p_block_{ledger.tick}",
             manifest_ref=primary_manifest.apx_name,
             pfna_refs=pfna_refs,
+            meta=scene_meta,
         )
         scenes.append(scene)
         envelopes.append(envelope)
+
+    governance_envelopes: list[NAPEnvelopeV1] = []
+    if governance:
+        envelopes, gate_gov_envelopes, _ = apply_governance_to_envelopes(
+            envelopes,
+            governance=governance,
+            window_id=primary_spec.window_id,
+            profile=profile,
+            logger=logger,
+        )
+        governance_envelopes.extend(gate_gov_envelopes)
 
     codex_motifs: tuple["CodexLibraryEntryV1", ...] = ()
     codex_proposals_out: tuple["CodexProposalV1", ...] = ()
     codex_actions: tuple["CodexProposalV1", ...] = ()
     codex_hypothetical_actions: tuple["CodexProposalV1", ...] = ()
     budget_usage_meta: dict[str, object] | None = None
-    governance_envelopes: list[NAPEnvelopeV1] = []
 
     proposals_source: Sequence["CodexProposalV1"] | None = codex_proposals
     if codex_ctx:
@@ -471,7 +544,7 @@ def run_cmp0_tick_loop(
     else:
         governance_budget_usage = None
 
-    u_ledger_entries = build_uledger_entries(
+    u_ledger_entries, u_ledger_checkpoint = build_and_validate_uledger(
         gid=topo.gid,
         run_id=run_id,
         window_id=primary_spec.window_id,
@@ -526,6 +599,7 @@ def run_cmp0_tick_loop(
         egress_envelopes=egress_envelopes,
         governance_envelopes=governance_envelopes,
         u_ledger_entries=u_ledger_entries,
+        u_ledger_checkpoint=u_ledger_checkpoint,
         apxi_views=apxi_views,
         governance=governance,
         governance_budget_usage=governance_budget_usage,
@@ -536,7 +610,9 @@ def run_cmp0_tick_loop(
     )
 
 
-def run_gf01(run_id: str = "GF01", nid: str = "N/A") -> GF01RunResult:
+def run_gf01(
+    run_id: str = "GF01", nid: str = "N/A", loom_block_store: LoomBlockStore | None = None
+) -> GF01RunResult:
     """Execute the full GF-01 CMP-0 tick loop for ticks 1–8."""
 
     profile = gf01_profile_cmp0()
@@ -566,5 +642,6 @@ def run_gf01(run_id: str = "GF01", nid: str = "N/A") -> GF01RunResult:
         run_id=run_id,
         nid=nid,
         governance=GovernanceConfigV1(gid=topo.gid, run_id=run_id),
+        loom_block_store=loom_block_store,
     )
 

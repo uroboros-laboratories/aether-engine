@@ -9,6 +9,7 @@ from gate import (
     _default_press_stream_specs,
     build_pfna_placeholder,
     emit_nap_envelope,
+    validate_scene_frame,
 )
 from umx.profile_cmp0 import gf01_profile_cmp0
 from umx.topology_profile import gf01_topology_profile, load_topology_profile
@@ -31,7 +32,7 @@ def test_gf01_scene_frames_anchor_nap_envelopes():
     ]
     expected_prev_chain = [profile.C0] + expected_chain[:-1]
 
-    assert manifest.manifest_check == 487809945
+    assert manifest.manifest_check == 824666593
     assert [scene.C_t for scene in result.scenes] == expected_chain
     assert [scene.C_prev for scene in result.scenes] == expected_prev_chain
     assert [env.prev_chain for env in result.envelopes] == expected_prev_chain
@@ -210,7 +211,7 @@ def test_gate_drives_press_window_streams_config():
     )
 
     manifest = result.manifests[gf_window.apx_name]
-    assert manifest.manifest_check == 487809945
+    assert manifest.manifest_check == 824666593
     stream_ids = [stream.stream_id for stream in manifest.streams]
     assert stream_ids == [spec.name for spec in stream_specs]
 
@@ -250,6 +251,27 @@ def test_press_streams_accept_chain_value_source():
     manifest = result.manifests[window_spec.apx_name]
     chain_stream = next(stream for stream in manifest.streams if stream.stream_id == "S3_prev_chain")
     assert chain_stream.scheme == "ID"
-    assert chain_stream.L_model == 1
-    assert chain_stream.L_residual == 3
-    assert chain_stream.L_total == 4
+    assert chain_stream.L_model == 16
+    assert chain_stream.L_residual == 104
+    assert chain_stream.L_total == 120
+
+
+def test_scene_frame_validation_checks_manifest_refs():
+    result = run_gf01()
+    manifest = result.manifests["GF01_APX_v0_full_window"]
+    scene = result.scenes[0]
+
+    validate_scene_frame(
+        scene,
+        manifest_ref=manifest.apx_name,
+        manifest_check=manifest.manifest_check,
+        expected_tick=scene.tick,
+    )
+
+    with pytest.raises(ValueError):
+        validate_scene_frame(
+            scene,
+            manifest_ref="BAD_REF",
+            manifest_check=manifest.manifest_check,
+            expected_tick=scene.tick,
+        )
