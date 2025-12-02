@@ -1,0 +1,1820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Aether Gate — Operator Surface (Mock)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    /* --- Base reset & theme --- */
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-body: #050712;
+      --bg-elevated: #101322;
+      --bg-elevated-soft: #141729;
+      --bg-chip: #1e2235;
+      --accent: #6d8bff;
+      --accent-soft: rgba(109, 139, 255, 0.12);
+      --accent-strong: rgba(109, 139, 255, 0.24);
+      --border-soft: #24273b;
+      --text-main: #f5f5f7;
+      --text-muted: #a0a3b8;
+      --danger: #ff4f6b;
+      --success: #2ecc71;
+      --warning: #ffb347;
+      --radius-lg: 16px;
+      --radius-pill: 999px;
+      --shadow-soft: 0 18px 45px rgba(0, 0, 0, 0.45);
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, #171a3d 0, #050712 50%, #050712 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* --- App frame --- */
+    .app {
+      margin: 12px auto;
+      width: min(1220px, 100% - 24px);
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.4));
+      border-radius: 24px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      background: linear-gradient(120deg, rgba(109, 139, 255, 0.35), rgba(10, 14, 36, 0.95));
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .app-title-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .app-logo {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 20%, #ffffff, #a4b5ff 30%, #050712 80%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      font-size: 11px;
+      text-transform: uppercase;
+      color: #050712;
+    }
+
+    .app-title-block h1 {
+      font-size: 18px;
+      margin: 0;
+    }
+
+    .app-title-block p {
+      margin: 2px 0 0;
+      font-size: 12px;
+      color: #dde0ff;
+    }
+
+    .app-meta {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+      font-size: 12px;
+      color: #e0e4ff;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 10px;
+      border-radius: var(--radius-pill);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(0, 0, 0, 0.25);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--warning);
+      box-shadow: 0 0 8px rgba(255, 179, 71, 0.8);
+    }
+
+    .status-dot.idle {
+      background: var(--warning);
+    }
+    .status-dot.running {
+      background: var(--success);
+      box-shadow: 0 0 8px rgba(46, 204, 113, 0.9);
+    }
+    .status-dot.paused {
+      background: var(--accent);
+      box-shadow: 0 0 8px rgba(109, 139, 255, 0.9);
+    }
+
+    /* --- Main nav tabs --- */
+    .main-nav {
+      display: flex;
+      padding: 4px 10px 0;
+      border-bottom: 1px solid var(--border-soft);
+      background: rgba(4, 5, 18, 0.9);
+      backdrop-filter: blur(18px);
+    }
+
+    .tab-button {
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      padding: 10px 16px;
+      margin: 0 4px;
+      border-radius: var(--radius-pill);
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .tab-button span.icon {
+      font-size: 14px;
+      opacity: 0.85;
+    }
+
+    .tab-button:hover {
+      background: rgba(255, 255, 255, 0.04);
+      color: #f2f3ff;
+    }
+
+    .tab-button.active {
+      background: var(--accent-soft);
+      color: #f5f6ff;
+      box-shadow: 0 0 0 1px var(--accent-strong);
+    }
+
+    .tab-button.active::after {
+      content: "";
+      position: absolute;
+      left: 24px;
+      right: 24px;
+      bottom: -4px;
+      height: 3px;
+      border-radius: 99px;
+      background: linear-gradient(90deg, #a4b5ff, #6d8bff);
+    }
+
+    /* --- Layout for tab content --- */
+    .tab-container {
+      padding: 16px 18px 10px;
+      background: radial-gradient(circle at top, rgba(109, 139, 255, 0.12), transparent 55%), var(--bg-body);
+      flex: 1;
+      overflow: auto;
+    }
+
+    .tab-content {
+      display: none;
+      animation: fadeIn 150ms ease-out;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(4px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* --- Shared UI bits --- */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      gap: 8px;
+    }
+
+    .section-header h2 {
+      font-size: 16px;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-header h2 span.badge {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      background: rgba(0, 0, 0, 0.48);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+    }
+
+    .section-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .button {
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-soft);
+      background: rgba(11, 14, 33, 0.9);
+      color: var(--text-main);
+      padding: 7px 14px;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .button.primary {
+      background: linear-gradient(135deg, #6d8bff, #465bfb);
+      border-color: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 8px 20px rgba(7, 10, 41, 0.7);
+    }
+
+    .button.ghost {
+      background: transparent;
+    }
+
+    .button.danger {
+      background: rgba(255, 79, 107, 0.12);
+      border-color: rgba(255, 79, 107, 0.5);
+      color: #ffcfd8;
+    }
+
+    .button:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+
+    .button .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.6);
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+      background: var(--bg-chip);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .chip-pillars {
+      background: rgba(109, 139, 255, 0.12);
+      border-color: rgba(109, 139, 255, 0.35);
+      color: #d8deff;
+    }
+
+    .grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .grid-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .grid-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .grid-5 {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
+    @media (max-width: 960px) {
+      .grid-5 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .grid-3 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 720px) {
+      .grid-2,
+      .grid-3 {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .card {
+      background: var(--bg-elevated);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-soft);
+      padding: 10px 12px;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      gap: 8px;
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pill-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      padding: 1px 6px;
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: var(--text-muted);
+    }
+
+    .card-body {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-top: 4px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .stat-value {
+      font-size: 13px;
+    }
+
+    .stat-value.positive {
+      color: #8de3b1;
+    }
+
+    .stat-value.negative {
+      color: #ffb7c5;
+    }
+
+    .stat-value.neutral {
+      color: #d1d4f0;
+    }
+
+    .pill-indicator {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 25%, #ffffff, #a4b5ff, #1a1d33);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: #050712;
+    }
+
+    /* --- Dashboard specifics --- */
+    .run-controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .run-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .run-meta span strong {
+      color: #e1e4ff;
+      font-weight: 600;
+    }
+
+    .dashboard-layout {
+      display: grid;
+      grid-template-columns: 2.1fr 1.2fr;
+      gap: 10px;
+    }
+
+    @media (max-width: 960px) {
+      .dashboard-layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .placeholder-chart {
+      margin-top: 10px;
+      border-radius: 10px;
+      background: repeating-linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0.02),
+        rgba(255, 255, 255, 0.02) 1px,
+        transparent 1px,
+        transparent 8px
+      );
+      padding: 10px;
+      border: 1px dashed rgba(255, 255, 255, 0.08);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* --- Scenario & config --- */
+    .scenario-layout {
+      display: grid;
+      grid-template-columns: 1.1fr 1.9fr;
+      gap: 10px;
+    }
+
+    @media (max-width: 960px) {
+      .scenario-layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .scenario-list {
+      max-height: 320px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .scenario-item {
+      padding: 8px 9px;
+      border-radius: 10px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      margin-bottom: 6px;
+      background: rgba(5, 7, 18, 0.8);
+    }
+
+    .scenario-item:hover {
+      border-color: rgba(255, 255, 255, 0.12);
+      background: rgba(8, 11, 26, 0.95);
+    }
+
+    .scenario-item.active {
+      border-color: var(--accent);
+      background: rgba(17, 21, 49, 0.96);
+      box-shadow: 0 0 0 1px rgba(109, 139, 255, 0.2);
+    }
+
+    .scenario-name {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .scenario-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .scenario-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 4px;
+    }
+
+    .config-mode-toggle {
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+
+    .toggle-pill {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(0, 0, 0, 0.5);
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    .toggle-pill.active {
+      background: var(--accent-soft);
+      color: #e9ecff;
+      border-color: var(--accent-strong);
+    }
+
+    .config-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    @media (max-width: 720px) {
+      .config-grid {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      font-size: 11px;
+    }
+
+    .field label {
+      color: var(--text-muted);
+    }
+
+    .field input[type="text"],
+    .field input[type="number"],
+    .field select,
+    .field textarea {
+      width: 100%;
+      border-radius: 9px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(3, 5, 15, 0.9);
+      color: var(--text-main);
+      padding: 6px 8px;
+      font-size: 12px;
+    }
+
+    .field input[type="range"] {
+      width: 100%;
+    }
+
+    .field small {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .config-raw {
+      margin-top: 8px;
+      font-size: 11px;
+      border-radius: 10px;
+      background: #050712;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 8px 10px;
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+        monospace;
+      max-height: 230px;
+      overflow: auto;
+    }
+
+    /* --- Pillars tab --- */
+    .pillars-subnav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .pillars-subtab {
+      border-radius: var(--radius-pill);
+      padding: 5px 11px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(6, 8, 22, 0.9);
+      font-size: 11px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-muted);
+    }
+
+    .pillars-subtab .pill-indicator {
+      width: 18px;
+      height: 18px;
+      font-size: 9px;
+    }
+
+    .pillars-subtab.active {
+      border-color: var(--accent);
+      background: rgba(17, 21, 49, 0.95);
+      color: #e6e9ff;
+      box-shadow: 0 0 0 1px rgba(109, 139, 255, 0.25);
+    }
+
+    .pillar-panel {
+      display: none;
+      animation: fadeIn 150ms ease-out;
+    }
+
+    .pillar-panel.active {
+      display: block;
+    }
+
+    .pillar-layout {
+      display: grid;
+      grid-template-columns: 1.4fr 1.2fr;
+      gap: 10px;
+    }
+
+    @media (max-width: 960px) {
+      .pillar-layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .help-link {
+      font-size: 11px;
+      color: #c9d0ff;
+      text-decoration: underline dashed;
+      text-underline-offset: 3px;
+      cursor: pointer;
+    }
+
+    /* --- Governance --- */
+    .pill-badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-muted);
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+      margin-top: 4px;
+    }
+
+    .table th,
+    .table td {
+      padding: 6px 6px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .table th {
+      color: var(--text-muted);
+      font-weight: 500;
+      font-size: 11px;
+    }
+
+    .table td.actions {
+      text-align: right;
+    }
+
+    /* --- History & Exports --- */
+    .history-layout {
+      display: grid;
+      grid-template-columns: 1.7fr 1.3fr;
+      gap: 10px;
+    }
+
+    @media (max-width: 960px) {
+      .history-layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .history-list {
+      max-height: 260px;
+      overflow: auto;
+    }
+
+    .history-item {
+      padding: 7px 9px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      background: rgba(5, 7, 18, 0.9);
+      margin-bottom: 6px;
+      font-size: 11px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      cursor: pointer;
+    }
+
+    .history-item:hover {
+      border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    .history-item.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(109, 139, 255, 0.25);
+      background: rgba(16, 20, 46, 0.95);
+    }
+
+    .history-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      color: var(--text-muted);
+    }
+
+    /* --- Logs & Console --- */
+    .logs-layout {
+      display: grid;
+      grid-template-columns: 1.7fr 1.3fr;
+      gap: 10px;
+    }
+
+    @media (max-width: 960px) {
+      .logs-layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .log-view {
+      background: #050712;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 8px 10px;
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+        monospace;
+      font-size: 11px;
+      max-height: 260px;
+      overflow: auto;
+      color: #dadcf8;
+    }
+
+    .console-input {
+      margin-top: 6px;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
+        monospace;
+    }
+
+    .console-input span {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .console-input input {
+      flex: 1;
+      border-radius: 9px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(5, 7, 18, 0.9);
+      color: var(--text-main);
+      padding: 5px 7px;
+      font-size: 11px;
+    }
+
+    /* --- Footer status bar --- */
+    .status-bar {
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 4px 14px;
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(3, 4, 12, 0.95);
+    }
+
+    .status-bar-left,
+    .status-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Scrollbar polish */
+    ::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.14);
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Header / title bar -->
+    <header class="app-header">
+      <div class="app-title-wrapper">
+        <div class="app-logo">AG</div>
+        <div class="app-title-block">
+          <h1>Aether Gate — Operator Surface</h1>
+          <p>Gate pillar UI • Human control membrane for the five pillars</p>
+        </div>
+      </div>
+      <div class="app-meta">
+        <div>Scenario: <strong>baseline_calm_start</strong></div>
+        <div class="status-pill">
+          <span class="status-dot idle"></span>
+          <span>Idle</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main navigation tabs -->
+    <nav class="main-nav">
+      <button class="tab-button active" data-tab="dashboard">
+        <span class="icon">🏠</span>
+        <span>Dashboard</span>
+      </button>
+      <button class="tab-button" data-tab="scenario">
+        <span class="icon">🧩</span>
+        <span>Scenario &amp; Config</span>
+      </button>
+      <button class="tab-button" data-tab="pillars">
+        <span class="icon">⚙️</span>
+        <span>Pillars</span>
+      </button>
+      <button class="tab-button" data-tab="governance">
+        <span class="icon">🏛️</span>
+        <span>Governance &amp; Budgets</span>
+      </button>
+      <button class="tab-button" data-tab="history">
+        <span class="icon">📜</span>
+        <span>History &amp; Exports</span>
+      </button>
+      <button class="tab-button" data-tab="logs">
+        <span class="icon">🧪</span>
+        <span>Logs &amp; Console</span>
+      </button>
+    </nav>
+
+    <!-- Tab content area -->
+    <main class="tab-container">
+      <!-- Dashboard tab -->
+      <section class="tab-content active" data-tab-content="dashboard">
+        <div class="section-header">
+          <h2>
+            Dashboard
+            <span class="badge">overview</span>
+          </h2>
+          <div class="section-header-actions">
+            <button class="button ghost">
+              <span>📄</span>
+              Quick summary
+            </button>
+            <button class="button ghost">
+              <span>❓</span>
+              Help
+            </button>
+          </div>
+        </div>
+
+        <div class="run-controls">
+          <button class="button primary">
+            <span class="dot"></span>
+            Run
+          </button>
+          <button class="button">
+            ⏸ Pause
+          </button>
+          <button class="button">
+            ⏭ Step
+          </button>
+          <button class="button danger">
+            ⟲ Reset
+          </button>
+        </div>
+
+        <div class="run-meta">
+          <span>Tick: <strong>0</strong></span>
+          <span>Run ID: <strong>#draft-mock-run</strong></span>
+          <span>Mode: <strong>single-run</strong></span>
+          <span>Governance: <strong>spec-007 / v1</strong></span>
+        </div>
+
+        <div class="dashboard-layout">
+          <div>
+            <!-- Pillar overview cards -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">
+                  Pillar overview
+                  <span class="pill-label">UMX • Gate • Astral • Loom • Codex</span>
+                </div>
+                <span class="chip chip-pillars">5 pillars online</span>
+              </div>
+              <div class="grid grid-5">
+                <div class="card">
+                  <div class="card-header">
+                    <div class="card-title">
+                      <span class="pill-indicator">U</span>
+                      UMX
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <div class="stat-row">
+                      <span class="stat-label">Core load</span>
+                      <span class="stat-value neutral">0.73</span>
+                    </div>
+                    <div class="stat-row">
+                      <span class="stat-label">Signal</span>
+                      <span class="stat-value positive">Stable</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card">
+                  <div class="card-header">
+                    <div class="card-title">
+                      <span class="pill-indicator">G</span>
+                      Trinity Gate
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <div class="stat-row">
+                      <span class="stat-label">Surface</span>
+                      <span class="stat-value neutral">Operator UI</span>
+                    </div>
+                    <div class="stat-row">
+                      <span class="stat-label">I/O</span>
+                      <span class="stat-value positive">Healthy</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card">
+                  <div class="card-header">
+                    <div class="card-title">
+                      <span class="pill-indicator">A</span>
+                      Astral Press
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <div class="stat-row">
+                      <span class="stat-label">Press state</span>
+                      <span class="stat-value neutral">Idle</span>
+                    </div>
+                    <div class="stat-row">
+                      <span class="stat-label">Intensity</span>
+                      <span class="stat-value neutral">—</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card">
+                  <div class="card-header">
+                    <div class="card-title">
+                      <span class="pill-indicator">L</span>
+                      Aevum Loom
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <div class="stat-row">
+                      <span class="stat-label">Timeline</span>
+                      <span class="stat-value neutral">t=0</span>
+                    </div>
+                    <div class="stat-row">
+                      <span class="stat-label">Weave state</span>
+                      <span class="stat-value positive">Clean</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card">
+                  <div class="card-header">
+                    <div class="card-title">
+                      <span class="pill-indicator">C</span>
+                      Codex Eterna
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <div class="stat-row">
+                      <span class="stat-label">Proposals</span>
+                      <span class="stat-value neutral">0</span>
+                    </div>
+                    <div class="stat-row">
+                      <span class="stat-label">Mode</span>
+                      <span class="stat-value neutral">Listen</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="placeholder-chart">
+                Placeholder for “global run trend” chart (tick vs aggregate output / stress).  
+                In the real app, Gate will render a small dynamic chart here.
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <!-- Run notes / quick controls -->
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Run quick controls</div>
+              </div>
+              <div class="card-body">
+                <div class="field">
+                  <label>Stopping condition (preview only)</label>
+                  <select>
+                    <option>Manual stop (default)</option>
+                    <option>Tick count reached</option>
+                    <option>Governance halt</option>
+                    <option>Threshold crossed</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>Target ticks</label>
+                  <input type="number" value="100" />
+                </div>
+                <div class="field">
+                  <label>Run label</label>
+                  <input type="text" value="mock_run_001" />
+                </div>
+              </div>
+            </div>
+
+            <div class="card" style="margin-top: 10px;">
+              <div class="card-header">
+                <div class="card-title">Operator notes</div>
+              </div>
+              <div class="card-body">
+                <div class="field">
+                  <textarea rows="4" placeholder="Scratchpad for this run (purely for you, Gate just stores it)."></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Scenario & Config tab -->
+      <section class="tab-content" data-tab-content="scenario">
+        <div class="section-header">
+          <h2>
+            Scenario &amp; Config
+            <span class="badge">inputs through Gate</span>
+          </h2>
+          <div class="section-header-actions">
+            <button class="button">
+              💾 Save
+            </button>
+            <button class="button ghost">
+              📝 Save as…
+            </button>
+            <button class="button ghost">
+              ⟲ Revert
+            </button>
+          </div>
+        </div>
+
+        <div class="scenario-layout">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Scenarios</div>
+              <span class="chip">Mock list</span>
+            </div>
+            <div class="scenario-list">
+              <div class="scenario-item active">
+                <div class="scenario-name">baseline_calm_start</div>
+                <div class="scenario-desc">
+                  Gentle initialization, low stress, all pillars neutral.
+                </div>
+                <div class="scenario-tags">
+                  <span class="chip">default</span>
+                  <span class="chip">safe</span>
+                </div>
+              </div>
+              <div class="scenario-item">
+                <div class="scenario-name">stress_test_high_pressure</div>
+                <div class="scenario-desc">
+                  Crank constraints and load to probe governance + Codex behavior.
+                </div>
+                <div class="scenario-tags">
+                  <span class="chip">intense</span>
+                  <span class="chip">governance</span>
+                </div>
+              </div>
+              <div class="scenario-item">
+                <div class="scenario-name">timeline_warp_loops</div>
+                <div class="scenario-desc">
+                  Aevum-heavy run with looping/branching emphasis.
+                </div>
+                <div class="scenario-tags">
+                  <span class="chip">Aevum Loom</span>
+                </div>
+              </div>
+              <div class="scenario-item">
+                <div class="scenario-name">codex_learning_burst</div>
+                <div class="scenario-desc">
+                  Feed Codex Eterna a high volume of proposed actions.
+                </div>
+                <div class="scenario-tags">
+                  <span class="chip">Codex</span>
+                  <span class="chip">learning</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Scenario config (mock)</div>
+              <span class="help-link">View Trinity Gate config docs</span>
+            </div>
+
+            <div class="config-mode-toggle">
+              <div class="toggle-pill active">Basic</div>
+              <div class="toggle-pill">Advanced</div>
+            </div>
+
+            <div class="config-grid">
+              <div class="field">
+                <label>Run duration (ticks)</label>
+                <input type="number" value="1000" />
+                <small>Gate will pass this into the engine as a stopping hint.</small>
+              </div>
+              <div class="field">
+                <label>Randomness seed</label>
+                <input type="number" value="42" />
+                <small>For repeatable runs. Engine-side interpretation lives in UMX/Aevum.</small>
+              </div>
+              <div class="field">
+                <label>UMX baseline energy</label>
+                <input type="range" min="0" max="100" value="60" />
+                <small>Purely visual placeholder right now.</small>
+              </div>
+              <div class="field">
+                <label>Astral Press intensity</label>
+                <input type="range" min="0" max="100" value="20" />
+              </div>
+              <div class="field">
+                <label>Aevum Loom time window</label>
+                <select>
+                  <option>Short</option>
+                  <option selected>Medium</option>
+                  <option>Long</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Governance profile</label>
+                <select>
+                  <option selected>spec007_default_soft</option>
+                  <option>spec007_strict_budget</option>
+                  <option>spec007_experimental</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="config-raw">
+              <!-- This is just a visual stand-in for the real config file Trinity Gate will pass through. -->
+              <pre>
+{
+  "scenario": "baseline_calm_start",
+  "ticks": 1000,
+  "seed": 42,
+  "pillars": {
+    "UMX": { "baseline_energy": 0.6 },
+    "AstralPress": { "intensity": 0.2 },
+    "AevumLoom": { "window": "medium" },
+    "CodexEterna": { "profile": "listen" }
+  },
+  "governance": {
+    "policy_set": "spec007_default_soft",
+    "max_budget": 1.0
+  }
+}
+              </pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Pillars tab -->
+      <section class="tab-content" data-tab-content="pillars">
+        <div class="section-header">
+          <h2>
+            Pillars
+            <span class="badge">per-pillar state &amp; controls</span>
+          </h2>
+          <div class="section-header-actions">
+            <button class="button ghost">
+              🔗 View spec crosswalk
+            </button>
+          </div>
+        </div>
+
+        <div class="pillars-subnav">
+          <button class="pillars-subtab active" data-pillar="umx">
+            <span class="pill-indicator">U</span>
+            UMX
+          </button>
+          <button class="pillars-subtab" data-pillar="gate">
+            <span class="pill-indicator">G</span>
+            Trinity Gate
+          </button>
+          <button class="pillars-subtab" data-pillar="astral">
+            <span class="pill-indicator">A</span>
+            Astral Press
+          </button>
+          <button class="pillars-subtab" data-pillar="aevum">
+            <span class="pill-indicator">L</span>
+            Aevum Loom
+          </button>
+          <button class="pillars-subtab" data-pillar="codex">
+            <span class="pill-indicator">C</span>
+            Codex Eterna
+          </button>
+        </div>
+
+        <!-- UMX -->
+        <div class="pillar-panel active" data-pillar-panel="umx">
+          <div class="pillar-layout">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">
+                  UMX state snapshot
+                </div>
+                <span class="help-link">Open UMX spec</span>
+              </div>
+              <div class="card-body">
+                <div class="stat-row">
+                  <span class="stat-label">Core load</span>
+                  <span class="stat-value neutral">0.73</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-label">Signal stability</span>
+                  <span class="stat-value positive">Stable</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-label">Drift</span>
+                  <span class="stat-value neutral">Minimal (mock)</span>
+                </div>
+                <div class="placeholder-chart" style="margin-top: 8px;">
+                  Placeholder: UMX curves / internal metrics visualised by Gate.
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">UMX controls (mock)</div>
+              </div>
+              <div class="card-body">
+                <div class="field">
+                  <label>Mode</label>
+                  <select>
+                    <option>Neutral</option>
+                    <option>Exploratory</option>
+                    <option>Conservative</option>
+                  </select>
+                  <small>In reality, these knobs will map to UMX contracts Gate is allowed to touch.</small>
+                </div>
+                <div class="field" style="margin-top: 6px;">
+                  <label>Manual nudge</label>
+                  <input type="range" min="-100" max="100" value="0" />
+                  <small>Operator bias injection (purely illustrative for now).</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trinity Gate -->
+        <div class="pillar-panel" data-pillar-panel="gate">
+          <div class="pillar-layout">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Gate surfaces</div>
+                <span class="help-link">Open Trinity Gate spec</span>
+              </div>
+              <div class="card-body">
+                <div class="stat-row">
+                  <span class="stat-label">Operator surface</span>
+                  <span class="stat-value neutral">This UI</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-label">Console facet</span>
+                  <span class="stat-value neutral">Available</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-label">Integration facet</span>
+                  <span class="stat-value neutral">Local-only (mock)</span>
+                </div>
+                <div class="placeholder-chart" style="margin-top: 8px;">
+                  Placeholder: Gate I/O activity timeline (how much flows in/out over time).
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Gate configuration (mock)</div>
+              </div>
+              <div class="card-body">
+                <div class="field">
+                  <label>Allow CLI facet</label>
+                  <select>
+                    <option>Enabled</option>
+                    <option>Disabled</option>
+                  </select>
+                </div>
+                <div class="field" style="margin-top: 6px;">
+                  <label>Max concurrent surfaces</label>
+                  <input type="number" value="1" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Astral Press -->
+        <div class="pillar-panel" data-pillar-panel="astral">
+          <div class="pillar-layout">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Astral Press state</div>
+                <span class="help-link">Open Astral Press spec</span>
+              </div>
+              <div class="card-body">
+                <div class="stat-row">
+                  <span class="stat-label">Press state</span>
+                  <span class="stat-value neutral">Idle</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-label">Current imprint</span>
+                  <span class="stat-value neutral">—</span>
+                </div>
+                <div class="placeholder-chart" style="margin-top: 8px;">
+                  Placeholder: Astral outputs / intensity over time, rendered via Gate.
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Astral controls (mock)</div>
+              </div>
+              <div class="card-body">
+                <div class="field">
+                  <label>Press intensity</label>
+                  <input type="range" min="0" max="100" value="20" />
+                </div>
+                <div class="field" style="margin-top: 6px;">
+                  <label>Mode</label>
+                  <select>
+                    <option>Passive</option>
+                    <option>Guided</option>
+                    <option>Freeform</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Aevum Loom -->
+        <div class="pillar-panel" data-pillar-panel="aevum">
+          <div class="pillar-layout">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Aevum Loom state</div>
+                <span class="help-link">Open Aevum Loom spec</span>
+              </div>
+              <div class="card-body">
+                <div class="stat-row">
+                  <span class="stat-label">Current tick</span>
+                  <span class="stat-value neutral">0</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-label">Branch count</span>
+                  <span class="stat-value neutral">0</span>
+                </div>
+                <div class="placeholder-chart" style="margin-top: 8px;">
+                  Placeholder: Loom timeline / branches visualised on Gate’s side.
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Aevum controls (mock)</div>
+              </div>
+              <div class="card-body">
+                <div class="field">
+                  <label>Timeline window</label>
+                  <select>
+                    <option>Short</option>
+                    <option selected>Medium</option>
+                    <option>Long</option>
+                  </select>
+                </div>
+                <div class="field" style="margin-top: 6px;">
+                  <label>Manual bookmark label</label>
+                  <input type="text" placeholder="e.g. 'pre-branch'" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Codex Eterna -->
+        <div class="pillar-panel" data-pillar-panel="codex">
+          <div class="pillar-layout">
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Codex Eterna state</div>
+                <span class="help-link">Open Codex Eterna spec</span>
+              </div>
+              <div class="card-body">
+                <div class="stat-row">
+                  <span class="stat-label">Incoming proposals</span>
+                  <span class="stat-value neutral">0</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-label">Accepted</span>
+                  <span class="stat-value neutral">0</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-label">Rejected</span>
+                  <span class="stat-value neutral">0</span>
+                </div>
+                <div class="placeholder-chart" style="margin-top: 8px;">
+                  Placeholder: Codex proposals over time &amp; classes of action.
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <div class="card-title">Codex controls (mock)</div>
+              </div>
+              <div class="card-body">
+                <div class="field">
+                  <label>Codex profile</label>
+                  <select>
+                    <option>Listen</option>
+                    <option>Advise</option>
+                    <option>Act (governed)</option>
+                  </select>
+                </div>
+                <div class="field" style="margin-top: 6px;">
+                  <label>Proposal rate limiter</label>
+                  <input type="range" min="0" max="100" value="50" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Governance & Budgets tab -->
+      <section class="tab-content" data-tab-content="governance">
+        <div class="section-header">
+          <h2>
+            Governance &amp; Budgets
+            <span class="badge">SPEC-007 surface</span>
+          </h2>
+          <div class="section-header-actions">
+            <button class="button ghost">📚 View SPEC-007</button>
+          </div>
+        </div>
+
+        <div class="grid grid-3">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Budget</div>
+              <span class="pill-badge">mock numbers</span>
+            </div>
+            <div class="card-body">
+              <div class="stat-row">
+                <span class="stat-label">Total budget</span>
+                <span class="stat-value neutral">1.00</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Consumed</span>
+                <span class="stat-value neutral">0.00</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Remaining</span>
+                <span class="stat-value positive">1.00</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Policy set</div>
+            </div>
+            <div class="card-body">
+              <div class="stat-row">
+                <span class="stat-label">Active</span>
+                <span class="stat-value neutral">spec007_default_soft</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Topology</span>
+                <span class="stat-value neutral">Single-node, local-only</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Safety</span>
+                <span class="stat-value neutral">Standard</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Controls (mock)</div>
+            </div>
+            <div class="card-body">
+              <div class="field">
+                <label>Human veto mode</label>
+                <select>
+                  <option>Required for all actions</option>
+                  <option>Required for high-cost only</option>
+                  <option>Advisory only</option>
+                </select>
+              </div>
+              <div class="field" style="margin-top: 6px;">
+                <label>Budget strictness</label>
+                <input type="range" min="0" max="100" value="50" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top: 10px;">
+          <div class="card-header">
+            <div class="card-title">Proposals (mock table)</div>
+          </div>
+          <div class="card-body">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Source pillar</th>
+                  <th>Type</th>
+                  <th>Cost</th>
+                  <th>Status</th>
+                  <th class="actions">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>PX-001</td>
+                  <td>Codex</td>
+                  <td>Parameter tweak</td>
+                  <td>0.02</td>
+                  <td>Pending</td>
+                  <td class="actions">
+                    <button class="button" style="font-size: 10px; padding: 4px 8px;">Approve</button>
+                    <button class="button ghost" style="font-size: 10px; padding: 4px 8px;">Reject</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>PX-002</td>
+                  <td>Aevum</td>
+                  <td>Timeline branch</td>
+                  <td>0.15</td>
+                  <td>Pending</td>
+                  <td class="actions">
+                    <button class="button" style="font-size: 10px; padding: 4px 8px;">Approve</button>
+                    <button class="button ghost" style="font-size: 10px; padding: 4px 8px;">Reject</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>PX-003</td>
+                  <td>UMX</td>
+                  <td>Load redistribution</td>
+                  <td>0.05</td>
+                  <td>Accepted (mock)</td>
+                  <td class="actions">
+                    <button class="button ghost" style="font-size: 10px; padding: 4px 8px;">Inspect</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- History & Exports tab -->
+      <section class="tab-content" data-tab-content="history">
+        <div class="section-header">
+          <h2>
+            History &amp; Exports
+            <span class="badge">runs through Gate</span>
+          </h2>
+          <div class="section-header-actions">
+            <button class="button ghost">🔍 Search</button>
+          </div>
+        </div>
+
+        <div class="history-layout">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Run history</div>
+            </div>
+            <div class="card-body">
+              <div class="history-list">
+                <div class="history-item active">
+                  <div><strong>#mock_run_001</strong></div>
+                  <div class="history-meta">
+                    <span>Scenario: baseline_calm_start</span>
+                    <span>Ticks: 1000</span>
+                    <span>Result: Completed</span>
+                  </div>
+                </div>
+                <div class="history-item">
+                  <div><strong>#mock_run_000</strong></div>
+                  <div class="history-meta">
+                    <span>Scenario: stress_test_high_pressure</span>
+                    <span>Ticks: 400</span>
+                    <span>Result: Halted (governance)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Selected run details (mock)</div>
+            </div>
+            <div class="card-body">
+              <div class="stat-row">
+                <span class="stat-label">Run ID</span>
+                <span class="stat-value neutral">#mock_run_001</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Timestamp</span>
+                <span class="stat-value neutral">2025-11-30T12:34:56</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-label">Governance profile</span>
+                <span class="stat-value neutral">spec007_default_soft</span>
+              </div>
+              <div class="field" style="margin-top: 8px;">
+                <label>Export format</label>
+                <select>
+                  <option>JSON (full state)</option>
+                  <option>CSV (summary)</option>
+                  <option>Human-readable report</option>
+                </select>
+              </div>
+              <div class="field" style="margin-top: 6px;">
+                <label>Export scope</label>
+                <select>
+                  <option>All pillars + governance</option>
+                  <option>Governance only</option>
+                  <option>Single pillar</option>
+                </select>
+              </div>
+              <button class="button primary" style="margin-top: 8px;">
+                ⬇ Export (mock)
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Logs & Console tab -->
+      <section class="tab-content" data-tab-content="logs">
+        <div class="section-header">
+          <h2>
+            Logs &amp; Console
+            <span class="badge">Gate debug surface</span>
+          </h2>
+          <div class="section-header-actions">
+            <button class="button ghost">🧹 Clear (mock)</button>
+          </div>
+        </div>
+
+        <div class="logs-layout">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Run log (mock)</div>
+            </div>
+            <div class="card-body">
+              <div class="log-view">
+                [00:00:00] Gate: operator surface loaded (mock).<br />
+                [00:00:01] Engine: pillars initialized (mock).<br />
+                [00:00:02] Governance: policy set spec007_default_soft loaded (mock).<br />
+                [00:00:03] Ready for first run (mock).<br />
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Console facet (mock)</div>
+            </div>
+            <div class="card-body">
+              <div class="console-input">
+                <span>&gt;&gt;</span>
+                <input type="text" placeholder="aether inspect --pillar UMX --tick 42" />
+              </div>
+              <small style="font-size: 10px; color: var(--text-muted); display: block; margin-top: 4px;">
+                This is the nerd corner. UI will stay primary; console is for power users + automation.
+              </small>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer status bar -->
+    <footer class="status-bar">
+      <div class="status-bar-left">
+        <span>Gate surface: <strong>operator-ui</strong></span>
+        <span>Run state: Idle (mock)</span>
+      </div>
+      <div class="status-bar-right">
+        <span>Pillars online: UMX • Gate • Astral • Loom • Codex</span>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // --- Simple tab switching for main tabs ---
+    const tabButtons = document.querySelectorAll(".tab-button");
+    const tabContents = document.querySelectorAll(".tab-content");
+
+    tabButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const target = btn.getAttribute("data-tab");
+
+        tabButtons.forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+
+        tabContents.forEach((section) => {
+          section.classList.toggle(
+            "active",
+            section.getAttribute("data-tab-content") === target
+          );
+        });
+      });
+    });
+
+    // --- Pillars sub-tabs switching ---
+    const pillarTabs = document.querySelectorAll(".pillars-subtab");
+    const pillarPanels = document.querySelectorAll(".pillar-panel");
+
+    pillarTabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        const target = tab.getAttribute("data-pillar");
+
+        pillarTabs.forEach((t) => t.classList.remove("active"));
+        tab.classList.add("active");
+
+        pillarPanels.forEach((panel) => {
+          panel.classList.toggle(
+            "active",
+            panel.getAttribute("data-pillar-panel") === target
+          );
+        });
+      });
+    });
+  </script>
+</body>
+</html>
