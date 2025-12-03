@@ -1,37 +1,4 @@
-const operatorConfig = (typeof window !== 'undefined' && window.OPERATOR_CONFIG) || {};
-
-function deriveBaseUrl(config) {
-  const loc = typeof window !== 'undefined' ? window.location : null;
-  const configProtocol = config.protocol && config.protocol !== 'auto' ? config.protocol : null;
-  const protocol = (configProtocol || (loc && loc.protocol) || 'http:').replace(/:$/, '');
-  const servicePort = config.servicePort || 8000;
-
-  if (config.baseUrl && config.baseUrl !== 'auto') {
-    return config.baseUrl;
-  }
-
-  if (!loc) {
-    return `${protocol}://localhost:${servicePort}`;
-  }
-
-  let host = loc.hostname || 'localhost';
-
-  // Codespaces/Gitpod-style forwarded hosts encode the port as the first hostname segment
-  // (e.g. 9000-foo.github.dev). Swap that segment so the service port is addressed.
-  if (/^\d+-/.test(host)) {
-    const [, ...rest] = host.split('-');
-    host = `${servicePort}-${rest.join('-')}`;
-    return `${protocol}://${host}`;
-  }
-
-  if (loc.port) {
-    return `${protocol}://${host}:${servicePort}`;
-  }
-
-  return `${protocol}://${host}:${servicePort}`;
-}
-
-const DEFAULT_BASE_URL = deriveBaseUrl(operatorConfig);
+const DEFAULT_BASE_URL = 'http://localhost:8000';
 
 function normaliseBaseUrl(url) {
   if (!url) return DEFAULT_BASE_URL;
@@ -48,13 +15,7 @@ export class GateClient {
   }
 
   async get(path) {
-    let response;
-    try {
-      response = await fetch(`${this.baseUrl}${path}`);
-    } catch (err) {
-      const reason = err && err.message ? err.message : String(err);
-      throw new Error(`Network/CORS failure for ${this.baseUrl}${path}: ${reason}`);
-    }
+    const response = await fetch(`${this.baseUrl}${path}`);
     if (!response.ok) {
       throw new Error(`Request failed (${response.status}) for ${path}`);
     }
@@ -62,19 +23,13 @@ export class GateClient {
   }
 
   async post(path, body) {
-    let response;
-    try {
-      response = await fetch(`${this.baseUrl}${path}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: body ? JSON.stringify(body) : undefined,
-      });
-    } catch (err) {
-      const reason = err && err.message ? err.message : String(err);
-      throw new Error(`Network/CORS failure for ${this.baseUrl}${path}: ${reason}`);
-    }
+    const response = await fetch(`${this.baseUrl}${path}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    });
     if (!response.ok) {
       const message = await response.text();
       throw new Error(`Request failed (${response.status}): ${message || path}`);
