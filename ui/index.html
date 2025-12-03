@@ -19,18 +19,8 @@
         <label for="base-url">Operator Service URL</label>
         <input id="base-url" name="base-url" type="text" value="http://localhost:8000" />
         <button id="save-endpoint" type="button">Save</button>
-        <button id="probe-endpoint" type="button" class="ghost">Run checks</button>
-        <button id="download-diagnostics" type="button" class="ghost">Export diagnostics</button>
       </div>
     </header>
-
-    <div id="connection-alert" class="alert hidden" role="status" aria-live="polite">
-      <div class="alert-title">Connection issue</div>
-      <p id="connection-message">Waiting to contact the Operator Service.</p>
-      <p id="connection-hint" class="muted">
-        Ensure the Operator Service is running on http://localhost:8000 or update the URL above.
-      </p>
-    </div>
 
     <nav class="tabs" aria-label="Primary">
       <button data-tab="dashboard" class="tab active">Dashboard</button>
