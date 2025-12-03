@@ -114,7 +114,7 @@ The basic idea:
 
  ---
 
- ## Where to start (for coding)
+## Where to start (for coding)
 
  If you are a coding agent or a dev:
 
@@ -133,3 +133,11 @@ The basic idea:
     - Each section in `SPEC_002_…Issue_Pack_v1.md` maps cleanly to a GitHub Issue.
 
  Past that, move to `SPEC_005_…` for Phase 2 work.
+
+---
+
+## Phase 7 (Gate Operator) local dev snapshot
+- Bundle the offline UI: `python scripts/build_ui_bundle.py` (honours `OPERATOR_UI_SRC`, `OPERATOR_UI_DIST`, `OPERATOR_UI_ZIP`).
+- Run the Operator Service + UI together: `python scripts/run_phase7_local.py` (defaults to `127.0.0.1:8000` and `127.0.0.1:9000`; override with `OPERATOR_SERVICE_HOST`/`OPERATOR_SERVICE_PORT`/`OPERATOR_UI_HOST`/`OPERATOR_UI_PORT` or CLI flags).
+- See `docs/phase7_runbook.md` for prerequisites, workflows, and troubleshooting the Phase 7 offline stack.
+- See `docs/phase7_completion_report.md` for a concise Phase 7 deliverable summary and offline run instructions.
