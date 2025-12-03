@@ -1,0 +1,13 @@
+{
+  "governance_mode": "OBSERVE",
+  "codex_action_mode": "OBSERVE",
+  "budget_policies": [
+    {
+      "policy_id": "default",
+      "max_actions_per_window": 0,
+      "max_proposals_per_window": 0,
+      "max_topology_changes": 0,
+      "notes": "Conservative defaults for UI-launched runs"
+    }
+  ]
+}
