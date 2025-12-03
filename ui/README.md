@@ -1,0 +1,34 @@
+# Trinity Gate Operator UI Shell
+
+This folder contains a minimal offline shell for the Phase 7 Trinity Gate Operator Surface. It provides:
+
+- A tabbed layout that mirrors the Phase 7 navigation (Dashboard, Scenario & Config, Pillars, Governance & Budgets, History & Exports, Logs & Console).
+- A lightweight `GateClient` wrapper for calling the Operator Service with a configurable base URL.
+- A connection status line that probes `/state` to confirm connectivity.
+
+## Usage
+
+### Quick start (manual)
+Open `ui/index.html` in a browser (or serve the folder locally) and point the Operator Service URL to your running backend (default: `http://localhost:8000`). The client will store the endpoint in `localStorage` and re-use it on next load.
+
+#### If you see "failed to fetch"
+- Make sure the Operator Service is running on the same URL the header shows (by default `http://127.0.0.1:8000`).
+- The easiest way is to start everything with `python scripts/run_phase7_local.py`, which launches the Operator Service and a static server for the UI.
+- If you run the backend separately, confirm nothing else is already bound to port 8000 or update the base URL in the UI header to match your chosen host/port.
+- When using `scripts/run_phase7_local.py`, the launcher now writes `operator-config.js` into the bundled UI directory so the page automatically points at the exact host/port it started (helpful for Codespaces/port forwarding). If you bundle or host the UI yourself, set the base URL in the header to match your backend.
+
+### Offline bundle
+Bundle the UI into `dist/operator_ui` (and an optional zip) with:
+
+```bash
+python scripts/build_ui_bundle.py
+```
+
+### One-command launcher
+Start the Operator Service and serve the bundled UI together:
+
+```bash
+python scripts/run_phase7_local.py
+```
+
+This launches the Operator Service on `127.0.0.1:8000` and the static UI server on `127.0.0.1:9000`, then opens the browser unless `--no-browser` is provided.
