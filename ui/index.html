@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trinity Gate Operator</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-mark">TG</div>
+        <div>
+          <div class="brand-title">Trinity Gate</div>
+          <div class="brand-subtitle">Operator Surface</div>
+        </div>
+      </div>
+      <div class="endpoint-control">
+        <label for="base-url">Operator Service URL</label>
+        <input id="base-url" name="base-url" type="text" value="http://localhost:8000" />
+        <button id="save-endpoint" type="button">Save</button>
+        <button id="probe-endpoint" type="button" class="ghost">Run checks</button>
+        <button id="download-diagnostics" type="button" class="ghost">Export diagnostics</button>
+      </div>
+    </header>
+
+    <div id="connection-alert" class="alert hidden" role="status" aria-live="polite">
+      <div class="alert-title">Connection issue</div>
+      <p id="connection-message">Waiting to contact the Operator Service.</p>
+      <p id="connection-hint" class="muted">
+        Ensure the Operator Service is running on http://localhost:8000 or update the URL above.
+      </p>
+    </div>
+
+    <nav class="tabs" aria-label="Primary">
+      <button data-tab="dashboard" class="tab active">Dashboard</button>
+      <button data-tab="scenario" class="tab">Scenario &amp; Config</button>
+      <button data-tab="pillars" class="tab">Pillars</button>
+      <button data-tab="governance" class="tab">Governance &amp; Budgets</button>
+      <button data-tab="history" class="tab">History &amp; Exports</button>
+      <button data-tab="logs" class="tab">Logs &amp; Console</button>
+    </nav>
+
+    <main id="content" class="content" tabindex="-1">
+      <section id="dashboard" class="panel active">
+        <h2>Dashboard</h2>
+        <div class="panel-grid">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="eyebrow">Run Status</div>
+                <div id="run-state" class="card-title">No active run</div>
+              </div>
+              <div class="badge" id="run-id">—</div>
+            </div>
+            <dl class="meta">
+              <div>
+                <dt>Scenario</dt>
+                <dd id="run-scenario">—</dd>
+              </div>
+              <div>
+                <dt>Started</dt>
+                <dd id="run-started">—</dd>
+              </div>
+              <div>
+                <dt>Finished</dt>
+                <dd id="run-finished">—</dd>
+              </div>
+            </dl>
+            <div class="controls">
+              <form id="start-run-form" class="stack">
+                <label>Scenario ID <input id="run-scenario-input" name="scenario_id" type="text" required /></label>
+                <label>Ticks (optional) <input id="run-ticks" name="ticks" type="number" min="1" placeholder="e.g. 12" /></label>
+                <div class="control-row">
+                  <button id="start-run" type="submit">Start Run</button>
+                  <button id="stop-run" type="button" class="ghost" disabled>Stop Run</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="eyebrow">Active Scenario</div>
+                <div id="scenario-title" class="card-title">Unknown</div>
+              </div>
+              <div class="badge" id="scenario-id">—</div>
+            </div>
+            <p id="scenario-description" class="muted">Point to a running Operator Service to load scenarios.</p>
+            <div class="pillars" id="pillar-list"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="eyebrow">Governance</div>
+                <div id="governance-mode" class="card-title">—</div>
+              </div>
+              <div class="badge" id="governance-codex">Codex —</div>
+            </div>
+            <dl class="meta">
+              <div>
+                <dt>Budgets</dt>
+                <dd id="governance-budgets">—</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="eyebrow">Diagnostics</div>
+                <div id="diagnostic-state" class="card-title">Idle</div>
+              </div>
+              <div class="badge" id="diagnostic-id">—</div>
+            </div>
+            <form id="diagnostic-form" class="stack">
+              <label>Profile
+                <select id="diagnostic-profile"></select>
+              </label>
+              <button id="start-diagnostic" type="submit">Run Diagnostics</button>
+            </form>
+            <div class="diagnostic-log">
+              <div class="eyebrow">Latest results</div>
+              <ul id="diagnostic-history" class="list"></ul>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section id="scenario" class="panel">
+        <h2>Scenario &amp; Config</h2>
+        <div class="panel-grid">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="eyebrow">Scenarios</div>
+                <div class="card-title">Available scenarios</div>
+              </div>
+              <button id="refresh-scenarios" type="button" class="ghost">Refresh</button>
+            </div>
+            <div class="stack">
+              <label>Filter
+                <input id="scenario-search" type="text" placeholder="Search by name or ID" />
+              </label>
+              <ul id="scenario-list" class="list"></ul>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="eyebrow">Scenario detail</div>
+                <div id="scenario-detail-title" class="card-title">Select a scenario</div>
+              </div>
+              <div class="badge" id="scenario-detail-id">—</div>
+            </div>
+            <div id="scenario-pillars" class="pillars"></div>
+            <form id="scenario-form" class="stack">
+              <label>Description
+                <textarea id="scenario-description-input" rows="3" placeholder="Describe the scenario"></textarea>
+              </label>
+              <label>Runtime hint
+                <input id="scenario-runtime-hint" type="text" placeholder="e.g. baseline calm start" />
+              </label>
+              <label>Ticks
+                <input id="scenario-ticks" type="number" min="1" placeholder="e.g. 12" />
+              </label>
+              <div class="control-row">
+                <label class="inline"><input id="scenario-enable-codex" type="checkbox" /> Enable Codex</label>
+                <label class="inline"><input id="scenario-enable-pfna" type="checkbox" /> Enable PFNA</label>
+              </div>
+              <label>Run ID (optional)
+                <input id="scenario-run-id" type="text" placeholder="Override run id" />
+              </label>
+              <label>GID (optional)
+                <input id="scenario-gid" type="text" placeholder="Override gid" />
+              </label>
+              <div class="control-row">
+                <button id="scenario-save" type="submit">Save changes</button>
+                <button id="scenario-activate" type="button" class="ghost">Activate</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+      <section id="pillars" class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Pillars</h2>
+            <p>View per-pillar status for the active or selected run.</p>
+          </div>
+          <div class="control-row">
+            <input id="pillar-run-id" type="text" placeholder="Run ID (defaults to active run)" />
+            <button id="refresh-pillars" type="button">Refresh pillars</button>
+          </div>
+        </div>
+        <div class="grid pillars-grid">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="eyebrow">Pillars for run</div>
+                <div id="pillar-run-label" class="card-title">No run selected</div>
+              </div>
+              <div class="badge" id="pillar-run-state">—</div>
+            </div>
+            <div id="pillar-cards" class="pillars cards"></div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="eyebrow">Pillar detail</div>
+                <div id="pillar-detail-name" class="card-title">Select a pillar</div>
+              </div>
+              <div class="badge" id="pillar-detail-status">—</div>
+            </div>
+            <div class="stack" id="pillar-detail-body">
+              <div class="empty">Choose a pillar card to see metrics.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section id="governance" class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Governance &amp; Budgets</h2>
+            <p>Inspect and update governance defaults for upcoming runs.</p>
+          </div>
+          <div class="control-row">
+            <button id="governance-refresh" type="button" class="ghost">Refresh</button>
+            <button id="governance-reset" type="button" class="ghost">Reset edits</button>
+          </div>
+        </div>
+        <div class="grid governance-grid">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="eyebrow">Current profile</div>
+                <div id="governance-summary-mode" class="card-title">—</div>
+              </div>
+              <div class="badge" id="governance-summary-codex">Codex —</div>
+            </div>
+            <div class="stack">
+              <div>
+                <div class="eyebrow">Budget policies</div>
+                <ul id="governance-summary-budgets" class="list compact"></ul>
+              </div>
+              <p class="muted">Changes here apply to newly started runs.</p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="eyebrow">Update governance</div>
+                <div class="card-title">Set defaults for new runs</div>
+              </div>
+            </div>
+            <form id="governance-form" class="stack">
+              <label>Governance mode
+                <select id="governance-mode-input">
+                  <option value="">—</option>
+                  <option value="OBSERVE">OBSERVE</option>
+                  <option value="INTERVENE">INTERVENE</option>
+                  <option value="OFF">OFF</option>
+                </select>
+              </label>
+              <label>Codex action mode
+                <select id="governance-codex-input">
+                  <option value="">—</option>
+                  <option value="OBSERVE">OBSERVE</option>
+                  <option value="INTERVENE">INTERVENE</option>
+                  <option value="OFF">OFF</option>
+                </select>
+              </label>
+              <div class="budget-policies" id="budget-policies"></div>
+              <div class="control-row">
+                <button id="add-budget" type="button" class="ghost">Add policy</button>
+                <div class="spacer"></div>
+                <button id="governance-save" type="submit">Save governance</button>
+              </div>
+              <div class="notice" id="governance-error" aria-live="polite"></div>
+            </form>
+          </div>
+        </div>
+      </section>
+      <section id="history" class="panel">
+        <div class="panel-header">
+          <h2>History &amp; Exports</h2>
+          <div class="control-row">
+            <button id="history-refresh" type="button" class="ghost">Refresh</button>
+          </div>
+        </div>
+        <div class="panel-grid history-grid">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="eyebrow">Run history</div>
+                <div class="card-title">Completed runs</div>
+              </div>
+            </div>
+            <ul id="history-list" class="list"></ul>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="eyebrow">Run detail</div>
+                <div class="card-title" id="history-detail-title">Select a run</div>
+              </div>
+              <div class="control-row">
+                <button id="history-export" type="button" class="ghost" disabled>Export bundle</button>
+              </div>
+            </div>
+            <dl class="meta-grid" id="history-detail">
+              <div>
+                <dt>Run ID</dt>
+                <dd id="history-run-id">—</dd>
+              </div>
+              <div>
+                <dt>Scenario</dt>
+                <dd id="history-scenario">—</dd>
+              </div>
+              <div>
+                <dt>Result</dt>
+                <dd id="history-result">—</dd>
+              </div>
+              <div>
+                <dt>Started</dt>
+                <dd id="history-started">—</dd>
+              </div>
+              <div>
+                <dt>Finished</dt>
+                <dd id="history-finished">—</dd>
+              </div>
+              <div>
+                <dt>Ticks</dt>
+                <dd id="history-ticks">—</dd>
+              </div>
+              <div>
+                <dt>Governance</dt>
+                <dd id="history-governance">—</dd>
+              </div>
+              <div>
+                <dt>Summary metrics</dt>
+                <dd id="history-metrics">—</dd>
+              </div>
+              <div>
+                <dt>Pillars</dt>
+                <dd id="history-pillars">—</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+        <div class="panel-grid history-grid">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="eyebrow">Diagnostics</div>
+                <div class="card-title">Past diagnostics</div>
+              </div>
+            </div>
+            <ul id="history-diagnostics" class="list compact"></ul>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="eyebrow">Diagnostics detail</div>
+                <div class="card-title" id="diagnostic-detail-title">Select a diagnostics run</div>
+              </div>
+            </div>
+            <dl class="meta-grid" id="diagnostic-detail">
+              <div>
+                <dt>Diagnostic ID</dt>
+                <dd id="diagnostic-detail-id">—</dd>
+              </div>
+              <div>
+                <dt>Profile</dt>
+                <dd id="diagnostic-detail-profile">—</dd>
+              </div>
+              <div>
+                <dt>State</dt>
+                <dd id="diagnostic-detail-state">—</dd>
+              </div>
+              <div>
+                <dt>Related runs</dt>
+                <dd id="diagnostic-detail-runs">—</dd>
+              </div>
+            </dl>
+            <div id="diagnostic-checks" class="checks"></div>
+          </div>
+        </div>
+      </section>
+      <section id="logs" class="panel">
+        <h2>Logs &amp; Console</h2>
+        <div class="control-row log-controls">
+          <label>Run ID
+            <input id="logs-run-id" type="text" placeholder="current run or history run" />
+          </label>
+          <label>Level
+            <select id="logs-level">
+              <option value="">All</option>
+              <option value="INFO">INFO</option>
+              <option value="WARN">WARN</option>
+              <option value="ERROR">ERROR</option>
+            </select>
+          </label>
+          <label>Event type
+            <input id="logs-event" type="text" placeholder="event name" />
+          </label>
+          <label class="inline">
+            <input id="logs-follow-current" type="checkbox" checked />
+            Follow current run
+          </label>
+          <label class="inline">
+            <input id="logs-autoscroll" type="checkbox" checked />
+            Auto-scroll
+          </label>
+          <button id="logs-refresh" type="button">Pull latest</button>
+          <button id="logs-more" type="button" class="ghost">Load more</button>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="eyebrow">Structured logs</div>
+              <div class="card-title">Run console stream</div>
+            </div>
+            <div class="muted">Cursor: <span id="logs-cursor">0</span></div>
+          </div>
+          <div id="logs-list" class="log-stream"></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <div id="status-line">Disconnected — update the Operator Service URL to begin.</div>
+    </footer>
+
+    <script src="operator-config.js"></script>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
