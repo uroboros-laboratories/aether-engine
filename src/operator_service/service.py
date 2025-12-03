@@ -24,7 +24,7 @@ class OperatorServiceConfig:
     """Configuration for the Operator Service server."""
 
     host: str = "127.0.0.1"
-    port: int = 8000
+    port: int = 8080
     repo_root: Optional[Path] = None
     scenario_registry_path: Optional[Path] = None
     history_path: Optional[Path] = None
@@ -44,14 +44,6 @@ class _OperatorRequestHandler(BaseHTTPRequestHandler):
     service: "OperatorService"
     history_store: HistoryStore
     diagnostics: DiagnosticsManager
-
-    def do_OPTIONS(self) -> None:  # noqa: N802 - BaseHTTPRequestHandler signature
-        """Respond to CORS preflight requests."""
-
-        self.send_response(204)
-        self._send_cors_headers()
-        self.send_header("Content-Length", "0")
-        self.end_headers()
 
     def do_GET(self) -> None:  # noqa: N802 - BaseHTTPRequestHandler signature
         parsed = urlparse(self.path)
@@ -363,7 +355,6 @@ class _OperatorRequestHandler(BaseHTTPRequestHandler):
             "Content-Disposition", f"attachment; filename=\"{bundle.name}\""
         )
         self.send_header("Content-Length", str(len(data)))
-        self._send_cors_headers()
         self.end_headers()
         self.wfile.write(data)
 
@@ -481,14 +472,8 @@ class _OperatorRequestHandler(BaseHTTPRequestHandler):
         self.send_response(status_code)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(body)))
-        self._send_cors_headers()
         self.end_headers()
         self.wfile.write(body)
-
-    def _send_cors_headers(self) -> None:
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
 
     def _read_json(self) -> Optional[dict]:
         length = int(self.headers.get("Content-Length", "0"))
@@ -656,7 +641,7 @@ def _serialize_diag_result(result: object) -> dict:
 def _parse_args(argv: Optional[list[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Start the Operator Service")
     parser.add_argument("--host", default="127.0.0.1", help="Bind host (default: 127.0.0.1)")
-    parser.add_argument("--port", type=int, default=8000, help="Bind port (default: 8000)")
+    parser.add_argument("--port", type=int, default=8080, help="Bind port (default: 8080)")
     parser.add_argument(
         "--registry",
         type=Path,
