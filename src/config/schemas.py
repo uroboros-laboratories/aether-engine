@@ -429,12 +429,17 @@ def _resolve_relative(base_path: Path, reference: str, *, label: str) -> Path:
     return _validate_path(ref_path, label)
 
 
-def load_run_session_config(source: Union[str, Path]) -> SessionConfigV1:
-    """Load a RunConfig file and materialise a Gate SessionConfig_v1."""
+def build_session_config_from_run_config(
+    run_config: "RunConfigV1", *, config_base_dir: Union[str, Path]
+) -> SessionConfigV1:
+    """Materialise a SessionConfigV1 from an in-memory RunConfigV1.
 
-    config_path = Path(source).resolve()
-    run_config = load_run_config(config_path)
-    base_dir = config_path.parent
+    This mirrors the logic used by :func:`load_run_session_config` but operates on an
+    already parsed RunConfig instance so callers can apply overrides before
+    constructing the session.
+    """
+
+    base_dir = Path(config_base_dir).resolve()
 
     topo_path = _resolve_relative(base_dir, run_config.topology_path, label="topology_path")
     profile_path = _resolve_relative(base_dir, run_config.profile_path, label="profile_path")
@@ -500,6 +505,14 @@ def load_run_session_config(source: Union[str, Path]) -> SessionConfigV1:
         logging_config=run_config.logging,
         metrics_config=run_config.metrics,
     )
+
+
+def load_run_session_config(source: Union[str, Path]) -> SessionConfigV1:
+    """Load a RunConfig file and materialise a Gate SessionConfig_v1."""
+
+    config_path = Path(source).resolve()
+    run_config = load_run_config(config_path)
+    return build_session_config_from_run_config(run_config, config_base_dir=config_path.parent)
 
 
 def load_scenario_run_config(
