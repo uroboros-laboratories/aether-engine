@@ -851,12 +851,14 @@ class SessionRunResult:
         return ordered
 
 
-def run_session(config: SessionConfigV1) -> SessionRunResult:
+def run_session(
+    config: SessionConfigV1, *, logger: Optional[StructuredLogger] = None
+) -> SessionRunResult:
     """Run a CMP-0 session via Gate/TBP and TickLoop_v1."""
 
     from core.tick_loop import run_cmp0_tick_loop
 
-    logger = StructuredLogger(config.logging_config)
+    logger = logger or StructuredLogger(config.logging_config)
     logger.log(
         "run_start",
         gid=config.topo.gid,
@@ -984,4 +986,22 @@ def _build_metrics_snapshot(
         apx_manifests=len(tick_result.manifests),
         apxi_views=len(tick_result.apxi_views),
     )
+
+
+def build_metrics_snapshot(result: SessionRunResult) -> MetricsSnapshotV1:
+    """Public helper to derive metrics for a SessionRunResult."""
+
+    return _build_metrics_snapshot(
+        config=result.config,
+        tick_result=result.tick_result,
+        lifecycle_envelopes=result.lifecycle_envelopes,
+    )
+
+
+def build_introspection_view(result: SessionRunResult) -> "IntrospectionViewV1":
+    """Public helper delegating to the ops introspection builder."""
+
+    from ops import build_introspection_view as _build_introspection_view
+
+    return _build_introspection_view(result)
 

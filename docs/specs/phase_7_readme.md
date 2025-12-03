@@ -132,12 +132,10 @@ When using an AI coding assistant (e.g., GitHub Copilot / Codex / GPT) on this r
 > **Note:** This section describes the intended experience. Exact commands/paths may differ depending on the final implementation. See the final run book for authoritative instructions.
 
 1. Build or install dependencies as described in the main `README.md`.
-2. Start the Operator Service + UI (single command or script, e.g.):
+2. Start the Operator Service + UI (single command):
 
 ```bash
-./scripts/run_phase7_local.sh
-# or
-python -m aether.operator_service --with-ui
+python scripts/run_phase7_local.py
 ```
 
 3. Open the Gate Operator UI in a browser:
@@ -155,5 +153,10 @@ http://localhost:<PORT>
 For detailed operator workflows, refer to:
 
 - `docs/phase7/gate_ui_spec_phase7.md` (behaviour & acceptance criteria),
-- The Phase 7 run book (to be added in Epic E).
+- `docs/phase7_runbook.md` (operator run book and troubleshooting).
 
+
+## 7. Developer experience snapshot (Phase 7)
+- Bundle the offline UI: `python scripts/build_ui_bundle.py` (outputs `dist/operator_ui` and a zip archive). Override defaults with `OPERATOR_UI_SRC`, `OPERATOR_UI_DIST`, `OPERATOR_UI_ZIP`, or CLI flags.
+- Run the full stack locally: `python scripts/run_phase7_local.py` (Operator Service on `127.0.0.1:8000`, UI on `127.0.0.1:9000`). Defaults can be adjusted via CLI flags or `OPERATOR_SERVICE_HOST` / `OPERATOR_SERVICE_PORT` / `OPERATOR_UI_HOST` / `OPERATOR_UI_PORT`.
+- See `docs/phase7_runbook.md` for prerequisites, workflow, and troubleshooting, including the full environment variable matrix.
