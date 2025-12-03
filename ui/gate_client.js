@@ -1,6 +1,4 @@
-const DEFAULT_BASE_URL =
-  (typeof window !== 'undefined' && window.OPERATOR_CONFIG && window.OPERATOR_CONFIG.baseUrl) ||
-  'http://localhost:8000';
+const DEFAULT_BASE_URL = 'http://localhost:8000';
 
 function normaliseBaseUrl(url) {
   if (!url) return DEFAULT_BASE_URL;
