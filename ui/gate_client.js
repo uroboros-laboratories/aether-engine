@@ -1,36 +1,4 @@
-const operatorConfig = (typeof window !== 'undefined' && window.OPERATOR_CONFIG) || {};
-
-function deriveBaseUrl(config) {
-  const loc = typeof window !== 'undefined' ? window.location : null;
-  const protocol = (config.protocol || (loc && loc.protocol) || 'http:').replace(/:$/, '');
-  const servicePort = config.servicePort || 8000;
-
-  if (config.baseUrl && config.baseUrl !== 'auto') {
-    return config.baseUrl;
-  }
-
-  if (!loc) {
-    return `${protocol}://localhost:${servicePort}`;
-  }
-
-  let host = loc.hostname || 'localhost';
-
-  // Codespaces/Gitpod-style forwarded hosts encode the port as the first hostname segment
-  // (e.g. 9000-foo.github.dev). Swap that segment so the service port is addressed.
-  if (/^\d+-/.test(host)) {
-    const [, ...rest] = host.split('-');
-    host = `${servicePort}-${rest.join('-')}`;
-    return `${protocol}://${host}`;
-  }
-
-  if (loc.port) {
-    return `${protocol}://${host}:${servicePort}`;
-  }
-
-  return `${protocol}://${host}:${servicePort}`;
-}
-
-const DEFAULT_BASE_URL = deriveBaseUrl(operatorConfig);
+const DEFAULT_BASE_URL = 'http://localhost:8000';
 
 function normaliseBaseUrl(url) {
   if (!url) return DEFAULT_BASE_URL;

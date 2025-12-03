@@ -158,5 +158,5 @@ For detailed operator workflows, refer to:
 
 ## 7. Developer experience snapshot (Phase 7)
 - Bundle the offline UI: `python scripts/build_ui_bundle.py` (outputs `dist/operator_ui` and a zip archive). Override defaults with `OPERATOR_UI_SRC`, `OPERATOR_UI_DIST`, `OPERATOR_UI_ZIP`, or CLI flags.
-- Run the full stack locally: `python scripts/run_phase7_local.py` (Operator Service on `0.0.0.0:8000`, UI on `0.0.0.0:9000`). Defaults can be adjusted via CLI flags or `OPERATOR_SERVICE_HOST` / `OPERATOR_SERVICE_PORT` / `OPERATOR_UI_HOST` / `OPERATOR_UI_PORT`.
+- Run the full stack locally: `python scripts/run_phase7_local.py` (Operator Service on `127.0.0.1:8000`, UI on `127.0.0.1:9000`). Defaults can be adjusted via CLI flags or `OPERATOR_SERVICE_HOST` / `OPERATOR_SERVICE_PORT` / `OPERATOR_UI_HOST` / `OPERATOR_UI_PORT`.
 - See `docs/phase7_runbook.md` for prerequisites, workflow, and troubleshooting, including the full environment variable matrix.
