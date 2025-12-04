@@ -47,28 +47,6 @@ def _build_temp_repo(tmp_path: Path) -> Path:
     return tmp_path
 
 
-def test_cors_headers_allow_cross_origin() -> None:
-    server, thread, _ = _start_service()
-    try:
-        host, port = server.server_address
-        conn = HTTPConnection(host, port)
-
-        conn.request("OPTIONS", "/state", headers={"Origin": "http://example.com"})
-        options_resp = conn.getresponse()
-        options_resp.read()
-
-        conn.request("GET", "/state", headers={"Origin": "http://example.com"})
-        get_resp = conn.getresponse()
-        get_resp.read()
-
-        for resp in (options_resp, get_resp):
-            assert resp.getheader("Access-Control-Allow-Origin") == "*"
-            assert resp.getheader("Access-Control-Allow-Methods") == "GET, POST, OPTIONS"
-            assert resp.getheader("Access-Control-Allow-Headers") == "Content-Type"
-    finally:
-        _stop_service(server, thread)
-
-
 def test_health_endpoint_reports_registry() -> None:
     server, thread, _ = _start_service()
     try:

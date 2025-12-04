@@ -2,12 +2,7 @@ import { GateClient, loadSavedBaseUrl, saveBaseUrl } from './gate_client.js';
 
 const baseUrlInput = document.getElementById('base-url');
 const saveEndpointButton = document.getElementById('save-endpoint');
-const probeEndpointButton = document.getElementById('probe-endpoint');
-const downloadDiagnosticsButton = document.getElementById('download-diagnostics');
 const statusLine = document.getElementById('status-line');
-const connectionAlert = document.getElementById('connection-alert');
-const connectionMessage = document.getElementById('connection-message');
-const connectionHint = document.getElementById('connection-hint');
 const tabs = Array.from(document.querySelectorAll('.tab'));
 const panels = Array.from(document.querySelectorAll('.panel'));
 const runStateEl = document.getElementById('run-state');
@@ -121,7 +116,6 @@ let logEntries = [];
 let logsActiveRunId = '';
 let lastCurrentRunId = '';
 let activeTab = tabs.find((tab) => tab.classList.contains('active'))?.dataset.tab || 'dashboard';
-let connectionIssues = [];
 
 setScenarioFormEnabled(false);
 renderPillars([], null);
@@ -134,35 +128,6 @@ renderLogs('');
 
 function updateStatus(text) {
   statusLine.textContent = text;
-}
-
-function renderConnectionAlert() {
-  if (!connectionAlert) return;
-  if (!connectionIssues.length) {
-    connectionAlert.classList.add('hidden');
-    return;
-  }
-
-  const latest = connectionIssues[0];
-  connectionAlert.classList.remove('hidden');
-  if (connectionMessage) {
-    connectionMessage.textContent = `Last error (${latest.stage} @ ${client.baseUrl}): ${latest.message}`;
-  }
-  if (connectionHint) {
-    connectionHint.textContent = `Open ${client.baseUrl}/health in your browser. If that fails, the Operator Service is down or unreachable. If it works, the browser is blocking the response (CORS/mixed content) — try the same protocol as this page or set the endpoint above.`;
-  }
-}
-
-function recordConnectionIssue(stage, error) {
-  const message = (error && error.message) || String(error || 'Unknown error');
-  connectionIssues.unshift({ stage, message, timestamp: new Date().toISOString() });
-  connectionIssues = connectionIssues.slice(0, 10);
-  renderConnectionAlert();
-}
-
-function clearConnectionIssues() {
-  connectionIssues = [];
-  renderConnectionAlert();
 }
 
 function formatTimestamp(value) {
@@ -380,7 +345,6 @@ async function loadScenarios(preferredId) {
     scenarios = [];
     renderScenarioList('');
     updateStatus(`Failed to load scenarios: ${err.message}`);
-    recordConnectionIssue('scenarios', err);
   }
 }
 
@@ -477,7 +441,6 @@ async function loadHistory(preferredRunId) {
     renderHistoryDetail(null);
     renderDiagnosticDetail(null);
     updateStatus(`Failed to load history: ${err.message}`);
-    recordConnectionIssue('history', err);
   }
 }
 
@@ -1049,12 +1012,10 @@ async function refreshState() {
     lastCurrentRunId = state.current_run?.run_id || '';
     renderScenarioList(scenarioSearchInput.value);
     updateStatus(`Connected — ${state.active_scenario?.name || state.active_scenario?.scenario_id || 'ready'}`);
-    clearConnectionIssues();
   } catch (err) {
     updateStatus(`Failed to refresh state: ${err.message}`);
     clearInterval(statePoll);
     statePoll = undefined;
-    recordConnectionIssue('state', err);
   }
 }
 
@@ -1112,7 +1073,6 @@ async function probeConnection() {
     const state = await client.state();
     const scenarioLabel = state?.active_scenario?.name || state?.active_scenario?.scenario_id || 'no active scenario';
     updateStatus(`Connected — ${scenarioLabel}`);
-    clearConnectionIssues();
     renderScenario(state.active_scenario);
     renderGovernanceSnapshot(state.governance, { forceForm: true });
     renderRunStatus(state.current_run);
@@ -1136,7 +1096,6 @@ async function probeConnection() {
     updateStatus(`Failed to reach service: ${err.message}`);
     clearInterval(statePoll);
     statePoll = undefined;
-    recordConnectionIssue('startup', err);
   }
 }
 
@@ -1174,47 +1133,12 @@ function stopLogsPoll() {
   }
 }
 
-function buildDiagnosticsReport() {
-  return {
-    timestamp: new Date().toISOString(),
-    baseUrl: client.baseUrl,
-    storedBaseUrl: loadSavedBaseUrl(),
-    statusLine: statusLine.textContent,
-    connectionIssues,
-    lastState: latestState,
-    selectedHistoryRunId,
-    historyCount: historyEntries.length,
-    diagnosticsCount: diagnosticsArchive.length,
-    userAgent: navigator.userAgent,
-  };
-}
-
-function downloadDiagnosticsReport() {
-  const report = buildDiagnosticsReport();
-  const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `gate-ui-diagnostics-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
-  link.click();
-  URL.revokeObjectURL(url);
-  updateStatus('Diagnostics report downloaded.');
-}
-
 saveEndpointButton.addEventListener('click', () => {
   const normalised = saveBaseUrl(baseUrlInput.value.trim());
   client.setBaseUrl(normalised);
   updateStatus(`Saved endpoint — ${normalised}`);
   probeConnection();
   loadDiagnosticsProfiles();
-});
-
-probeEndpointButton?.addEventListener('click', () => {
-  probeConnection();
-});
-
-downloadDiagnosticsButton?.addEventListener('click', () => {
-  downloadDiagnosticsReport();
 });
 
 tabs.forEach((tab) => {
