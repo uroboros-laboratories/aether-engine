@@ -23,6 +23,8 @@ from gate.gate import (
     dump_pfna_v0,
     load_pfna_v0,
     run_session,
+    build_metrics_snapshot,
+    build_introspection_view,
 )
 
 __all__ = [
@@ -48,4 +50,6 @@ __all__ = [
     "dump_pfna_v0",
     "load_pfna_v0",
     "run_session",
+    "build_metrics_snapshot",
+    "build_introspection_view",
 ]
