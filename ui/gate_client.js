@@ -1,8 +1,51 @@
-const DEFAULT_BASE_URL = 'http://localhost:8000';
+const DEFAULT_BASE_URL = (() => {
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return window.location.origin;
+  }
+  return 'http://localhost:8000';
+})();
+
+function ensureScheme(url) {
+  if (!url) return url;
+  return /^https?:\/\//i.test(url) ? url : `http://${url}`;
+}
 
 function normaliseBaseUrl(url) {
   if (!url) return DEFAULT_BASE_URL;
-  return url.endsWith('/') ? url.slice(0, -1) : url;
+  const withScheme = ensureScheme(url.trim());
+  return withScheme.endsWith('/') ? withScheme.slice(0, -1) : withScheme;
+}
+
+function buildNetworkError(url, err) {
+  const baseMessage = `Network error calling ${url}: ${err.message}`;
+  if (err?.message?.toLowerCase().includes('failed to fetch')) {
+    return new Error(
+      `${baseMessage}. Ensure the Operator Service is reachable from your browser, the URL includes the scheme (http/https), and CORS/network policies allow the request.`,
+    );
+  }
+  return new Error(`${baseMessage}. Check service availability and connectivity.`);
+}
+
+async function requestJson(url, options = {}) {
+  let response;
+  try {
+    response = await fetch(url, options);
+  } catch (err) {
+    throw buildNetworkError(url, err);
+  }
+
+  if (!response.ok) {
+    let message;
+    try {
+      message = await response.text();
+    } catch (err) {
+      message = err?.message;
+    }
+    const detail = message ? `: ${message}` : '';
+    throw new Error(`Request failed (${response.status}) for ${url}${detail}`);
+  }
+
+  return response.json();
 }
 
 export class GateClient {
@@ -15,26 +58,19 @@ export class GateClient {
   }
 
   async get(path) {
-    const response = await fetch(`${this.baseUrl}${path}`);
-    if (!response.ok) {
-      throw new Error(`Request failed (${response.status}) for ${path}`);
-    }
-    return response.json();
+    const url = `${this.baseUrl}${path}`;
+    return requestJson(url);
   }
 
   async post(path, body) {
-    const response = await fetch(`${this.baseUrl}${path}`, {
+    const url = `${this.baseUrl}${path}`;
+    return requestJson(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: body ? JSON.stringify(body) : undefined,
     });
-    if (!response.ok) {
-      const message = await response.text();
-      throw new Error(`Request failed (${response.status}): ${message || path}`);
-    }
-    return response.json();
   }
 
   // Core Operator Service endpoints surfaced for UI wiring.

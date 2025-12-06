@@ -334,7 +334,8 @@ async function loadScenarioDetail(scenarioId) {
 async function loadScenarios(preferredId) {
   try {
     const list = await client.listScenarios();
-    scenarios = Array.isArray(list) ? list : [];
+    const receivedScenarios = Array.isArray(list) ? list : list?.scenarios;
+    scenarios = Array.isArray(receivedScenarios) ? receivedScenarios : [];
     renderScenarioList(scenarioSearchInput.value);
     const defaultId =
       preferredId || latestState?.active_scenario?.scenario_id || scenarios[0]?.scenario_id || selectedScenarioId;

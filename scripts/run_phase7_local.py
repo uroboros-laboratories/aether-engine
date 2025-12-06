@@ -6,7 +6,10 @@ import os
 import subprocess
 import sys
 import threading
+import time
 import webbrowser
+import urllib.error
+import urllib.request
 from functools import partial
 from http.server import SimpleHTTPRequestHandler
 from pathlib import Path
@@ -53,6 +56,32 @@ def _start_operator_service(host: str, port: int, repo_root: Path) -> subprocess
         str(repo_root),
     ]
     return subprocess.Popen(cmd, env=env)
+
+
+def _await_health(url: str, timeout: float = 30.0, poll_interval: float = 0.5) -> None:
+    deadline = time.time() + timeout
+    last_error: Exception | None = None
+
+    while time.time() < deadline:
+        try:
+            with urllib.request.urlopen(url, timeout=poll_interval) as response:
+                if response.status == 200:
+                    return
+        except urllib.error.URLError as exc:  # pragma: no cover - exercised via integration
+            last_error = exc
+        time.sleep(poll_interval)
+
+    if last_error is None:
+        raise TimeoutError(f"Timed out waiting for health check at {url}")
+    raise TimeoutError(f"Timed out waiting for health check at {url}: {last_error}")
+
+
+def _get_probe_host(service_host: str) -> str:
+    if service_host == "0.0.0.0":
+        return "127.0.0.1"
+    if service_host == "::":
+        return "[::1]"
+    return service_host
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -110,11 +139,20 @@ def main(argv: list[str] | None = None) -> None:
 
     ui_url = f"http://{args.ui_host}:{args.ui_port}".replace("0.0.0.0", "127.0.0.1")
     service_url = f"http://{args.service_host}:{args.service_port}".replace("0.0.0.0", "127.0.0.1")
+    health_url = f"http://{_get_probe_host(args.service_host)}:{args.service_port}/health"
 
     print("Phase 7 stack is running:")
     print(f"  Operator Service: {service_url}")
     print(f"  Operator UI:      {ui_url}")
     print("Press Ctrl+C to stop both servers.")
+
+    try:
+        _await_health(health_url)
+    except TimeoutError as exc:
+        print(f"Health check failed: {exc}")
+        httpd.shutdown()
+        service_proc.terminate()
+        raise SystemExit(1) from exc
 
     if not args.no_browser:
         webbrowser.open(ui_url)

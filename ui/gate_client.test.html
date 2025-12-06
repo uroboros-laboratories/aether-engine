@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Gate Client Tests</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 1rem;
+      }
+      .pass {
+        color: green;
+      }
+      .fail {
+        color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Gate Client Tests</h1>
+    <ul id="results"></ul>
+    <script type="module">
+      import { GateClient, loadSavedBaseUrl, saveBaseUrl } from './gate_client.js';
+
+      const resultsEl = document.getElementById('results');
+      const results = [];
+
+      function record(name, status, error) {
+        results.push({ name, status, error });
+        const item = document.createElement('li');
+        item.textContent = `${status.toUpperCase()}: ${name}${error ? ` — ${error}` : ''}`;
+        item.className = status;
+        resultsEl.appendChild(item);
+      }
+
+      async function test(name, fn) {
+        try {
+          await fn();
+          record(name, 'pass');
+        } catch (err) {
+          record(name, 'fail', err?.message || err);
+        }
+      }
+
+      async function run() {
+        // LocalStorage interactions should not leak between tests.
+        localStorage.clear();
+
+        const expectedOrigin = (() => {
+          const origin = window.location?.origin;
+          if (origin) return origin;
+          return 'http://localhost:8000';
+        })();
+        const expectedDefault = expectedOrigin.endsWith('/') ? expectedOrigin.slice(0, -1) : expectedOrigin;
+        const normalisedDefault = /^https?:\/\//i.test(expectedDefault)
+          ? expectedDefault
+          : `http://${expectedDefault}`;
+
+        await test('Defaults to window origin when available', () => {
+          const client = new GateClient();
+          if (client.baseUrl !== normalisedDefault) {
+            throw new Error(`Expected ${normalisedDefault} but got ${client.baseUrl}`);
+          }
+        });
+
+        await test('Adds scheme and trims trailing slash for custom base URL', () => {
+          const client = new GateClient('example.com/');
+          if (client.baseUrl !== 'http://example.com') {
+            throw new Error(`Unexpected base URL: ${client.baseUrl}`);
+          }
+        });
+
+        await test('Persists and reloads normalised base URL', () => {
+          const saved = saveBaseUrl('https://demo.local/');
+          if (saved !== 'https://demo.local') {
+            throw new Error(`Save returned ${saved}`);
+          }
+          const loaded = loadSavedBaseUrl();
+          if (loaded !== 'https://demo.local') {
+            throw new Error(`Load returned ${loaded}`);
+          }
+        });
+
+        await test('Wraps failed fetch with troubleshooting hint', async () => {
+          const client = new GateClient('http://api.invalid');
+          const originalFetch = globalThis.fetch;
+          globalThis.fetch = () => {
+            throw new TypeError('Failed to fetch');
+          };
+          try {
+            await client.get('/state');
+            throw new Error('Expected call to fail');
+          } catch (err) {
+            const message = err?.message || '';
+            if (!message.includes('Ensure the Operator Service is reachable')) {
+              throw new Error(`Missing hint in error: ${message}`);
+            }
+            if (!message.includes('http://api.invalid/state')) {
+              throw new Error(`Missing URL context: ${message}`);
+            }
+          } finally {
+            globalThis.fetch = originalFetch;
+          }
+        });
+
+        await test('Successful fetch returns parsed JSON', async () => {
+          const client = new GateClient('http://api.example');
+          const originalFetch = globalThis.fetch;
+          let calledUrl;
+          globalThis.fetch = async (url, options) => {
+            calledUrl = url;
+            return {
+              ok: true,
+              async json() {
+                return { ok: true, method: options?.method || 'GET' };
+              },
+            };
+          };
+          try {
+            const result = await client.post('/run', { demo: true });
+            if (calledUrl !== 'http://api.example/run') {
+              throw new Error(`Unexpected fetch URL: ${calledUrl}`);
+            }
+            if (!result?.ok || result?.method !== 'POST') {
+              throw new Error(`Unexpected response: ${JSON.stringify(result)}`);
+            }
+          } finally {
+            globalThis.fetch = originalFetch;
+          }
+        });
+
+        window.testResults = results;
+        window.testsDone = true;
+      }
+
+      run();
+    </script>
+  </body>
+</html>
