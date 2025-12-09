@@ -11,12 +11,22 @@ import json
 from dataclasses import dataclass, field
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from typing import Optional
+from typing import Dict, Optional
 from urllib.parse import parse_qs, urlparse
 
 from config import EngineRuntime
 from operator_service.diagnostics import DiagnosticsManager, DiagnosticsStore
-from operator_service.run_registry import HistoryStore, RunRegistry, RunStatus
+from operator_service.dpi import (
+    DpiDetail,
+    DpiJob,
+    DpiJobKind,
+    DpiJobStatus,
+    DpiRegistry,
+    DpiSummary,
+)
+from operator_service.dpi_jobs import apply_job_defaults, validate_job_params
+from operator_service.quantum_ingest import auto_tune_ingestion_params, build_ingestion_result_summary
+from operator_service.run_registry import HistoryStore, RunHandle, RunRegistry, RunStatus
 
 
 @dataclass
@@ -29,6 +39,77 @@ class OperatorServiceConfig:
     scenario_registry_path: Optional[Path] = None
     history_path: Optional[Path] = None
     diagnostics_path: Optional[Path] = None
+
+
+def _resolve_scenario_id(runtime: EngineRuntime, preferred: Optional[object]) -> Optional[str]:
+    """Pick a scenario id for DPI-triggered runs, favouring user input."""
+
+    if isinstance(preferred, str) and preferred.strip():
+        return preferred.strip()
+
+    try:
+        registry = runtime.load_registry()
+        scenarios = getattr(registry, "scenarios", []) or []
+        if scenarios:
+            return getattr(scenarios[0], "scenario_id", None)
+    except Exception:  # pragma: no cover - defensive fallback
+        return None
+    return None
+
+
+def _start_run_for_job(
+    runtime: EngineRuntime,
+    run_registry: RunRegistry,
+    dpi_registry: DpiRegistry,
+    job: DpiJob,
+) -> tuple[Optional[RunHandle], Optional[dict[str, object]]]:
+    """Start an engine run for DPI jobs that request it."""
+
+    params = getattr(job, "params", {}) or {}
+    if not bool(params.get("run_engine")):
+        return None, None
+
+    scenario_id = _resolve_scenario_id(runtime, params.get("scenario_id"))
+    if not scenario_id:
+        summary = {"run_started": False, "reason": "no scenarios available"}
+        job.result_summary = _merge_result_summary(job.result_summary, summary)
+        return None, summary
+
+    overrides = {
+        "dpi_id": job.dpi_id,
+        "dpi_kind": getattr(job.kind, "value", job.kind),
+        "dpi_job_id": job.job_id,
+    }
+    if params.get("run_id"):
+        overrides["run_id"] = str(params["run_id"])
+
+    try:
+        handle = run_registry.start_run(scenario_id, overrides)
+    except Exception as exc:  # pragma: no cover - defensive guard
+        summary = {"run_started": False, "reason": str(exc)}
+        job.result_summary = _merge_result_summary(job.result_summary, summary)
+        return None, summary
+
+    dpi_registry.attach_run(job, handle.status.run_id)
+    job.status = DpiJobStatus.RUNNING
+
+    summary = {
+        "run_started": True,
+        "run_id": handle.status.run_id,
+        "scenario_id": scenario_id,
+        "ticks_total": handle.status.ticks_total,
+    }
+    job.result_summary = _merge_result_summary(job.result_summary, summary)
+    return handle, summary
+
+
+def _merge_result_summary(
+    existing: Optional[dict[str, object]],
+    update: dict[str, object],
+) -> dict[str, object]:
+    base = dict(existing or {})
+    base.update(update)
+    return base
 
 
 class _OperatorRequestHandler(BaseHTTPRequestHandler):
@@ -44,6 +125,7 @@ class _OperatorRequestHandler(BaseHTTPRequestHandler):
     service: "OperatorService"
     history_store: HistoryStore
     diagnostics: DiagnosticsManager
+    dpi_registry: DpiRegistry
 
     def do_GET(self) -> None:  # noqa: N802 - BaseHTTPRequestHandler signature
         parsed = urlparse(self.path)
@@ -91,6 +173,14 @@ class _OperatorRequestHandler(BaseHTTPRequestHandler):
             self._handle_diagnostic_profiles()
         elif parsed.path == "/diagnostics":
             self._handle_diagnostics()
+        elif parsed.path == "/dpis":
+            self._handle_dpis()
+        elif parsed.path.startswith("/dpis/"):
+            _, _, dpi_id, *_ = parsed.path.split("/")
+            if not dpi_id:
+                self._send_json({"error": "missing dpi id"}, status_code=400)
+                return
+            self._handle_dpi_detail(dpi_id)
         elif parsed.path.startswith("/diagnostics/"):
             _, _, diagnostic_id, *_ = parsed.path.split("/")
             if not diagnostic_id:
@@ -112,6 +202,12 @@ class _OperatorRequestHandler(BaseHTTPRequestHandler):
             self._handle_stop_run(run_id)
         elif parsed.path == "/governance":
             self._handle_update_governance()
+        elif parsed.path.startswith("/dpis/") and parsed.path.endswith("/jobs"):
+            _, _, dpi_id, *_ = parsed.path.split("/")
+            if not dpi_id:
+                self._send_json({"error": "missing dpi id"}, status_code=400)
+                return
+            self._handle_create_dpi_job(dpi_id)
         elif parsed.path.startswith("/scenarios/") and parsed.path.endswith("/activate"):
             _, _, scenario_id, *_ = parsed.path.split("/")
             if not scenario_id:
@@ -152,6 +248,99 @@ class _OperatorRequestHandler(BaseHTTPRequestHandler):
 
         self._send_json(detail, status_code=code)
 
+    def _handle_dpis(self) -> None:
+        if not self.dpi_registry.enabled:
+            self._send_json({"error": "dpi feature disabled"}, status_code=404)
+            return
+
+        summaries = [_serialize_dpi_summary(item) for item in self.dpi_registry.list()]
+        self._send_json({"dpis": summaries})
+
+    def _handle_dpi_detail(self, dpi_id: str) -> None:
+        if not self.dpi_registry.enabled:
+            self._send_json({"error": "dpi feature disabled"}, status_code=404)
+            return
+
+        detail = self.dpi_registry.get(dpi_id)
+        if detail is None:
+            self._send_json({"error": "unknown dpi id"}, status_code=404)
+            return
+
+        payload = _serialize_dpi_detail(detail)
+        payload["jobs"] = [_serialize_dpi_job(job) for job in self.dpi_registry.list_jobs(dpi_id)]
+        self._send_json(payload)
+
+    def _handle_create_dpi_job(self, dpi_id: str) -> None:
+        if not self.dpi_registry.enabled:
+            self._send_json({"error": "dpi feature disabled"}, status_code=404)
+            return
+
+        if self.dpi_registry.get(dpi_id) is None:
+            self._send_json({"error": "unknown dpi id"}, status_code=404)
+            return
+
+        payload = self._read_json()
+        if payload is None:
+            return
+
+        kind_raw = payload.get("kind")
+        params_raw = payload.get("params") if isinstance(payload, dict) else None
+        params: Dict[str, object] = params_raw if isinstance(params_raw, dict) else {}
+        run_id_raw = payload.get("run_id") if isinstance(payload, dict) else None
+        if run_id_raw is not None and not isinstance(run_id_raw, str):
+            self._send_json({"error": "run_id must be a string"}, status_code=400)
+            return
+        run_id = run_id_raw.strip() if isinstance(run_id_raw, str) else None
+
+        try:
+            kind = DpiJobKind(kind_raw)
+        except Exception:
+            self._send_json({"error": "invalid job kind"}, status_code=400)
+            return
+
+        normalized = apply_job_defaults(kind, params)
+        if kind is DpiJobKind.INGESTION:
+            normalized = auto_tune_ingestion_params(normalized)
+
+        errors = validate_job_params(kind, normalized)
+        if errors:
+            self._send_json({"error": "; ".join(errors)}, status_code=400)
+            return
+
+        result_summary = None
+        if kind is DpiJobKind.INGESTION:
+            try:
+                result_summary = build_ingestion_result_summary(normalized)
+            except Exception:  # pragma: no cover - defensive: ingestion preview should not fail requests
+                result_summary = None
+
+        job = self.dpi_registry.create_job(
+            dpi_id,
+            kind,
+            params=normalized,
+            status=DpiJobStatus.QUEUED,
+            run_id=run_id,
+            result_summary=result_summary,
+        )
+        run_tagged = False
+        if run_id:
+            run_tagged = self.run_registry.tag_run(
+                run_id, dpi_id=dpi_id, dpi_kind=kind.value, dpi_job_id=job.job_id
+            )
+        run_summary = None
+        if kind in {DpiJobKind.SIMULATION, DpiJobKind.EXPERIMENT}:
+            handle, run_summary = _start_run_for_job(
+                self.runtime, self.run_registry, self.dpi_registry, job
+            )
+            if handle is not None:
+                run_tagged = True
+
+        payload = _serialize_dpi_job(job)
+        payload["run_tagged"] = run_tagged
+        if run_summary:
+            payload["run"] = run_summary
+        self._send_json(payload, status_code=201)
+
     def _handle_state(self) -> None:
         registry = self.runtime.load_registry()
         active_scenario_id = self.service.active_scenario_id
@@ -187,8 +376,22 @@ class _OperatorRequestHandler(BaseHTTPRequestHandler):
             self._send_json({"error": "scenario_id is required"}, status_code=400)
             return
 
+        if overrides is not None and not isinstance(overrides, dict):
+            self._send_json({"error": "overrides must be an object"}, status_code=400)
+            return
+
+        dpi_payload = payload.get("dpi") if isinstance(payload, dict) else None
+        if dpi_payload is not None and not isinstance(dpi_payload, dict):
+            self._send_json({"error": "dpi must be an object"}, status_code=400)
+            return
+        merged_overrides = dict(overrides or {})
+        if isinstance(dpi_payload, dict):
+            for key in ("dpi_id", "dpi_kind", "dpi_job_id"):
+                if key in dpi_payload and dpi_payload.get(key) is not None:
+                    merged_overrides[key] = dpi_payload.get(key)
+
         try:
-            handle = self.run_registry.start_run(scenario_id, overrides)
+            handle = self.run_registry.start_run(scenario_id, merged_overrides)
         except RuntimeError as exc:
             self._send_json({"error": str(exc)}, status_code=409)
             return
@@ -307,6 +510,11 @@ class _OperatorRequestHandler(BaseHTTPRequestHandler):
                 "pillars": list(entry.pillars),
                 "governance": entry.governance,
                 "metrics": entry.summary_metrics,
+                "dpi": entry.dpi,
+                "dpi_jobs": [
+                    _serialize_dpi_job(job)
+                    for job in self.dpi_registry.list_jobs_for_run(run_id)
+                ],
             }
             self._send_json(payload)
             return
@@ -333,6 +541,15 @@ class _OperatorRequestHandler(BaseHTTPRequestHandler):
             "pillars": list(getattr(scenario, "pillars", ())),
             "governance": dict(handle.session_config.governance.to_dict()),
             "metrics": metrics,
+            "dpi": {
+                "dpi_id": handle.status.dpi_id,
+                "dpi_kind": handle.status.dpi_kind,
+                "dpi_job_id": handle.status.dpi_job_id,
+            },
+            "dpi_jobs": [
+                _serialize_dpi_job(job)
+                for job in self.dpi_registry.list_jobs_for_run(run_id)
+            ],
         }
         payload["governance"].pop("policy_set_hash", None)
         self._send_json(payload)
@@ -505,6 +722,9 @@ class _OperatorRequestHandler(BaseHTTPRequestHandler):
             "ticks_total": status.ticks_total,
             "ticks_completed": status.ticks_completed,
             "fault_reason": status.fault_reason,
+            "dpi_id": status.dpi_id,
+            "dpi_kind": status.dpi_kind,
+            "dpi_job_id": status.dpi_job_id,
         }
 
     @staticmethod
@@ -557,7 +777,10 @@ class OperatorService:
         history_path = self.config.history_path
         if history_path is None:
             history_path = self.runtime.repo_root / "docs/fixtures/history/history.jsonl"
-        self.history_store = HistoryStore(history_path, self.runtime)
+        self.dpi_registry = DpiRegistry()
+        self.history_store = HistoryStore(
+            history_path, self.runtime, dpi_registry=self.dpi_registry
+        )
         self.run_registry = RunRegistry(self.runtime, history_store=self.history_store)
         diagnostics_path = self.config.diagnostics_path
         if diagnostics_path is None:
@@ -580,6 +803,7 @@ class OperatorService:
         _BoundHandler.service = self
         _BoundHandler.history_store = self.history_store
         _BoundHandler.diagnostics = self.diagnostics
+        _BoundHandler.dpi_registry = self.dpi_registry
 
         server = ThreadingHTTPServer(
             (self.config.host, self.config.port), _BoundHandler
@@ -635,6 +859,41 @@ def _serialize_diag_result(result: object) -> dict:
         "status": status,
         "checks": checks,
         "related_run_ids": related_run_ids,
+    }
+
+
+def _serialize_dpi_summary(summary: DpiSummary) -> dict:
+    return {
+        "id": summary.id,
+        "name": summary.name,
+        "type": summary.type,
+        "description": summary.description,
+        "status": summary.status,
+        "tags": list(summary.tags),
+    }
+
+
+def _serialize_dpi_detail(detail: DpiDetail) -> dict:
+    payload = _serialize_dpi_summary(detail)
+    payload["capabilities"] = dict(detail.capabilities)
+    payload["config_schema"] = dict(detail.config_schema)
+    return payload
+
+
+def _serialize_dpi_job(job: object) -> dict:
+    kind = getattr(job, "kind", None)
+    status = getattr(job, "status", None)
+    summary = getattr(job, "result_summary", None)
+    return {
+        "job_id": getattr(job, "job_id", None),
+        "dpi_id": getattr(job, "dpi_id", None),
+        "kind": getattr(kind, "value", kind),
+        "status": getattr(status, "value", status),
+        "params": getattr(job, "params", {}),
+        "run_id": getattr(job, "run_id", None),
+        "result_summary": summary,
+        "pfna_replay": summary.get("pfna_replay") if isinstance(summary, dict) else None,
+        "gate_replay": summary.get("gate_replay") if isinstance(summary, dict) else None,
     }
 
 
