@@ -1,9 +1,9 @@
 """Run lifecycle management for the Operator Service."""
 from __future__ import annotations
 
-import threading
 import json
 import zipfile
+import threading
 from dataclasses import dataclass, field, replace
 from datetime import datetime, timezone
 from pathlib import Path
@@ -13,6 +13,7 @@ from uuid import uuid4
 from config import EngineRuntime
 from gate import SessionConfigV1, SessionRunResult, run_session
 from ops import StructuredLogEntryV1, StructuredLogger
+from operator_service.dpi import DpiRegistry
 
 
 @dataclass
@@ -28,6 +29,9 @@ class RunStatus:
     ticks_total: Optional[int] = None
     ticks_completed: Optional[int] = None
     fault_reason: Optional[str] = None
+    dpi_id: Optional[str] = None
+    dpi_kind: Optional[str] = None
+    dpi_job_id: Optional[str] = None
 
 
 @dataclass
@@ -57,6 +61,7 @@ class HistoryEntry:
     governance: Optional[Mapping[str, object]] = None
     pillars: tuple[str, ...] = ()
     status: Mapping[str, object] = field(default_factory=dict)
+    dpi: Mapping[str, Optional[str]] | None = None
 
     def to_dict(self) -> dict[str, object]:
         payload: dict[str, object] = {
@@ -73,6 +78,8 @@ class HistoryEntry:
             payload["summary_metrics"] = dict(self.summary_metrics)
         if self.governance is not None:
             payload["governance"] = dict(self.governance)
+        if self.dpi is not None:
+            payload["dpi"] = dict(self.dpi)
         return payload
 
     @classmethod
@@ -88,15 +95,23 @@ class HistoryEntry:
             governance=raw.get("governance"),
             pillars=tuple(raw.get("pillars", ()) or ()),
             status=raw.get("status", {}),
+            dpi=raw.get("dpi"),
         )
 
 
 class HistoryStore:
     """JSONL-backed persistence for run history entries."""
 
-    def __init__(self, path: Path, runtime: EngineRuntime):
+    def __init__(
+        self,
+        path: Path,
+        runtime: EngineRuntime,
+        *,
+        dpi_registry: DpiRegistry | None = None,
+    ):
         self.path = path
         self.runtime = runtime
+        self.dpi_registry = dpi_registry
         self.export_root = self.path.parent / "exports"
         self.path.parent.mkdir(parents=True, exist_ok=True)
         if not self.path.exists():
@@ -176,6 +191,13 @@ class HistoryStore:
         if handle.result and handle.result.metrics:
             summary_metrics = handle.result.metrics.to_dict()
 
+        dpi_tags = {
+            "dpi_id": handle.status.dpi_id,
+            "dpi_kind": handle.status.dpi_kind,
+            "dpi_job_id": handle.status.dpi_job_id,
+        }
+        dpi_payload = dpi_tags if any(dpi_tags.values()) else None
+
         return HistoryEntry(
             run_id=handle.status.run_id,
             scenario_id=handle.status.scenario_id,
@@ -187,10 +209,12 @@ class HistoryStore:
             governance=governance,
             pillars=tuple(getattr(scenario, "pillars", ())),
             status=_serialize_status(handle.status),
+            dpi=dpi_payload,
         )
 
     def _write_export_bundle(self, handle: RunHandle, entry: HistoryEntry) -> None:
         payload = _build_export_payload(handle, entry, self.runtime)
+        payload["dpi_jobs"] = self._dpi_job_summaries(entry.run_id)
         bundle_dir = self.export_root
         bundle_dir.mkdir(parents=True, exist_ok=True)
         zip_path = bundle_dir / f"{entry.run_id}.zip"
@@ -207,10 +231,38 @@ class HistoryStore:
             "pillars": list(entry.pillars),
             "metrics": entry.summary_metrics,
             "governance": entry.governance,
+            "dpi": entry.dpi,
+            "dpi_jobs": self._dpi_job_summaries(entry.run_id),
             "logs": [],
         }
         with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
             zf.writestr("export.json", json.dumps(payload, indent=2, sort_keys=True))
+
+    def _dpi_job_summaries(self, run_id: str) -> list[dict[str, object]]:
+        if not self.dpi_registry:
+            return []
+        summaries: list[dict[str, object]] = []
+        for job in self.dpi_registry.list_jobs_for_run(run_id):
+            kind = getattr(job, "kind", None)
+            status = getattr(job, "status", None)
+            params = dict(getattr(job, "params", {}) or {})
+            tuning_notes = params.get("tuning_notes")
+            summary = getattr(job, "result_summary", None)
+            summaries.append(
+                {
+                    "job_id": job.job_id,
+                    "dpi_id": job.dpi_id,
+                    "kind": getattr(kind, "value", kind),
+                    "status": getattr(status, "value", status),
+                    "run_id": job.run_id,
+                    "result_summary": summary,
+                    "pfna_replay": summary.get("pfna_replay") if isinstance(summary, dict) else None,
+                    "gate_replay": summary.get("gate_replay") if isinstance(summary, dict) else None,
+                    "params": params if params else None,
+                    "tuning_notes": list(tuning_notes) if tuning_notes else None,
+                }
+            )
+        return summaries
 
 
 class RunRegistry:
@@ -253,6 +305,9 @@ class RunRegistry:
                 ticks_total=session_config.total_ticks,
                 ticks_completed=0,
             )
+            status.dpi_id = _safe_str(overrides.get("dpi_id")) if overrides else None
+            status.dpi_kind = _safe_str(overrides.get("dpi_kind")) if overrides else None
+            status.dpi_job_id = _safe_str(overrides.get("dpi_job_id")) if overrides else None
 
             handle = RunHandle(
                 scenario_id=scenario_id,
@@ -289,6 +344,31 @@ class RunRegistry:
 
             handle.status.stop_requested = True
             return replace(handle.status)
+
+    def tag_run(
+        self,
+        run_id: str,
+        *,
+        dpi_id: Optional[str] = None,
+        dpi_kind: Optional[str] = None,
+        dpi_job_id: Optional[str] = None,
+    ) -> bool:
+        """Attach DPI metadata to a known run if it exists.
+
+        Returns ``True`` when a handle is found and updated, ``False`` otherwise.
+        """
+
+        with self._lock:
+            handle = self.history.get(run_id)
+            if handle is None:
+                return False
+            if dpi_id is not None:
+                handle.status.dpi_id = dpi_id
+            if dpi_kind is not None:
+                handle.status.dpi_kind = dpi_kind
+            if dpi_job_id is not None:
+                handle.status.dpi_job_id = dpi_job_id
+            return True
 
     def get_logs(
         self,
@@ -418,12 +498,21 @@ def _build_export_payload(
 
     logs = [_entry.to_dict() for _entry in _resolve_logs(handle)]
 
+    dpi = entry.dpi
+    if dpi is None:
+        dpi = {
+            "dpi_id": handle.status.dpi_id,
+            "dpi_kind": handle.status.dpi_kind,
+            "dpi_job_id": handle.status.dpi_job_id,
+        }
+
     return {
         "run": _serialize_status(handle.status),
         "history_entry": entry.to_dict(),
         "pillars": list(scenario_pillars),
         "metrics": metrics,
         "governance": governance,
+        "dpi": dpi,
         "logs": logs,
     }
 
@@ -439,6 +528,9 @@ def _serialize_status(status: RunStatus) -> dict[str, object]:
         "ticks_total": status.ticks_total,
         "ticks_completed": status.ticks_completed,
         "fault_reason": status.fault_reason,
+        "dpi_id": status.dpi_id,
+        "dpi_kind": status.dpi_kind,
+        "dpi_job_id": status.dpi_job_id,
     }
 
 
@@ -473,6 +565,17 @@ def _metrics_from_handle(handle: RunHandle) -> Mapping[str, object] | None:
         "nap_total": handle.status.ticks_completed or 0,
         "window_count": len(handle.session_config.window_specs),
     }
+
+
+def _safe_str(value: object | None) -> Optional[str]:
+    if value is None:
+        return None
+    if isinstance(value, str):
+        return value
+    try:
+        return str(value)
+    except Exception:
+        return None
 
 
 def _pillars_for_scenario(

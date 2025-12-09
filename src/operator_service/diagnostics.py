@@ -12,6 +12,7 @@ from uuid import uuid4
 
 from config import EngineRuntime
 from operator_service.run_registry import RunRegistry
+from operator_service.dpi import DpiJob
 
 
 @dataclass(frozen=True)
@@ -150,6 +151,33 @@ class DiagnosticsManager:
             if entry.status.diagnostic_id == diagnostic_id:
                 return entry
         raise KeyError(f"unknown diagnostic_id: {diagnostic_id}")
+
+    def record_fidelity_result(
+        self,
+        *,
+        prob_l1: float,
+        amp_l2: float,
+        source: str,
+        run: DpiJob | None = None,
+        max_prob_l1: float | None = None,
+        max_amp_l2: float | None = None,
+    ) -> DiagnosticResult:
+        """Persist a DPI fidelity diagnostics result to the store."""
+
+        result = build_fidelity_result(
+            prob_l1=prob_l1,
+            amp_l2=amp_l2,
+            source=source,
+            run_id=getattr(run, "run_id", None),
+            dpi_job_id=getattr(run, "job_id", None),
+            max_prob_l1=max_prob_l1,
+            max_amp_l2=max_amp_l2,
+        )
+        self.store.record(result)
+        handle = DiagnosticHandle(status=result.status, result=result)
+        with self._lock:
+            self.history[result.status.diagnostic_id] = handle
+        return result
 
     def start_diagnostics(self, profile_id: str) -> DiagnosticStatus:
         if profile_id not in self.profiles:
@@ -330,3 +358,68 @@ def _parse_dt(value: object) -> Optional[datetime]:
     if isinstance(value, datetime):
         return value
     return None
+
+
+def build_fidelity_result(
+    *,
+    prob_l1: float,
+    amp_l2: float,
+    source: str,
+    run_id: str | None = None,
+    dpi_job_id: str | None = None,
+    max_prob_l1: float | None = None,
+    max_amp_l2: float | None = None,
+) -> DiagnosticResult:
+    """Materialise a diagnostics entry for DPI fidelity checks.
+
+    The result uses a synthetic ``DPI_FIDELITY`` profile and marks the run as
+    ``FAILED`` if either metric exceeds the provided thresholds.
+    """
+
+    now = datetime.now(timezone.utc)
+    threshold_messages: list[str] = []
+    failures: list[str] = []
+
+    if max_prob_l1 is not None:
+        threshold_messages.append(f"max_prob_l1={max_prob_l1}")
+        if prob_l1 > max_prob_l1:
+            failures.append(
+                f"prob_l1 {prob_l1:.6f} exceeds threshold {max_prob_l1:.6f}"
+            )
+    if max_amp_l2 is not None:
+        threshold_messages.append(f"max_amp_l2={max_amp_l2}")
+        if amp_l2 > max_amp_l2:
+            failures.append(f"amp_l2 {amp_l2:.6f} exceeds threshold {max_amp_l2:.6f}")
+
+    threshold_hint = ", ".join(threshold_messages) if threshold_messages else None
+    status_label = "FAILED" if failures else "PASSED"
+    summary = "; ".join(failures) if failures else "Fidelity metrics within bounds"
+
+    check_message = (
+        f"prob_l1={prob_l1:.6f} amp_l2={amp_l2:.6f}"
+        + (f"; thresholds: {threshold_hint}" if threshold_hint else "")
+    )
+
+    check = DiagnosticCheck(
+        id="dpi_fidelity",
+        name="Quantum DPI fidelity bounds",
+        description=f"Computed from {source}",
+        state=status_label,
+        message=check_message,
+    )
+    status = DiagnosticStatus(
+        diagnostic_id=f"dpi-fidelity-{uuid4().hex[:8]}",
+        profile_id="DPI_FIDELITY",
+        state=status_label,
+        created_at=now,
+        started_at=now,
+        finished_at=now,
+        summary=summary,
+        checks_passed=0 if failures else 1,
+        checks_failed=len(failures),
+    )
+    related_run_ids = [run_id] if run_id else []
+    result = DiagnosticResult(status=status, checks=[check], related_run_ids=related_run_ids)
+    if dpi_job_id:
+        result.related_run_ids.append(dpi_job_id)
+    return result
