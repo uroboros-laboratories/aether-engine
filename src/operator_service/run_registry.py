@@ -5,7 +5,7 @@ import json
 import zipfile
 import threading
 from dataclasses import dataclass, field, replace
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Mapping, Optional
 from uuid import uuid4
@@ -268,12 +268,20 @@ class HistoryStore:
 class RunRegistry:
     """Track the current run and completed runs."""
 
-    def __init__(self, runtime: EngineRuntime, history_store: HistoryStore | None = None):
+    def __init__(
+        self,
+        runtime: EngineRuntime,
+        history_store: HistoryStore | None = None,
+        *,
+        active_grace_seconds: float = 0.05,
+    ):
         self.runtime = runtime
         self.history_store = history_store
         self._lock = threading.Lock()
         self.current: Optional[RunHandle] = None
         self.history: dict[str, RunHandle] = {}
+        self._grace_period = timedelta(seconds=active_grace_seconds)
+        self._active_until: datetime | None = None
 
     # Public API -----------------------------------------------------
     def start_run(
@@ -282,6 +290,11 @@ class RunRegistry:
         """Start a new run for the given scenario and track its lifecycle."""
 
         with self._lock:
+            now = datetime.now(timezone.utc)
+            if self._active_until and now < self._active_until:
+                raise RuntimeError(
+                    "a previous run is still winding down; retry in a moment"
+                )
             if self.current and self.current.status.state in {"pending", "running"}:
                 raise RuntimeError("a run is already in progress")
 
@@ -321,6 +334,7 @@ class RunRegistry:
             handle.thread = worker
             self.current = handle
             self.history[run_id] = handle
+            self._active_until = now + self._grace_period
 
         worker.start()
         return handle
@@ -465,6 +479,7 @@ class RunRegistry:
             handle.status.state = "completed"
             handle.status.ended_at = datetime.now(timezone.utc)
             handle.status.ticks_completed = handle.session_config.total_ticks
+            self._active_until = handle.status.ended_at + self._grace_period
             if self.current is handle:
                 self.current = None
             if self.history_store:
@@ -476,6 +491,7 @@ class RunRegistry:
             handle.status.state = "fault"
             handle.status.ended_at = datetime.now(timezone.utc)
             handle.status.fault_reason = str(exc)
+            self._active_until = handle.status.ended_at + self._grace_period
             if self.current is handle:
                 self.current = None
             if self.history_store:
