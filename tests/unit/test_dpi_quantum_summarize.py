@@ -4,7 +4,7 @@ import argparse
 import json
 from pathlib import Path
 
-from dpi_quantum import _summarize
+from src.dpi_quantum import _summarize
 from operator_service.diagnostics import DiagnosticsStore, build_fidelity_result
 from operator_service.run_registry import HistoryEntry
 
