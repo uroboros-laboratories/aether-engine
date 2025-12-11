@@ -1,0 +1,14 @@
+{
+  "name": "c2_spin_chain_qubits",
+  "kind": "experiment",
+  "notes": "spin-chain qubit/tick coverage",
+  "base_params": {
+    "name": "spin_chain",
+    "pfna_tick": 0,
+    "auto_tune": true
+  },
+  "grid": {
+    "qubits": [2, 4],
+    "ticks": [2, 3]
+  }
+}

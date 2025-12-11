@@ -8,16 +8,18 @@ The basic idea:
 - The **code** in `src/` is just an implementation that has to obey those docs.
 - The **tests** in `tests/` keep everything honest (GF‑01 paper parity first, then generalised features).
 
- If you’re a human or a coding agent landing here, read this in order:
+If you’re a human or a coding agent landing here, read this in order:
 
- 1. `docs/specs/spec_000_AETHER_Spec_Index_and_Roadmap.md`  
+ 1. `docs/specs/spec_000_AETHER_Spec_Index_and_Roadmap.md`
     High‑level map of all specs and phases (SPEC‑000 .. SPEC‑007).
  2. `docs/specs/spec_001_aether_full_system_build_plan_medium_agnostic.md`  
     The overall build plan and architecture for the full Aether system.
- 3. `docs/specs/spec_002_GF01_CMP0_Baseline_Build_Plan.md`  
+ 3. `docs/specs/spec_002_GF01_CMP0_Baseline_Build_Plan.md`
     Defines the **Phase 1** “GF‑01 CMP‑0 Baseline” engine and exactly what must be built and tested.
- 4. `docs/specs/spec_005_Phase_2_Pillar_V1_Implementation_Plan.md`  
+ 4. `docs/specs/spec_005_Phase_2_Pillar_V1_Implementation_Plan.md`
     Defines **Phase 2** “Pillar V1” generalisation work (UMX / Loom / Press / Gate / Codex / U‑ledger).
+
+ For a novice-friendly Phase 9 CLI run sheet (commands, meanings, and a one-line "run everything" command), see `docs/phase9_novice_runsheet.md`.
 
  After that, use `SPEC_000_Aether_Master_Spec_Index_and_Roadmap_v1.md` and the per‑phase issue packs
  (`SPEC_002_…Issue_Pack_v1.md` etc.) as your guide for day‑to‑day work.

@@ -1,0 +1,11 @@
+{
+  "name": "c5_gf01_run",
+  "kind": "gf01_run",
+  "base_params": {
+    "notes": "GF01 base-engine run captured to snapshot"
+  },
+  "grid": {
+    "run_id": ["gf01_suite"],
+    "output": ["logs/snapshots/gf01_suite_snapshot.json"]
+  }
+}

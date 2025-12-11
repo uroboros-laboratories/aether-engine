@@ -27,16 +27,23 @@ from operator_service.quantum_ingest import (
     summarize_pfna_replay,
     tbp_to_pfna_bundle,
 )
+from ops import RunSummary, append_run_summaries
 
 
 @dataclass
 class CommandResult:
     exit_code: int = 0
     message: Optional[str] = None
+    extras: Optional[dict[str, object]] = None
 
 
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Quantum DPI CLI")
+    parser.add_argument(
+        "--logs-dir",
+        dest="logs_dir",
+        help="Override run log directory (defaults to <repo>/logs)",
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     ingest = subparsers.add_parser("ingest", help="Ingest quantum data into the engine")
@@ -331,6 +338,13 @@ def _ingest(args: argparse.Namespace) -> CommandResult:
             params=params,
             diagnostics_path=params.get("diagnostics_path"),
         )
+        _record_run_summary(
+            kind="ingest",
+            params=params,
+            fidelity=fidelity,
+            status="FAILED",
+            notes="; ".join(failures),
+        )
         if diagnostics_note:
             summary_lines.append(f"  diagnostics: {diagnostics_note}")
         return CommandResult(exit_code=1, message="\n".join(summary_lines))
@@ -343,6 +357,13 @@ def _ingest(args: argparse.Namespace) -> CommandResult:
     if pfna_written:
         summary_lines.append(f"  pfna_bundle: written to {pfna_written}")
     summary_lines.append("Note: engine run linkage will be wired in subsequent steps.")
+    _record_run_summary(
+        kind="ingest",
+        params=params,
+        fidelity=fidelity,
+        status="OK",
+        extras={"tune_notes": tune_notes, "replay": replay, "gate_replay": gate_replay},
+    )
     return CommandResult(exit_code=0, message="\n".join(summary_lines))
 
 
@@ -415,6 +436,13 @@ def _simulate(args: argparse.Namespace) -> CommandResult:
         summary_lines.append(f"  pfna_bundle: written to {pfna_written}")
     if params.get("run_engine"):
         summary_lines.append("  engine run: stubbed start (wire to operator service next)")
+    _record_run_summary(
+        kind="simulate",
+        params=params,
+        fidelity=fidelity,
+        status="OK",
+        extras={"replay": replay, "gate_replay": gate_replay, "tune_notes": tune_notes},
+    )
     return CommandResult(exit_code=0, message="\n".join(summary_lines))
 
 
@@ -487,7 +515,49 @@ def _experiment(args: argparse.Namespace) -> CommandResult:
     if pfna_written:
         summary_lines.append(f"  pfna_bundle: written to {pfna_written}")
     summary_lines.append("  engine run: experiment wiring stubbed; integrate with operator service")
+    _record_run_summary(
+        kind="experiment",
+        params=params,
+        fidelity=fidelity,
+        status="OK",
+        extras={"replay": replay, "gate_replay": gate_replay, "tune_notes": tune_notes},
+    )
     return CommandResult(exit_code=0, message="\n".join(summary_lines))
+
+
+def _record_run_summary(
+    *,
+    kind: str,
+    params: Dict[str, object],
+    fidelity: Dict[str, float],
+    status: str,
+    notes: str = "",
+    extras: Optional[Dict[str, object]] = None,
+) -> None:
+    """Persist a RunSummary row to the shared run sheets."""
+
+    repo_root = Path(__file__).resolve().parents[1]
+    logs_root = (
+        Path(str(params.get("logs_dir"))).expanduser() if params.get("logs_dir") else repo_root
+    )
+    scenario_hint = {
+        "ingest": params.get("input") or "ingest",
+        "simulate": params.get("circuit") or "simulate",
+        "experiment": params.get("name") or "experiment",
+    }.get(kind, kind)
+    summary = RunSummary.from_defaults(
+        run_id=str(params.get("run_id") or f"{kind}-{params.get('pfna_tick', 0)}"),
+        scenario=f"{kind}:{scenario_hint}",
+        status=status,
+        n_qubits=int(params.get("qubits")) if params.get("qubits") is not None else None,
+        ticks=int(params.get("ticks")) if params.get("ticks") is not None else None,
+        dpi_mode=kind,
+        fidelity_prob_l1=fidelity.get("prob_l1"),
+        fidelity_amp_l2=fidelity.get("amp_l2"),
+        notes=notes,
+        extras=extras,
+    )
+    append_run_summaries([summary], repo_root=logs_root)
 
 
 def _record_fidelity_diagnostic(

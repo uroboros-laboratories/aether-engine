@@ -1,0 +1,14 @@
+{
+  "name": "c1_ingest_eta_sweep",
+  "kind": "ingest",
+  "notes": "sweep η/P combinations for ingest hero (JSON fallback)",
+  "base_params": {
+    "qubits": 2,
+    "pfna_tick": 0,
+    "auto_tune": false
+  },
+  "grid": {
+    "eta": [0.05, 0.1],
+    "phase_bins": [32, 64]
+  }
+}
