@@ -1,0 +1,12 @@
+{
+  "name": "c6_gf01_compare",
+  "kind": "gf01_compare",
+  "base_params": {
+    "baseline": "tests/snapshots/gf01_run_snapshot.json",
+    "registry": "docs/fixtures/scenarios/scenario_registry.json",
+    "target": "gf01"
+  },
+  "grid": {
+    "run_id": ["GF01"]
+  }
+}

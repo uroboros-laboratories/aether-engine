@@ -6,7 +6,9 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Mapping, Optional
+
+from hero_suite import main as hero_suite_main
 
 from config import load_run_session_config, load_scenario_registry
 from core.serialization import (
@@ -18,7 +20,7 @@ from core.serialization import (
     serialize_uledger_entry,
 )
 from gate import run_session
-from ops import build_introspection_view
+from ops import RunSummary, append_run_summaries, build_introspection_view
 from ops.snapshots import (
     DEFAULT_SNAPSHOT_DIR,
     compare_snapshots,
@@ -29,6 +31,50 @@ from ops.snapshots import (
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_SCENARIO_REGISTRY = REPO_ROOT / "docs/fixtures/scenarios/scenario_registry.json"
+
+
+def _logs_root(logs_dir: Optional[str]) -> Path:
+    return Path(logs_dir).expanduser().resolve() if logs_dir else REPO_ROOT
+
+
+def _infer_n_qubits(snapshot: Mapping[str, Any]) -> Optional[int]:
+    ledgers = snapshot.get("ledgers") or []
+    if not ledgers:
+        return None
+    pre_u = ledgers[0].get("pre_u")
+    if isinstance(pre_u, list):
+        return len(pre_u)
+    return None
+
+
+def _infer_tick_count(snapshot: Mapping[str, Any]) -> Optional[int]:
+    ledgers = snapshot.get("ledgers")
+    if isinstance(ledgers, list):
+        return len(ledgers)
+    return None
+
+
+def _append_snapshot_summary(
+    *,
+    snapshot: Mapping[str, Any],
+    target: str,
+    status: str,
+    logs_dir: Optional[str],
+    notes: str,
+    extras: Optional[Mapping[str, Any]] = None,
+) -> None:
+    summary = RunSummary.from_defaults(
+        run_id=str(snapshot.get("run_id", target)),
+        scenario=target,
+        status=status,
+        n_qubits=_infer_n_qubits(snapshot),
+        ticks=_infer_tick_count(snapshot),
+        loom_p_blocks=len(snapshot.get("p_blocks", []) or []),
+        loom_i_blocks=len(snapshot.get("i_blocks", []) or []),
+        notes=notes,
+        extras=extras,
+    )
+    append_run_summaries([summary], repo_root=_logs_root(logs_dir))
 
 
 def _load_session_config(*, run_config: Optional[str], scenario: str, registry: Path):
@@ -108,8 +154,17 @@ def _snapshot_generate_command(args: argparse.Namespace) -> None:
         run_config=args.run_config, scenario=args.target, registry=registry_path
     )
     result = run_session(session_config)
-    write_snapshot(serialize_session_run(result), output_path)
+    snapshot = serialize_session_run(result)
+    write_snapshot(snapshot, output_path)
     sys.stdout.write(f"Wrote snapshot to {output_path}\n")
+    _append_snapshot_summary(
+        snapshot=snapshot,
+        target=args.target,
+        status="SNAPSHOT_GENERATED",
+        logs_dir=args.logs_dir,
+        notes=f"snapshot -> {output_path}",
+        extras={"snapshot_path": str(output_path)},
+    )
 
 
 def _snapshot_compare_command(args: argparse.Namespace) -> None:
@@ -126,6 +181,19 @@ def _snapshot_compare_command(args: argparse.Namespace) -> None:
         run_config=run_config,
         registry_path=registry_path if not run_config and not candidate_path else None,
         max_diffs=args.max_diffs,
+    )
+
+    status = "PASS" if not diffs else "FAIL"
+    _append_snapshot_summary(
+        snapshot=candidate,
+        target=args.target,
+        status=status,
+        logs_dir=args.logs_dir,
+        notes=f"compare baseline={baseline_path}",
+        extras={
+            "candidate_path": str(candidate_path) if candidate_path else None,
+            "run_config": str(run_config) if run_config else None,
+        },
     )
 
     if args.output:
@@ -146,8 +214,23 @@ def _show_ledger_command(args: argparse.Namespace) -> None:
     _json_print({"ledger": payload})
 
 
+def _hero_suite_command(args: argparse.Namespace) -> None:
+    sub_args = ["--mode", args.mode]
+    if args.logs_dir:
+        sub_args.extend(["--logs-dir", args.logs_dir])
+    if args.sweep_limit is not None:
+        sub_args.extend(["--sweep-limit", str(args.sweep_limit)])
+    if getattr(args, "fresh_run_sheet", False):
+        sub_args.append("--fresh-run-sheet")
+    hero_suite_main(sub_args)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Aether introspection CLI")
+    parser.add_argument(
+        "--logs-dir",
+        help="Override run log directory (defaults to <repo>/logs)",
+    )
     parent = argparse.ArgumentParser(add_help=False)
     parent.add_argument(
         "target",
@@ -218,6 +301,28 @@ def build_parser() -> argparse.ArgumentParser:
         help="Baseline snapshot JSON path",
     )
     snapshot_cmp.set_defaults(func=_snapshot_compare_command)
+
+    suite_parser = subparsers.add_parser(
+        "hero-suite",
+        help="Run all hero commands and sweeps (Phase 9 orchestrator)",
+    )
+    suite_parser.add_argument(
+        "--mode",
+        choices=["full-sweep", "smoke"],
+        default="full-sweep",
+        help="Execution mode: full-sweep runs heroes + sweeps; smoke skips sweeps",
+    )
+    suite_parser.add_argument(
+        "--sweep-limit",
+        type=int,
+        help="Optional limit on sweep points per config for quick checks",
+    )
+    suite_parser.add_argument(
+        "--fresh-run-sheet",
+        action="store_true",
+        help="Truncate run sheets before executing to avoid stale entries",
+    )
+    suite_parser.set_defaults(func=_hero_suite_command)
 
     return parser
 

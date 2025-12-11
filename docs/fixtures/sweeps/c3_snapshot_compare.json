@@ -1,0 +1,14 @@
+{
+  "name": "c3_snapshot_compare",
+  "kind": "snapshot_compare",
+  "base_params": {
+    "registry": "docs/fixtures/scenarios/scenario_registry.json",
+    "baseline": "tests/snapshots/gf01_run_snapshot.json",
+    "target": "gf01",
+    "logs_dir": "logs"
+  },
+  "grid": {
+    "candidate": [null]
+  },
+  "notes": "Compare the GF01 baseline snapshot against a fresh run to validate regressions during sweeps."
+}

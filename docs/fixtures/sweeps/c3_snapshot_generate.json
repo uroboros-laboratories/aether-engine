@@ -1,0 +1,12 @@
+{
+  "name": "c3_snapshot_generate",
+  "kind": "snapshot_generate",
+  "base_params": {
+    "registry": "docs/fixtures/scenarios/scenario_registry.json",
+    "logs_dir": "logs"
+  },
+  "grid": {
+    "target": ["gf01", "line-4"]
+  },
+  "notes": "Generate GF01 and Line-4 snapshots via the introspection CLI so base-engine sweeps log to run sheets."
+}
