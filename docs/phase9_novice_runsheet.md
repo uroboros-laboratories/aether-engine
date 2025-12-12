@@ -27,7 +27,7 @@ This page lists the Phase 9 console commands in plain language and shows where t
 - `python -m quantum_sweep docs/fixtures/sweeps/c4_emulation.json --limit 1 --no-resume` — execute sweep points (DPI heroes, snapshot generate/compare, emulation compares, GF01 runs), checkpoint progress, and append run summaries.
 
 ## One-line “run everything” command
-Run the full test suite first, then the hero + sweep orchestrator, truncating stale run-sheet entries before logging new results:
+Run the full test suite first, then the hero + sweep orchestrator, truncating stale run-sheet entries before logging new results. If you see `No module named pytest`, install the dependencies first with `python -m pip install -r requirements.txt` (or `py -m pip ...` on Windows) to make sure `pytest` is available on your active interpreter:
 
 ```bash
 python -m pytest && python -m cli hero-suite --mode full-sweep --fresh-run-sheet

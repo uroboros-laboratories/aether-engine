@@ -1,6 +1,6 @@
 import argparse
 
-from dpi_quantum import _ingest
+from src.dpi_quantum import _ingest
 
 
 def test_ingest_reports_gate_replay_metrics(tmp_path):
