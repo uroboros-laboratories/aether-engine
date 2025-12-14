@@ -35,9 +35,14 @@ class RunSummary:
     loom_mode: Optional[str] = None
     codex_mode: Optional[str] = None
     runtime_total_ms: Optional[float] = None
+    runtime_engine_ms: Optional[float] = None
     status: str = "UNKNOWN"
     loom_p_blocks: Optional[int] = None
     loom_i_blocks: Optional[int] = None
+    loom_bytes: Optional[int] = None
+    peak_mem_mb: Optional[float] = None
+    error_code: Optional[str] = None
+    error_message: Optional[str] = None
     eta: Optional[float] = None
     phase_bins: Optional[int] = None
     fidelity_prob_l1: Optional[float] = None
@@ -91,9 +96,14 @@ class RunSummary:
             "loom_mode",
             "codex_mode",
             "runtime_total_ms",
+            "runtime_engine_ms",
             "status",
             "loom_p_blocks",
             "loom_i_blocks",
+            "loom_bytes",
+            "peak_mem_mb",
+            "error_code",
+            "error_message",
             "eta",
             "phase_bins",
             "fidelity_prob_l1",
@@ -117,9 +127,14 @@ class RunSummary:
             self.loom_mode,
             self.codex_mode,
             self.runtime_total_ms,
+            self.runtime_engine_ms,
             self.status,
             self.loom_p_blocks,
             self.loom_i_blocks,
+            self.loom_bytes,
+            self.peak_mem_mb,
+            self.error_code,
+            self.error_message,
             self.eta,
             self.phase_bins,
             self.fidelity_prob_l1,

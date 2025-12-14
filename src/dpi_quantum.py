@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Dict, List, Optional
@@ -25,9 +26,15 @@ from operator_service.quantum_ingest import (
     simulate_preset_statevector,
     summarize_gate_pfna_replay,
     summarize_pfna_replay,
+    tbp_to_pfna_inputs,
     tbp_to_pfna_bundle,
 )
 from ops import RunSummary, append_run_summaries
+from core.tick_loop import TickLoopWindowSpec, run_cmp0_tick_loop
+from gate.gate import PFNAInputV0, PFNATransformV1
+from loom.chain import LoomBlockStore
+from umx.profile_cmp0 import gf01_profile_cmp0
+from umx.topology_profile import gf01_topology_profile
 
 
 @dataclass
@@ -124,6 +131,7 @@ def _build_parser() -> argparse.ArgumentParser:
         action="store_false",
         help="Disable auto-tuning even when η/P are omitted",
     )
+    experiment.add_argument("--run-engine", action="store_true", help="Also start an engine run")
     experiment.set_defaults(kind=DpiJobKind.EXPERIMENT)
 
     summarize = subparsers.add_parser("summarize", help="Summarize past DPI jobs or runs")
@@ -281,7 +289,7 @@ def _ingest(args: argparse.Namespace) -> CommandResult:
         pfna_path.write_text(json.dumps(pfna_bundle, indent=2))
         pfna_written = pfna_path
 
-    summary_lines = ["ingestion completed (stubbed run)", f"  source: {source}"]
+    summary_lines = ["ingestion completed", f"  source: {source}"]
     summary_lines.append(f"  masses: {len(encoded['masses'])} entries")
     summary_lines.append(
         f"  phases: {len(set(encoded['phases']))} unique buckets across {encoded['P']} bins"
@@ -356,7 +364,6 @@ def _ingest(args: argparse.Namespace) -> CommandResult:
         summary_lines.append(f"  written: {output_path}")
     if pfna_written:
         summary_lines.append(f"  pfna_bundle: written to {pfna_written}")
-    summary_lines.append("Note: engine run linkage will be wired in subsequent steps.")
     _record_run_summary(
         kind="ingest",
         params=params,
@@ -377,6 +384,7 @@ def _simulate(args: argparse.Namespace) -> CommandResult:
             message=f"Invalid simulation parameters:{formatted}\nUse --help to see required fields.",
         )
 
+    overall_start = time.perf_counter()
     try:
         statevector, desc = simulate_preset_statevector(
             params.get("circuit", "bell"),
@@ -434,13 +442,50 @@ def _simulate(args: argparse.Namespace) -> CommandResult:
     pfna_written = _maybe_write_pfna_bundle(encoded, params)
     if pfna_written:
         summary_lines.append(f"  pfna_bundle: written to {pfna_written}")
+    engine_metrics = None
     if params.get("run_engine"):
-        summary_lines.append("  engine run: stubbed start (wire to operator service next)")
+        try:
+            engine_metrics = _run_engine_with_pfna(
+                kind="simulate",
+                encoded=encoded,
+                params=params,
+                total_ticks=int(params.get("ticks") or params.get("layers") or 4),
+            )
+            summary_lines.append(f"  engine run: run_id={engine_metrics['run_id']}")
+            summary_lines.append(
+                "  loom: p_blocks={p} i_blocks={i} bytes={b} ticks={t}".format(
+                    p=engine_metrics["loom_p_blocks"],
+                    i=engine_metrics["loom_i_blocks"],
+                    b=engine_metrics["loom_bytes"],
+                    t=engine_metrics["ticks"],
+                )
+            )
+        except Exception as exc:  # pragma: no cover - engine failure path
+            runtime_total_ms = (time.perf_counter() - overall_start) * 1000
+            summary_lines.append(f"  engine run: failed ({exc})")
+            _record_run_summary(
+                kind="simulate",
+                params=params,
+                fidelity=fidelity,
+                status="FAILED",
+                runtime_total_ms=runtime_total_ms,
+                error_message=str(exc),
+                error_code="ENGINE_RUN_FAILED",
+                extras={"replay": replay, "gate_replay": gate_replay, "tune_notes": tune_notes},
+            )
+            return CommandResult(exit_code=1, message="\n".join(summary_lines))
     _record_run_summary(
         kind="simulate",
         params=params,
         fidelity=fidelity,
         status="OK",
+        runtime_total_ms=(time.perf_counter() - overall_start) * 1000,
+        runtime_engine_ms=engine_metrics["runtime_engine_ms"] if engine_metrics else None,
+        ticks=engine_metrics["ticks"] if engine_metrics else params.get("ticks"),
+        loom_p_blocks=engine_metrics.get("loom_p_blocks") if engine_metrics else None,
+        loom_i_blocks=engine_metrics.get("loom_i_blocks") if engine_metrics else None,
+        loom_bytes=engine_metrics.get("loom_bytes") if engine_metrics else None,
+        run_id=engine_metrics["run_id"] if engine_metrics else None,
         extras={"replay": replay, "gate_replay": gate_replay, "tune_notes": tune_notes},
     )
     return CommandResult(exit_code=0, message="\n".join(summary_lines))
@@ -456,6 +501,7 @@ def _experiment(args: argparse.Namespace) -> CommandResult:
             message=f"Invalid experiment parameters:{formatted}\nUse --help to see required fields.",
         )
 
+    overall_start = time.perf_counter()
     try:
         statevector, desc = run_experiment_statevector(
             params.get("name", "spin_chain"),
@@ -466,7 +512,6 @@ def _experiment(args: argparse.Namespace) -> CommandResult:
         encoded, fidelity, tune_notes = quantize_with_auto_tune(statevector, params)
     except Exception as exc:  # pragma: no cover - CLI error path
         return CommandResult(exit_code=1, message=f"Experiment failed: {exc}")
-
     summary_lines = ["experiment completed", f"  experiment: {desc}"]
     summary_lines.append(f"  eta={encoded['eta']} P={encoded['P']}")
     summary_lines.append(f"  masses: {len(encoded['masses'])} entries")
@@ -514,15 +559,155 @@ def _experiment(args: argparse.Namespace) -> CommandResult:
     pfna_written = _maybe_write_pfna_bundle(encoded, params)
     if pfna_written:
         summary_lines.append(f"  pfna_bundle: written to {pfna_written}")
-    summary_lines.append("  engine run: experiment wiring stubbed; integrate with operator service")
+    engine_metrics = None
+    if params.get("run_engine"):
+        try:
+            engine_metrics = _run_engine_with_pfna(
+                kind="experiment",
+                encoded=encoded,
+                params=params,
+                total_ticks=int(params.get("ticks") or 4),
+            )
+            summary_lines.append(f"  engine run: run_id={engine_metrics['run_id']}")
+            summary_lines.append(
+                "  loom: p_blocks={p} i_blocks={i} bytes={b} ticks={t}".format(
+                    p=engine_metrics["loom_p_blocks"],
+                    i=engine_metrics["loom_i_blocks"],
+                    b=engine_metrics["loom_bytes"],
+                    t=engine_metrics["ticks"],
+                )
+            )
+        except Exception as exc:  # pragma: no cover - engine failure path
+            runtime_total_ms = (time.perf_counter() - overall_start) * 1000
+            summary_lines.append(f"  engine run: failed ({exc})")
+            _record_run_summary(
+                kind="experiment",
+                params=params,
+                fidelity=fidelity,
+                status="FAILED",
+                runtime_total_ms=runtime_total_ms,
+                error_message=str(exc),
+                error_code="ENGINE_RUN_FAILED",
+                extras={
+                    "replay": replay,
+                    "gate_replay": gate_replay,
+                    "tune_notes": tune_notes,
+                },
+            )
+            return CommandResult(exit_code=1, message="\n".join(summary_lines))
+
+    runtime_total_ms = (time.perf_counter() - overall_start) * 1000
+    summary_run_id = engine_metrics["run_id"] if engine_metrics else str(params.get("run_id") or "dpi_quantum")
     _record_run_summary(
         kind="experiment",
         params=params,
         fidelity=fidelity,
         status="OK",
+        runtime_total_ms=runtime_total_ms,
+        runtime_engine_ms=engine_metrics["runtime_engine_ms"] if engine_metrics else None,
+        ticks=engine_metrics["ticks"] if engine_metrics else params.get("ticks"),
+        loom_p_blocks=engine_metrics.get("loom_p_blocks") if engine_metrics else None,
+        loom_i_blocks=engine_metrics.get("loom_i_blocks") if engine_metrics else None,
+        loom_bytes=engine_metrics.get("loom_bytes") if engine_metrics else None,
+        run_id=summary_run_id,
         extras={"replay": replay, "gate_replay": gate_replay, "tune_notes": tune_notes},
     )
     return CommandResult(exit_code=0, message="\n".join(summary_lines))
+
+
+def _run_engine_with_pfna(
+    *, kind: str, encoded: Dict[str, object], params: Dict[str, object], total_ticks: int
+) -> Dict[str, object]:
+    repo_root = Path(__file__).resolve().parents[1]
+    logs_root = Path(str(params.get("logs_dir"))).expanduser() if params.get("logs_dir") else repo_root
+    run_id = str(params.get("run_id") or f"{kind}-engine")
+    nid = str(params.get("nid") or "dpi_quantum")
+    profile = gf01_profile_cmp0()
+    topo, pfna_inputs = _prepare_pfna_inputs(encoded, params, run_id=run_id)
+
+    window_spec = TickLoopWindowSpec(
+        window_id="DPI_GF01_window",
+        apx_name="DPI_GF01_APX",
+        start_tick=1,
+        end_tick=max(int(total_ticks), 1),
+    )
+
+    loom_store = LoomBlockStore(logs_root / "logs" / "loom" / run_id)
+    engine_start = time.perf_counter()
+    result = run_cmp0_tick_loop(
+        topo=topo,
+        profile=profile,
+        initial_state=_initial_state_for_topology(topo.N),
+        total_ticks=max(int(total_ticks), 1),
+        window_specs=(window_spec,),
+        primary_window_id=window_spec.window_id,
+        run_id=run_id,
+        nid=nid,
+        pfna_inputs=pfna_inputs,
+        pfna_transform=PFNATransformV1(),
+        loom_block_store=loom_store,
+    )
+    runtime_engine_ms = (time.perf_counter() - engine_start) * 1000
+
+    return {
+        "run_id": run_id,
+        "result": result,
+        "runtime_engine_ms": runtime_engine_ms,
+        "loom_p_blocks": len(result.p_blocks),
+        "loom_i_blocks": len(result.i_blocks),
+        "loom_bytes": _loom_bytes(loom_store),
+        "ticks": len(result.ledgers),
+        "loom_store": loom_store,
+    }
+
+
+def _initial_state_for_topology(length: int) -> List[int]:
+    base = [3, 1, 0, 0, 0, 0]
+    if length <= len(base):
+        return base[:length]
+    return base + [0] * (length - len(base))
+
+
+def _prepare_pfna_inputs(encoded: Dict[str, object], params: Dict[str, object], *, run_id: str):
+    topo = gf01_topology_profile()
+    gid = str(params.get("gid") or topo.gid)
+    pfna_id = str(params.get("run_id") or params.get("name") or params.get("circuit") or run_id or "tbp_pfna")
+    tick = int(params.get("pfna_tick") or 0)
+    inputs = tbp_to_pfna_inputs(
+        encoded, pfna_id=pfna_id, gid=gid, run_id=run_id, nid=str(params.get("nid") or "quantum"), tick=tick
+    )
+
+    adjusted: List[PFNAInputV0] = []
+    for item in inputs:
+        values = tuple(item.values)
+        if len(values) < topo.N:
+            values = values + (0,) * (topo.N - len(values))
+        elif len(values) > topo.N:
+            values = values[: topo.N]
+        adjusted.append(
+            PFNAInputV0(
+                pfna_id=item.pfna_id,
+                gid=gid,
+                run_id=run_id,
+                tick=item.tick,
+                nid=item.nid,
+                values=values,
+                description=item.description,
+            )
+        )
+    return topo, adjusted
+
+
+def _loom_bytes(store: LoomBlockStore) -> int:
+    if not store or not store.index_path.exists():
+        return 0
+    try:
+        index = json.loads(store.index_path.read_text())
+        p_bytes = sum(entry.get("bin_size", 0) for entry in index.get("p", []))
+        i_bytes = sum(entry.get("bin_size", 0) for entry in index.get("i", []))
+        return p_bytes + i_bytes
+    except Exception:
+        return 0
 
 
 def _record_run_summary(
@@ -533,6 +718,16 @@ def _record_run_summary(
     status: str,
     notes: str = "",
     extras: Optional[Dict[str, object]] = None,
+    runtime_total_ms: Optional[float] = None,
+    runtime_engine_ms: Optional[float] = None,
+    ticks: Optional[int] = None,
+    loom_p_blocks: Optional[int] = None,
+    loom_i_blocks: Optional[int] = None,
+    loom_bytes: Optional[int] = None,
+    peak_mem_mb: Optional[float] = None,
+    error_code: Optional[str] = None,
+    error_message: Optional[str] = None,
+    run_id: Optional[str] = None,
 ) -> None:
     """Persist a RunSummary row to the shared run sheets."""
 
@@ -546,12 +741,21 @@ def _record_run_summary(
         "experiment": params.get("name") or "experiment",
     }.get(kind, kind)
     summary = RunSummary.from_defaults(
-        run_id=str(params.get("run_id") or f"{kind}-{params.get('pfna_tick', 0)}"),
+        run_id=str(run_id or params.get("run_id") or f"{kind}-{params.get('pfna_tick', 0)}"),
         scenario=f"{kind}:{scenario_hint}",
         status=status,
         n_qubits=int(params.get("qubits")) if params.get("qubits") is not None else None,
-        ticks=int(params.get("ticks")) if params.get("ticks") is not None else None,
+        ticks=int(ticks) if ticks is not None else int(params.get("ticks")) if params.get("ticks") is not None else None,
         dpi_mode=kind,
+        loom_mode="GF01",
+        runtime_total_ms=runtime_total_ms,
+        runtime_engine_ms=runtime_engine_ms,
+        loom_p_blocks=loom_p_blocks,
+        loom_i_blocks=loom_i_blocks,
+        loom_bytes=loom_bytes,
+        peak_mem_mb=peak_mem_mb,
+        error_code=error_code,
+        error_message=error_message,
         fidelity_prob_l1=fidelity.get("prob_l1"),
         fidelity_amp_l2=fidelity.get("amp_l2"),
         notes=notes,
